@@ -1,0 +1,132 @@
+using Microsoft.UI.Xaml.Controls;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+using Microsoft.Win32;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml;
+using System;
+
+namespace OmenFlow_App.Pages;
+
+public sealed partial class HomePage : Page
+{
+    public HomePage()
+    {
+        InitializeComponent();
+        LoadSystemDeviceData();
+        App.IpcClient.TelemetryReceived += IpcClient_TelemetryReceived;
+    }
+
+    private void IpcClient_TelemetryReceived(object? sender, Helpers.TelemetryData e)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            CpuTempText.Text = $"{e.CpuTemp:F0}°C";
+            GpuTempText.Text = $"{e.GpuTemp:F0}°C";
+            CpuUsageText.Text = $"%{e.CpuLoad:F0}";
+            GpuUsageText.Text = $"%{e.GpuLoad:F0}";
+            CpuFanText.Text = $"{e.CpuTemp:F0}°C - {e.CpuFanRpm} RPM";
+            GpuFanText.Text = $"{e.GpuTemp:F0}°C - {e.GpuFanRpm} RPM";
+        });
+    }
+
+    private void LoadSystemDeviceData()
+    {
+        try
+        {
+            string systemModel = "Bilinmeyen Sistem";
+            
+            using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS"))
+            {
+                if (key != null)
+                {
+                    object? prodName = key.GetValue("SystemProductName");
+                    if (prodName != null)
+                    {
+                        systemModel = prodName.ToString() ?? systemModel;
+                    }
+                }
+            }
+
+            BoardNumberText.Text = $"Sistem Modeli: {systemModel}";
+
+            if (systemModel.IndexOf("Victus", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                DeviceTitleText.Text = "HP Victus";
+                DeviceImage.Source = new BitmapImage(new Uri("ms-appx:///icons/hpvictus.png"));
+            }
+            else if (systemModel.IndexOf("Omen", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                DeviceTitleText.Text = "HP OMEN";
+                DeviceImage.Source = new BitmapImage(new Uri("ms-appx:///icons/hpomen.png"));
+            }
+            else
+            {
+                // Fallback to Omen
+                DeviceTitleText.Text = "HP Laptop";
+                DeviceImage.Source = new BitmapImage(new Uri("ms-appx:///icons/hpomen.png"));
+            }
+        }
+        catch (Exception)
+        {
+            DeviceTitleText.Text = "HP Laptop";
+            BoardNumberText.Text = "Sistem Modeli: Okunamadı";
+        }
+    }
+
+    private async void PowerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PowerModeComboBox?.SelectedItem is ComboBoxItem item)
+        {
+            int profile = 0x30; // Balanced/Default
+            if (item.Content.ToString() == "Quiet") profile = 0x50;
+            if (item.Content.ToString() == "Performance") profile = 0x31;
+
+            if (App.IpcClient != null)
+            {
+                await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
+            }
+        }
+    }
+
+    private async void FanModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (FanModeComboBox?.SelectedItem is ComboBoxItem item)
+        {
+            string mode = item.Content.ToString() ?? "";
+            
+            if (mode == "Manual")
+            {
+                var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
+                mainWindow?.NavigateToPerformance("SelectCustomFan");
+            }
+            else if (App.IpcClient != null)
+            {
+                if (mode == "Max Fan")
+                    await App.IpcClient.SendCommandAsync("SetMaxFan");
+                else
+                    await App.IpcClient.SendCommandAsync("SetAuto");
+            }
+        }
+    }
+
+    private void PowerCoolingCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
+        mainWindow?.NavigateToPerformance(null!);
+    }
+
+    private void LightingCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
+        mainWindow?.NavigateToLighting();
+    }
+
+    private void AdditionalSettingsCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
+        mainWindow?.NavigateToAdvancedSettings();
+    }
+}

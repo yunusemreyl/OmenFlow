@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "dgSpecHash": "BLxv4F20jAc=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.9\\microsoft.extensions.configuration.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.9\\microsoft.extensions.dependencyinjection.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.9\\microsoft.extensions.diagnostics.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.9\\microsoft.extensions.fileproviders.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.9\\microsoft.extensions.hosting.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.9\\microsoft.extensions.logging.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.options\\10.0.9\\microsoft.extensions.options.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.9\\microsoft.extensions.primitives.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure\\3.0.0\\microsoft.management.infrastructure.3.0.0.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.unix\\3.0.0\\microsoft.management.infrastructure.runtime.unix.3.0.0.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.win\\3.0.0\\microsoft.management.infrastructure.runtime.win.3.0.0.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.codedom\\10.0.9\\system.codedom.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.configuration.configurationmanager\\10.0.9\\system.configuration.configurationmanager.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.9\\system.diagnostics.diagnosticsource.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.9\\system.diagnostics.eventlog.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.performancecounter\\10.0.9\\system.diagnostics.performancecounter.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.management\\10.0.9\\system.management.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.security.cryptography.protecteddata\\10.0.9\\system.security.cryptography.protecteddata.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.threading.accesscontrol\\10.0.9\\system.threading.accesscontrol.10.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}

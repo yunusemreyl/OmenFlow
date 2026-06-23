@@ -1,0 +1,17 @@
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\OmenFlow.Hardware.deps.json
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\OmenFlow.Hardware.dll
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\OmenFlow.Hardware.pdb
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\OmenFlow.Core.dll
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\OmenFlow.Core.pdb
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.csproj.AssemblyReference.cache
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.AssemblyInfoInputs.cache
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.AssemblyInfo.cs
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.csproj.CoreCompileInputs.cache
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.33B16934.Up2Date
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.dll
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\refint\OmenFlow.Hardware.dll
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.pdb
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\ref\OmenFlow.Hardware.dll
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\drivers\LpcACPIEC.bin
+C:\Users\yeyil\Documents\OmenFlow\OmenFlow.Hardware\bin\Debug\net8.0\drivers\PawnIOLib.dll

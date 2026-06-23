@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OmenFlow.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OmenFlow.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

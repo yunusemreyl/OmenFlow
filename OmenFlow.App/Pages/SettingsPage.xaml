@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="OmenFlow_App.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:OmenFlow_App.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="24,16,24,16" RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Genel Ayarlar" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="12,0,0,16" />
+        
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="16" MaxWidth="800" HorizontalAlignment="Left">
+                
+                <!-- Başlangıç Ayarları -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Başlangıç Ayarları" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Başlangıçta Çalıştırma" FontWeight="SemiBold"/>
+                                <TextBlock Text="Bilgisayar açıldığında uygulamanın nasıl başlayacağını seçin." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboStartupMode" Grid.Column="1" Width="200" SelectionChanged="ComboStartupMode_SelectionChanged">
+                                <ComboBoxItem Content="Arayüzü Aç" Tag="OpenUI"/>
+                                <ComboBoxItem Content="Tray Olarak Başlat" Tag="Tray"/>
+                                <ComboBoxItem Content="Başlatma" Tag="Disabled"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Görünüm Ayarları -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Görünüm" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Uygulama Teması" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboTheme" Grid.Column="1" Width="150" SelectionChanged="ComboTheme_SelectionChanged">
+                                <ComboBoxItem Content="Sistem Varsayılanı" Tag="System"/>
+                                <ComboBoxItem Content="Açık Tema" Tag="Light"/>
+                                <ComboBoxItem Content="Koyu Tema" Tag="Dark"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Dil Seçeneği" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboLanguage" Grid.Column="1" Width="150" SelectionChanged="ComboLanguage_SelectionChanged">
+                                <ComboBoxItem Content="Türkçe" Tag="tr"/>
+                                <ComboBoxItem Content="English" Tag="en"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Hakkında -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Hakkında" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <TextBlock Text="OmenFlow, HP cihazlarını yönetmek için topluluk tarafından geliştirilmiş açık kaynaklı bir uygulamadır." TextWrapping="Wrap"/>
+                        <TextBlock Text="⚠️ HP Inc. ile hiçbir resmi bağı yoktur ve HP tarafından yapılmamıştır." Foreground="#D97706" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        
+                        <HyperlinkButton Content="GitHub Hesabım ve Kaynak Kod" NavigateUri="https://github.com/yeyil" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

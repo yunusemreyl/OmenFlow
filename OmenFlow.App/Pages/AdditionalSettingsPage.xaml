@@ -1,0 +1,85 @@
+<Page
+    x:Class="OmenFlow_App.Pages.AdditionalSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid Padding="24,16,24,16" RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="Ek Ayarlar" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="12,0,0,16" />
+        
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="16" MaxWidth="800" HorizontalAlignment="Left">
+                
+                <!-- Güç ve Pil Ayarları -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Güç ve Pil" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Pil Koruma (Adaptive Battery Optimizer)" FontWeight="SemiBold"/>
+                                <TextBlock Text="Pil sağlığını korumak için şarj seviyesini %80'de sınırlar." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleBatteryCare" Grid.Column="1" Toggled="ToggleBatteryCare_Toggled"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Her Zaman Açık USB (USB Charging)" FontWeight="SemiBold"/>
+                                <TextBlock Text="Cihaz uykudayken veya kapalıyken USB portlarından güç vermeye devam eder." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleUsbCharging" Grid.Column="1" Toggled="ToggleUsbCharging_Toggled"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Donanım Kilitleri -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Donanım Kilidi" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Windows Tuşu Kilidi" FontWeight="SemiBold"/>
+                                <TextBlock Text="Oyun sırasında yanlışlıkla Başlat menüsünün açılmasını engeller." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleWinKeyLock" Grid.Column="1" Toggled="ToggleWinKeyLock_Toggled"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Dokunmatik Yüzey (Touchpad) Kilidi" FontWeight="SemiBold"/>
+                                <TextBlock Text="Yazı yazarken veya oyun oynarken touchpad'i tamamen devre dışı bırakır." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleTouchpadLock" Grid.Column="1" Toggled="ToggleTouchpadLock_Toggled"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

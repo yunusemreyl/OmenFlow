@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="OmenFlow.App/OmenFlow.App.csproj">
+    <Platform Project="x86" />
+  </Project>
+  <Project Path="OmenFlow.Core/OmenFlow.Core.csproj" />
+  <Project Path="OmenFlow.Hardware/OmenFlow.Hardware.csproj" />
+  <Project Path="OmenFlow.Worker/OmenFlow.Worker.csproj" />
+</Solution>
