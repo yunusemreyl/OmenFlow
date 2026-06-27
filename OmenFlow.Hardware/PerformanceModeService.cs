@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Interfaces;
@@ -94,17 +95,73 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
 
         if (!success)
         {
-            Console.WriteLine("[PerformanceMode] ✗ WMI thermal policy command failed after retries.");
-            return false;
+            Console.WriteLine("[PerformanceMode] ✗ WMI thermal policy command failed after retries. Proceeding to EC fallback.");
+        }
+        else
+        {
+            Console.WriteLine($"[PerformanceMode] ✓ WMI 0x1A applied: {mode}");
         }
 
         _currentMode = mode;
-        Console.WriteLine($"[PerformanceMode] ✓ WMI 0x1A applied: {mode}");
 
-        // GPU power and CPU limits coupling removed to match OmenCore behavior.
-        // Users should control GPU power independently.
+        // Apply Windows Power Plan & Boost Index (OmenCore behavior)
+        Guid planGuid = mode switch
+        {
+            ThermalProfile.Performance => HighPerformancePlan,
+            ThermalProfile.Quiet => PowerSaverPlan,
+            _ => BalancedPlan
+        };
+        uint boostIndex = mode switch
+        {
+            ThermalProfile.Performance => 4, // Aggressive
+            ThermalProfile.Quiet => 0, // Disabled / Efficient
+            _ => 2 // Standard / Enabled
+        };
 
-        // Step 4: EC mode byte fallback (belt-and-suspenders)
+        try
+        {
+            uint res = PowerSetActiveScheme(IntPtr.Zero, ref planGuid);
+            Console.WriteLine($"[PerformanceMode] Windows Power Plan {planGuid} activation result: {res}");
+
+            var processorGroup = ProcessorSubGroup;
+            var boostSetting = ProcessorBoost;
+            PowerWriteACValueIndex(IntPtr.Zero, IntPtr.Zero, ref processorGroup, ref boostSetting, boostIndex);
+            PowerWriteDCValueIndex(IntPtr.Zero, IntPtr.Zero, ref processorGroup, ref boostSetting, boostIndex);
+            Console.WriteLine($"[PerformanceMode] Processor boost index set to {boostIndex}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PerformanceMode] Failed to set Windows Power Plan: {ex.Message}");
+        }
+
+        // Apply GPU Dynamic Boost Coupling (OmenCore behavior)
+        GpuPowerLevel gpuPower = mode switch
+        {
+            ThermalProfile.Performance => GpuPowerLevel.MaxPower,
+            ThermalProfile.Quiet => GpuPowerLevel.BasePower,
+            _ => GpuPowerLevel.ExtraPower
+        };
+        await _gpuControlService.SetGpuPowerAsync(gpuPower, ct);
+        Console.WriteLine($"[PerformanceMode] GPU Dynamic Boost coupled to: {gpuPower}");
+
+        // Step 4: EC mode byte fallback & Fan Profile Kick Down (0x95 & 0xCE)
+        byte ecFanMode = mode switch
+        {
+            ThermalProfile.Default     => 0x00,
+            ThermalProfile.Performance => 0x01,
+            ThermalProfile.Quiet       => 0x02,
+            _                          => 0x00
+        };
+        try
+        {
+            await _ecService.WriteByteAsync(0x95, ecFanMode, ct);
+            Console.WriteLine($"[PerformanceMode] EC 0x95 (Fan Profile) ← 0x{ecFanMode:X2} ✓");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PerformanceMode] EC 0x95 write failed: {ex.Message}");
+        }
+
         if (_boardConfig.UseSimplifiedPerformanceMode)
         {
             byte ecValue = mode switch
@@ -190,6 +247,21 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
             Console.WriteLine($"[PerformanceMode] Countdown extension tick error: {ex.Message}");
         }
     }
+
+    private static readonly Guid ProcessorSubGroup = Guid.Parse("54533251-82be-4824-96C1-47B60B740D00");
+    private static readonly Guid ProcessorBoost = Guid.Parse("BE337238-0D82-4146-A960-4F3749D470C7");
+    private static readonly Guid HighPerformancePlan = Guid.Parse("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
+    private static readonly Guid BalancedPlan = Guid.Parse("381b4222-f694-41f0-9685-ff5bb260df2e");
+    private static readonly Guid PowerSaverPlan = Guid.Parse("a1841308-3541-4fab-bc81-f71556f20b4a");
+
+    [DllImport("powrprof.dll")]
+    private static extern uint PowerSetActiveScheme(IntPtr userRootPowerKey, ref Guid schemeGuid);
+
+    [DllImport("powrprof.dll")]
+    private static extern uint PowerWriteACValueIndex(IntPtr rootPowerKey, IntPtr schemeGuid, ref Guid subGroupGuid, ref Guid settingGuid, uint valueIndex);
+
+    [DllImport("powrprof.dll")]
+    private static extern uint PowerWriteDCValueIndex(IntPtr rootPowerKey, IntPtr schemeGuid, ref Guid subGroupGuid, ref Guid settingGuid, uint valueIndex);
 
     public void Dispose()
     {

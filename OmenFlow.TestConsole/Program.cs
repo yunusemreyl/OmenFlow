@@ -101,8 +101,8 @@ class Program
                         // Update to handle parsing since enum values changed
                         if (Enum.TryParse<ThermalProfile>(parts[1], true, out var profile))
                         {
-                            bool success = await fanControlService.SetThermalProfileAsync(profile);
-                            Console.WriteLine($"SetThermalProfileAsync({profile}) -> Success: {success}");
+                            bool success = await perfModeService.SetPerformanceModeAsync(profile);
+                            Console.WriteLine($"SetPerformanceModeAsync({profile}) -> Success: {success}");
                         }
                         else 
                         {
@@ -175,7 +175,8 @@ class Program
                     }
                     else if (parts[0] == "rpm")
                     {
-                        var telemetry = sensorReader.Read(0, 0);
+                        var rpm = await fanControlService.GetFanRpmAsync();
+                        var telemetry = sensorReader.Read(rpm.CpuFanRpm, rpm.GpuFanRpm);
                         Console.WriteLine($"CPU: {telemetry.CpuFanRpm} RPM, GPU: {telemetry.GpuFanRpm} RPM");
                     }
                     else if (parts[0] == "fan" && parts.Length == 2)

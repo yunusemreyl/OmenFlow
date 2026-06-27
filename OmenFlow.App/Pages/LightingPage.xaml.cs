@@ -11,6 +11,8 @@ public sealed partial class LightingPage : Page
     private bool isOmen = false;
     private int currentZone = 0;
     private DispatcherTimer _colorUpdateTimer;
+    private bool _initialColorLoaded = false;
+    private bool _isSyncingFromServer = false;
     
     // Default colors for 4 zones
     private Color[] zoneColors = new Color[] {
@@ -44,8 +46,75 @@ public sealed partial class LightingPage : Page
             SendCurrentLightingState();
         };
 
-        // Send initial state shortly after load
-        Loaded += (s, e) => _colorUpdateTimer.Start();
+        App.IpcClient.TelemetryReceived += IpcClient_TelemetryReceived;
+        this.Unloaded += (s, e) => App.IpcClient.TelemetryReceived -= IpcClient_TelemetryReceived;
+    }
+
+    private void IpcClient_TelemetryReceived(object? sender, Helpers.TelemetryData e)
+    {
+        if (_initialColorLoaded) return; // Only sync preview on initial load from BIOS
+
+        if (!string.IsNullOrEmpty(e.ZoneColors))
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                try
+                {
+                    byte[] zones = System.Convert.FromBase64String(e.ZoneColors);
+                    if (zones.Length >= 12)
+                    {
+                        _isSyncingFromServer = true;
+                        if (isOmen)
+                        {
+                            for (int i = 0; i < 4; i++)
+                            {
+                                zoneColors[i] = Color.FromArgb(255, zones[i * 3], zones[i * 3 + 1], zones[i * 3 + 2]);
+                            }
+                            ZoneColorPicker.Color = zoneColors[currentZone];
+                            ApplyColorStopsOnly(zoneColors[0], 0);
+                            ApplyColorStopsOnly(zoneColors[1], 1);
+                            ApplyColorStopsOnly(zoneColors[2], 2);
+                            ApplyColorStopsOnly(zoneColors[3], 3);
+                        }
+                        else
+                        {
+                            singleZoneColor = Color.FromArgb(255, zones[0], zones[1], zones[2]);
+                            ZoneColorPicker.Color = singleZoneColor;
+                            ApplyColorStopsOnly(singleZoneColor, 0);
+                        }
+                        if (BrightnessSlider != null)
+                        {
+                            BrightnessSlider.Value = e.BacklightOn ? 100 : 0;
+                        }
+                        _initialColorLoaded = true;
+                        _isSyncingFromServer = false;
+                    }
+                }
+                catch { }
+            });
+        }
+    }
+
+    private void ApplyColorStopsOnly(Color c, int zone)
+    {
+        Color c20 = Color.FromArgb(0x20, c.R, c.G, c.B);
+        Color c70 = Color.FromArgb(0x70, c.R, c.G, c.B);
+        Color c00 = Color.FromArgb(0x00, c.R, c.G, c.B);
+
+        if (isOmen)
+        {
+            switch (zone)
+            {
+                case 0: Mz0Stop1.Color = c20; Mz0Stop2.Color = c70; Mz0Stop3.Color = c00; break;
+                case 1: Mz1Stop1.Color = c20; Mz1Stop2.Color = c70; Mz1Stop3.Color = c00; break;
+                case 2: Mz2Stop1.Color = c20; Mz2Stop2.Color = c70; Mz2Stop3.Color = c00; break;
+                case 3: Mz3Stop1.Color = c20; Mz3Stop2.Color = c70; Mz3Stop3.Color = c00; break;
+            }
+        }
+        else
+        {
+            SzStop1.Color = c20; SzStop2.Color = c70; SzStop3.Color = c00;
+        }
     }
 
     private void DetectSystemAndSetKeyboardLayout()
@@ -102,9 +171,9 @@ public sealed partial class LightingPage : Page
             SelectedZoneText.Text = $"Seçili Bölge: {zoneIndex + 1} ({zoneName})";
 
             // Update Color Picker without triggering ColorChanged on the other zones
-            // We temporarily unsubscribe or just let it trigger, because changing color picker color WILL trigger ColorChanged
-            // which will set the current zone to its own color (no-op). So it's safe.
+            _isSyncingFromServer = true;
             ZoneColorPicker.Color = zoneColors[zoneIndex];
+            _isSyncingFromServer = false;
         }
     }
 
@@ -122,6 +191,8 @@ public sealed partial class LightingPage : Page
 
     private void ApplyColorToZone(Color c)
     {
+        if (_isSyncingFromServer) return;
+
         Color c20 = Color.FromArgb(0x20, c.R, c.G, c.B);
         Color c70 = Color.FromArgb(0x70, c.R, c.G, c.B);
         Color c00 = Color.FromArgb(0x00, c.R, c.G, c.B);
@@ -158,18 +229,21 @@ public sealed partial class LightingPage : Page
 
     private void EffectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_isSyncingFromServer) return;
         _colorUpdateTimer?.Stop();
         _colorUpdateTimer?.Start();
     }
 
     private void BrightnessSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
+        if (_isSyncingFromServer) return;
         _colorUpdateTimer?.Stop();
         _colorUpdateTimer?.Start();
     }
 
     private void SpeedSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
+        if (_isSyncingFromServer) return;
         _colorUpdateTimer?.Stop();
         _colorUpdateTimer?.Start();
     }

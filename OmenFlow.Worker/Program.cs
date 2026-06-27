@@ -1,38 +1,112 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OmenFlow.Core.Interfaces;
 using OmenFlow.Core.Models;
 using OmenFlow.Hardware;
 using OmenFlow.Hardware.Lighting;
 
 namespace OmenFlow.Worker;
 
+public class CommandRequest
+{
+    public string Command { get; set; } = "";
+    public JsonElement? Value { get; set; }
+    public string? Effect { get; set; }
+}
+
 class Program
 {
+    static int s_activeFanMode = 0; // 0 = Auto, 1 = OmenFlow, 2 = Max Fan, 3 = Custom
+    const string FanModeCacheFile = @"C:\ProgramData\OmenFlow\fan_mode_cache.txt";
+
+    static bool s_thermalSafetyEnabled = true;
+    const string ThermalSafetyCacheFile = @"C:\ProgramData\OmenFlow\thermal_safety_cache.txt";
+
+    static void SaveFanMode(int mode)
+    {
+        s_activeFanMode = mode;
+        try
+        {
+            var dir = System.IO.Path.GetDirectoryName(FanModeCacheFile);
+            if (dir != null) System.IO.Directory.CreateDirectory(dir);
+            System.IO.File.WriteAllText(FanModeCacheFile, mode.ToString());
+        }
+        catch { }
+    }
+
+    static void SaveThermalSafety(bool enabled)
+    {
+        s_thermalSafetyEnabled = enabled;
+        try
+        {
+            var dir = System.IO.Path.GetDirectoryName(ThermalSafetyCacheFile);
+            if (dir != null) System.IO.Directory.CreateDirectory(dir);
+            System.IO.File.WriteAllText(ThermalSafetyCacheFile, enabled.ToString());
+        }
+        catch { }
+    }
+
     static async Task Main(string[] args)
     {
-        Console.WriteLine("OmenFlow Worker Process starting...");
-        
-        using var cts = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (sender, e) =>
+        Console.WriteLine("OmenFlow Worker Process (HTTP Minimal API) starting...");
+        try
         {
-            e.Cancel = true;
-            Console.WriteLine("Shutdown requested via Ctrl+C...");
-            cts.Cancel();
-        };
+            if (System.IO.File.Exists(FanModeCacheFile))
+            {
+                if (int.TryParse(System.IO.File.ReadAllText(FanModeCacheFile), out int m))
+                {
+                    s_activeFanMode = m;
+                }
+            }
+            if (System.IO.File.Exists(ThermalSafetyCacheFile))
+            {
+                if (bool.TryParse(System.IO.File.ReadAllText(ThermalSafetyCacheFile), out bool ts))
+                {
+                    s_thermalSafetyEnabled = ts;
+                }
+            }
+        }
+        catch { }
+        
+        int currentProcessId = System.Diagnostics.Process.GetCurrentProcess().Id;
+        foreach (var p in System.Diagnostics.Process.GetProcessesByName("OmenFlow.Worker"))
+        {
+            if (p.Id != currentProcessId)
+            {
+                try
+                {
+                    Console.WriteLine($"Killing existing worker process (ID: {p.Id})...");
+                    p.Kill();
+                    p.WaitForExit(2000);
+                }
+                catch { }
+            }
+        }
+
+        var builder = WebApplication.CreateBuilder(args);
+        
+        // Use local port 50312
+        builder.WebHost.UseUrls("http://localhost:50312");
+
+        var app = builder.Build();
 
         try
         {
             using var sensorReader = new SensorReader();
             
-            // Initialize Hardware Services
+            // Initialize Hardware Services (Exact match with TestConsole setup)
             var capabilityService = new CapabilityDetectionService();
             var boardConfig = capabilityService.DetectBoard();
-
-            using var biosService      = new BiosService();
             using var ecService        = new EcService(boardConfig);
+            using var biosService      = new BiosService();
             using var fanControlService  = new FanControlService(biosService, boardConfig, ecService);
             using var fanCurveService    = new FanCurveHostedService(fanControlService);
             var gpuControlService        = new GpuControlService(biosService);
@@ -42,23 +116,236 @@ class Program
             var powerService             = new PowerService(biosService);
             var presetService            = new PresetService();
 
-            var fanCurveTask = fanCurveService.StartAsync(cts.Token);
+            fanCurveService.TelemetryProvider = () => sensorReader.Read(0, 0);
+            fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
+            _ = fanCurveService.StartAsync(CancellationToken.None);
 
-            var ipcServer = new IpcServer(
-                sensorReader,
-                fanControlService,
-                fanCurveService,
-                gpuControlService,
-                lightingService,
-                rgbEffectEngine,
-                perfModeService,
-                powerService,
-                presetService);
+            Console.WriteLine("Hardware Services initialized. Setting up HTTP Endpoints...");
 
-            Console.WriteLine("Hardware Services initialized. Starting IpcServer...");
-            await ipcServer.RunAsync(cts.Token);
-            
-            await fanCurveTask;
+            app.MapGet("/api/telemetry", async () =>
+            {
+                var rpmTask       = fanControlService.GetFanRpmAsync();
+                var gpuModeTask   = gpuControlService.GetGpuModeAsync();
+                var gpuPowerTask  = gpuControlService.GetGpuPowerAsync();
+                var lightingTask  = lightingService.GetLightingAsync();
+                var profileTask   = perfModeService.GetCurrentModeAsync();
+
+                await Task.WhenAll(rpmTask, gpuModeTask, gpuPowerTask, lightingTask, profileTask);
+
+                var rpm       = rpmTask.Result;
+                var telemetry = sensorReader.Read(rpm.CpuFanRpm, rpm.GpuFanRpm);
+
+                telemetry.GpuMode       = gpuModeTask.Result;
+                telemetry.GpuPowerLevel = gpuPowerTask.Result;
+                telemetry.ActiveProfile  = profileTask.Result;
+                telemetry.ActiveFanMode  = s_activeFanMode;
+                telemetry.KeyboardType   = await lightingService.DetectKeyboardTypeAsync();
+
+                var lightingResult    = lightingTask.Result;
+                telemetry.BacklightOn = lightingResult.backlightOn;
+                telemetry.ZoneColors  = lightingResult.zoneColors;
+
+                return Results.Json(telemetry);
+            });
+
+            app.MapPost("/api/command", async (CommandRequest req) =>
+            {
+                string cmd = req.Command;
+                var root = req.Value;
+                Console.WriteLine($"[Command API] Received: {cmd}");
+
+                try
+                {
+                    switch (cmd)
+                    {
+                        case "SetFanLevel":
+                        {
+                            int level = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 100;
+                            Console.WriteLine($"[Command] SetFanLevel: {level}%");
+                            SaveFanMode(3); // Custom
+                            fanCurveService.SetMaxModeActive(false);
+                            await fanCurveService.ApplyCustomCurveAsync(null);
+                            await fanControlService.SetFanLevelAsync(level);
+                            break;
+                        }
+                        case "SetAuto":
+                        {
+                            Console.WriteLine("[Command] SetAuto");
+                            SaveFanMode(0); // Auto
+                            fanCurveService.SetMaxModeActive(false);
+                            await fanCurveService.ApplyCustomCurveAsync(null);
+                            await fanControlService.RestoreAutoControlAsync();
+                            break;
+                        }
+                        case "SetMaxFan":
+                        {
+                            bool enabled = true;
+                            if (root?.ValueKind == JsonValueKind.True || root?.ValueKind == JsonValueKind.False)
+                            {
+                                enabled = root.Value.GetBoolean();
+                            }
+                            Console.WriteLine($"[Command] SetMaxFan: {enabled}");
+                            SaveFanMode(enabled ? 2 : 0); // Max Fan
+                            fanCurveService.SetMaxModeActive(enabled);
+                            await fanCurveService.ApplyCustomCurveAsync(null);
+                            await fanControlService.SetMaxFanAsync(enabled);
+                            break;
+                        }
+                        case "ApplyCurve":
+                        {
+                            Console.WriteLine("[Command] ApplyCurve");
+                            FanCurve? curve = ParseFanCurve(root);
+                            if (curve != null && curve.Points.Count == 7 && curve.Points[0].TemperatureCelsius == 50 && curve.Points[0].FanSpeedPercent == 0)
+                            {
+                                SaveFanMode(1); // OmenFlow Preset
+                            }
+                            else
+                            {
+                                SaveFanMode(3); // Custom
+                            }
+                            fanCurveService.SetMaxModeActive(false);
+                            await fanCurveService.ApplyCustomCurveAsync(curve);
+                            break;
+                        }
+                        case "ApplyPreset":
+                        {
+                            string presetId = root?.ValueKind == JsonValueKind.String ? root.Value.GetString() ?? "" : "";
+                            Console.WriteLine($"[Command] ApplyPreset: {presetId}");
+                            var preset = presetService.GetAll().FirstOrDefault(p => p.Id == presetId);
+                            if (preset == null) break;
+
+                            if (preset.IsMaxMode)
+                            {
+                                SaveFanMode(2);
+                                fanCurveService.SetMaxModeActive(true);
+                                await fanCurveService.ApplyCustomCurveAsync(null);
+                                await fanControlService.SetMaxFanAsync(true);
+                            }
+                            else if (preset.Curve != null)
+                            {
+                                SaveFanMode(1);
+                                fanCurveService.SetMaxModeActive(false);
+                                await fanCurveService.ApplyCustomCurveAsync(preset.Curve);
+                            }
+                            else
+                            {
+                                SaveFanMode(0);
+                                fanCurveService.SetMaxModeActive(false);
+                                await fanCurveService.ApplyCustomCurveAsync(null);
+                                await fanControlService.RestoreAutoControlAsync();
+                            }
+                            break;
+                        }
+                        case "SetThermalProfile":
+                        {
+                            int profile = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 0;
+                            Console.WriteLine($"[Command] SetThermalProfile: 0x{profile:X2}");
+                            await perfModeService.SetPerformanceModeAsync((ThermalProfile)profile);
+                            break;
+                        }
+                        case "SetGpuMode":
+                        {
+                            int mode = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 2;
+                            Console.WriteLine($"[Command] SetGpuMode: {(GpuMode)mode}");
+                            await gpuControlService.SetGpuModeAsync((GpuMode)mode);
+                            break;
+                        }
+                        case "SetGpuPower":
+                        {
+                            int power = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 0;
+                            Console.WriteLine($"[Command] SetGpuPower: {(GpuPowerLevel)power}");
+                            await gpuControlService.SetGpuPowerAsync((GpuPowerLevel)power);
+                            break;
+                        }
+                        case "SetLighting":
+                        {
+                            bool on = true;
+                            string colors = "";
+
+                            if (root?.ValueKind == JsonValueKind.Object)
+                            {
+                                if (root.Value.TryGetProperty("BacklightOn", out var onProp)) on = onProp.GetBoolean();
+                                if (root.Value.TryGetProperty("ZoneColors", out var cProp)) colors = cProp.GetString() ?? "";
+                            }
+                            else if (root?.ValueKind == JsonValueKind.True || root?.ValueKind == JsonValueKind.False)
+                            {
+                                on = root.Value.ValueKind == JsonValueKind.True;
+                            }
+
+                            Console.WriteLine($"[Command] SetLighting: On={on}, Colors={colors}");
+                            rgbEffectEngine.Stop();
+                            await lightingService.SetLightingAsync(on, colors);
+                            break;
+                        }
+                        case "SetLightingEffect":
+                        {
+                            string effectName = req.Effect ?? "static";
+                            if (root?.ValueKind == JsonValueKind.Object && root.Value.TryGetProperty("Effect", out var innerE))
+                                effectName = innerE.GetString() ?? "static";
+                            else if (root?.ValueKind == JsonValueKind.String)
+                                effectName = root.Value.GetString() ?? "static";
+
+                            double speed = 0.5;
+                            if (root?.ValueKind == JsonValueKind.Object && root.Value.TryGetProperty("Speed", out var speedProp))
+                                speed = speedProp.GetDouble();
+
+                            double brightness = 1.0;
+                            if (root?.ValueKind == JsonValueKind.Object && root.Value.TryGetProperty("Brightness", out var bProp))
+                                brightness = bProp.GetDouble();
+
+                            string colors = "";
+                            if (root?.ValueKind == JsonValueKind.Object && root.Value.TryGetProperty("ZoneColors", out var zcProp))
+                                colors = zcProp.GetString() ?? "";
+
+                            byte r = 255, g = 0, b = 0;
+                            if (!string.IsNullOrEmpty(colors))
+                            {
+                                try {
+                                    byte[] decoded = Convert.FromBase64String(colors);
+                                    if (decoded.Length >= 3) { r = decoded[0]; g = decoded[1]; b = decoded[2]; }
+                                } catch {}
+                            }
+
+                            Console.WriteLine($"[Command] SetLightingEffect: {effectName}, Speed={speed}, Brightness={brightness}");
+                            rgbEffectEngine.SetEffect(effectName.ToLowerInvariant() switch
+                            {
+                                "breathing"  => new OmenFlow.Hardware.Lighting.BreathingEffect(r, g, b, speed),
+                                "colorcycle" => new OmenFlow.Hardware.Lighting.ColorCycleEffect(speed, brightness),
+                                "wave"       => new OmenFlow.Hardware.Lighting.WaveEffect(speed, brightness),
+                                _            => new OmenFlow.Hardware.Lighting.StaticEffect(string.IsNullOrEmpty(colors) ? "AP8A////////////" : colors)
+                            });
+                            break;
+                        }
+                        case "SetBatteryCare":
+                        {
+                            bool enabled = root?.ValueKind == JsonValueKind.True;
+                            Console.WriteLine($"[Command] SetBatteryCare: {enabled}");
+                            await powerService.SetBatteryCareModeAsync(enabled ? BatteryCareMode.Enabled : BatteryCareMode.Disabled);
+                            break;
+                        }
+                        case "SetThermalSafety":
+                        {
+                            bool enabled = root?.ValueKind == JsonValueKind.True;
+                            Console.WriteLine($"[Command] SetThermalSafety: {enabled}");
+                            SaveThermalSafety(enabled);
+                            fanCurveService.SetThermalSafetyEnabled(enabled);
+                            break;
+                        }
+                        default:
+                            Console.WriteLine($"[Command] Unknown command: {cmd}");
+                            break;
+                    }
+                    return Results.Ok(new { Success = true });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Command API Error] {ex.Message}");
+                    return Results.Problem(ex.Message);
+                }
+            });
+
+            Console.WriteLine("HTTP Server starting on http://localhost:50312...");
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
@@ -66,5 +353,33 @@ class Program
         }
 
         Console.WriteLine("Worker Process exited cleanly.");
+    }
+
+    static FanCurve? ParseFanCurve(JsonElement? root)
+    {
+        if (root == null || root.Value.ValueKind != JsonValueKind.Object) return null;
+        try
+        {
+            FanTarget target = FanTarget.Both;
+            if (root.Value.TryGetProperty("Target", out var tProp)) target = (FanTarget)tProp.GetInt32();
+
+            var points = new List<FanCurvePoint>();
+            if (root.Value.TryGetProperty("Points", out var pProp) && pProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var pt in pProp.EnumerateArray())
+                {
+                    int temp = 0, speed = 0;
+                    if (pt.TryGetProperty("TemperatureCelsius", out var tC)) temp = tC.GetInt32();
+                    if (pt.TryGetProperty("FanSpeedPercent", out var fS)) speed = fS.GetInt32();
+                    points.Add(new FanCurvePoint(temp, speed));
+                }
+            }
+            if (points.Count == 0) return null;
+            return new FanCurve(target, points);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -19,6 +19,14 @@ public class KeyboardLightingService
     {
         if (_cachedType.HasValue) return _cachedType.Value;
 
+        // Directly test 0x20009, 0x02 first to see if color table is supported
+        var (retColor, colorTable) = await _biosService.SendCommandAsync(0x20009, 0x02, new byte[4], 128, ct);
+        if (retColor == 0 && colorTable != null && colorTable.Length >= 37)
+        {
+            _cachedType = KeyboardType.FourZoneRgb;
+            return _cachedType.Value;
+        }
+
         var (ret, data) = await _biosService.SendCommandAsync(0x20008, 0x2B, new byte[4], 4, ct);
         if (ret == 0 && data != null && data.Length >= 1)
         {
@@ -28,7 +36,7 @@ public class KeyboardLightingService
         }
         else
         {
-            _cachedType = KeyboardType.Unknown;
+            _cachedType = KeyboardType.FourZoneRgb;
         }
 
         return _cachedType.Value;
@@ -71,16 +79,16 @@ public class KeyboardLightingService
     public async Task<bool> SetLightingAsync(bool backlightOn, string zoneColors = "", CancellationToken ct = default)
     {
         var type = await DetectKeyboardTypeAsync(ct);
-        if (type == KeyboardType.Unknown) return false;
+        if (type == KeyboardType.Unknown) type = KeyboardType.FourZoneRgb; // Fallback to RGB
 
-        if (type == KeyboardType.FourZoneRgb)
+        if (type == KeyboardType.FourZoneRgb || !string.IsNullOrEmpty(zoneColors))
         {
             byte[] payload = new byte[128];
             payload[0] = 3; // 4 zones
 
             if (backlightOn)
             {
-                byte[] zones = null;
+                byte[]? zones = null;
                 try { if (!string.IsNullOrEmpty(zoneColors)) zones = Convert.FromBase64String(zoneColors); } catch { }
                 
                 if (zones == null || zones.Length < 12)
@@ -93,12 +101,14 @@ public class KeyboardLightingService
             // else all 0s (black)
 
             var (ret, _) = await _biosService.SendCommandAsync(0x20009, 0x03, payload, 0, ct);
+            Console.WriteLine($"[KeyboardLighting] SetLightingAsync (FourZoneRgb) ret={ret}");
             return ret == 0;
         }
         else // Standard
         {
             byte cmdByte = (byte)(backlightOn ? 0xE4 : 0x64);
             var (ret, _) = await _biosService.SendCommandAsync(0x20009, 0x05, new byte[] { cmdByte, 0x00, 0x00, 0x00 }, 0, ct);
+            Console.WriteLine($"[KeyboardLighting] SetLightingAsync (Standard) ret={ret}");
             return ret == 0;
         }
     }

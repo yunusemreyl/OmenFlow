@@ -8,18 +8,18 @@
     Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Padding="24">
+        <Grid Padding="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <StackPanel Spacing="8" Margin="0,0,0,24">
+            <StackPanel Spacing="4" Margin="0" Visibility="Collapsed">
                 <TextBlock Text="Klavye Aydınlatması" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
                 <TextBlock x:Name="LightingDescText" Text="Cihazınızın klavye arka plan aydınlatmasını yapılandırın." FontSize="14" Foreground="{ThemeResource TertiaryTextBrush}"/>
             </StackPanel>
 
-            <Border Grid.Row="1" Style="{StaticResource ShadowCardStyle}" Padding="32">
+            <Border Grid.Row="1" Padding="4,12,4,20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -111,14 +111,9 @@
                     </Viewbox>
 
                     <!-- Control Area -->
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Left Side: Sliders and Combo -->
-                        <StackPanel Grid.Column="0" Spacing="24" Margin="0,0,32,0" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="1" Spacing="24">
+                        <!-- Sliders and Combo -->
+                        <StackPanel Spacing="20">
                             <!-- Selected Zone Info (OMEN) -->
                             <TextBlock x:Name="SelectedZoneText" Text="Seçili Bölge: 1 (Sol)" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Visibility="Collapsed"/>
 
@@ -134,7 +129,7 @@
                             </StackPanel>
 
                             <!-- Sliders Side-by-Side -->
-                            <Grid ColumnSpacing="24">
+                            <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
@@ -142,33 +137,35 @@
 
                                 <!-- Brightness -->
                                 <StackPanel Grid.Column="0" Spacing="8">
-                                    <TextBlock Text="Klavye Parlaklığı" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="Klavye Parlaklığı" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
                                     <Slider x:Name="BrightnessSlider" Minimum="0" Maximum="100" Value="100" StepFrequency="10" HorizontalAlignment="Stretch" ValueChanged="BrightnessSlider_ValueChanged"/>
                                 </StackPanel>
 
                                 <!-- Speed -->
                                 <StackPanel Grid.Column="1" Spacing="8">
-                                    <TextBlock Text="Efekt Hızı" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="Efekt Hızı" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
                                     <Slider x:Name="SpeedSlider" Minimum="1" Maximum="100" Value="50" StepFrequency="5" HorizontalAlignment="Stretch" ValueChanged="SpeedSlider_ValueChanged"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
 
-                        <!-- Right Side: Color Picker -->
-                        <StackPanel Grid.Column="1" Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
+
+                        <!-- Color Picker -->
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
                             <TextBlock Text="Renk Seçimi" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
                             
-                            <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                                 <!-- Preset Color Buttons -->
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF0000" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFF00" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#00FF00" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#0000FF" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF00FF" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFFFF" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF0000" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFF00" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#00FF00" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#0000FF" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF00FF" Click="PresetColor_Click"/>
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFFFF" Click="PresetColor_Click"/>
                                 
                                 <!-- Custom Color Button with Flyout -->
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Padding="0" ToolTipService.ToolTip="Özel Renk">
+                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Padding="0" ToolTipService.ToolTip="Özel Renk">
                                     <Button.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                             <GradientStop Color="#FF0000" Offset="0.0"/>
@@ -188,7 +185,7 @@
                                 </Button>
                             </StackPanel>
                         </StackPanel>
-                    </Grid>
+                    </StackPanel>
 
                 </Grid>
             </Border>

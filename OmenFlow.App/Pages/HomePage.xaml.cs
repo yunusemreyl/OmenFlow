@@ -12,6 +12,8 @@ namespace OmenFlow_App.Pages;
 
 public sealed partial class HomePage : Page
 {
+    private bool _isSyncing = false;
+
     public HomePage()
     {
         InitializeComponent();
@@ -29,6 +31,22 @@ public sealed partial class HomePage : Page
             GpuUsageText.Text = $"%{e.GpuLoad:F0}";
             CpuFanText.Text = $"{e.CpuTemp:F0}°C - {e.CpuFanRpm} RPM";
             GpuFanText.Text = $"{e.GpuTemp:F0}°C - {e.GpuFanRpm} RPM";
+
+            _isSyncing = true;
+            if (FanModeComboBox != null)
+            {
+                if (e.ActiveFanMode == 2) FanModeComboBox.SelectedIndex = 1; // Max Fan
+                else if (e.ActiveFanMode == 3 || e.ActiveFanMode == 1) FanModeComboBox.SelectedIndex = 2; // Manual / OmenFlow
+                else FanModeComboBox.SelectedIndex = 0; // Auto
+            }
+
+            if (PowerModeComboBox != null)
+            {
+                if (e.ActiveProfile == 0x50) PowerModeComboBox.SelectedIndex = 2; // Quiet
+                else if (e.ActiveProfile == 0x31) PowerModeComboBox.SelectedIndex = 0; // Performance
+                else PowerModeComboBox.SelectedIndex = 1; // Balanced
+            }
+            _isSyncing = false;
         });
     }
 
@@ -78,6 +96,8 @@ public sealed partial class HomePage : Page
 
     private async void PowerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_isSyncing) return;
+
         if (PowerModeComboBox?.SelectedItem is ComboBoxItem item)
         {
             int profile = 0x30; // Balanced/Default
@@ -93,6 +113,8 @@ public sealed partial class HomePage : Page
 
     private async void FanModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_isSyncing) return;
+
         if (FanModeComboBox?.SelectedItem is ComboBoxItem item)
         {
             string mode = item.Content.ToString() ?? "";
@@ -105,7 +127,7 @@ public sealed partial class HomePage : Page
             else if (App.IpcClient != null)
             {
                 if (mode == "Max Fan")
-                    await App.IpcClient.SendCommandAsync("SetMaxFan");
+                    await App.IpcClient.SendCommandAsync("SetMaxFan", true);
                 else
                     await App.IpcClient.SendCommandAsync("SetAuto");
             }

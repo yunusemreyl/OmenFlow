@@ -18,6 +18,7 @@ public class FanControlService : IFanControlService, IDisposable
     private Timer? _countdownTimer;
     private int _lastManualPercent = -1;
     private bool _isManualControlActive = false;
+    private bool _isMaxFanPresetActive = false;
     private readonly object _timerLock = new();
 
     public FanControlService(IBiosService biosService, BoardConfiguration boardConfig, IEcService ecService)
@@ -63,7 +64,7 @@ public class FanControlService : IFanControlService, IDisposable
 
     public async Task<(int CpuFanRpm, int GpuFanRpm)> GetFanRpmAsync(CancellationToken ct = default)
     {
-        // 1. Try to read real RPM from WMI 0x38 (V2 systems)
+        // 1. Try WMI 0x38 (CMD_FAN_GET_RPM for newer V2 systems) - Actual hardware tachometer RPM
         try
         {
             var (ret, outData) = await _biosService.SendCommandAsync(0x20008, 0x38, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 128, ct);
@@ -72,7 +73,7 @@ public class FanControlService : IFanControlService, IDisposable
                 int cpuRpm = outData[0] | (outData[1] << 8);
                 int gpuRpm = outData[2] | (outData[3] << 8);
                 
-                if (cpuRpm > 0 && cpuRpm <= 8000 || gpuRpm > 0 && gpuRpm <= 8000)
+                if ((cpuRpm > 0 && cpuRpm <= 10000) || (gpuRpm > 0 && gpuRpm <= 10000))
                 {
                     return (cpuRpm, gpuRpm);
                 }
@@ -80,25 +81,7 @@ public class FanControlService : IFanControlService, IDisposable
         }
         catch { }
 
-        // 2. Fallback to WMI 0x2D (V1 systems). Returns fan level (0-100), not direct RPM.
-        try
-        {
-            var (ret, outData) = await _biosService.SendCommandAsync(0x20008, 0x2D, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 128, ct);
-            if (ret == 0 && outData.Length >= 2)
-            {
-                // Multiply level by max RPM (5500) and divide by 100 to estimate RPM
-                int cpuRpm = Math.Clamp((outData[0] * 5500) / 100, 0, 8000);
-                int gpuRpm = Math.Clamp((outData[1] * 5500) / 100, 0, 8000);
-                
-                if (cpuRpm > 0 || gpuRpm > 0)
-                {
-                    return (cpuRpm, gpuRpm);
-                }
-            }
-        }
-        catch { }
-
-        // 3. Fallback to EC read if WMI didn't return data
+        // 2. Try EC direct tachometer read (Registers 0xD0 - 0xD3) - Actual hardware tachometer RPM
         try
         {
             byte cLow = await _ecService.ReadByteAsync(0xD0, ct);
@@ -109,8 +92,38 @@ public class FanControlService : IFanControlService, IDisposable
             int cpuRpm = (cHigh << 8) | cLow;
             int gpuRpm = (gHigh << 8) | gLow;
 
-            if (cpuRpm > 0 && cpuRpm < 10000 || gpuRpm > 0 && gpuRpm < 10000)
+            if ((cpuRpm > 0 && cpuRpm < 10000) || (gpuRpm > 0 && gpuRpm < 10000))
             {
+                return (cpuRpm, gpuRpm);
+            }
+        }
+        catch { }
+
+        // 3. Try WMI 0x2D (CMD_FAN_GET_LEVEL). On Victus systems (like 8BBE), this returns the active LUT level (0-55).
+        try
+        {
+            var (ret, outData) = await _biosService.SendCommandAsync(0x20008, 0x2D, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 128, ct);
+            if (ret == 0 && outData.Length >= 2 && (outData[0] > 0 || outData[1] > 0))
+            {
+                int maxLevel = Math.Clamp(_boardConfig.MaxFanLevel, 1, 100);
+                int cpuRpm = Math.Clamp((outData[0] * 5800) / maxLevel, 0, 5800);
+                int gpuRpm = Math.Clamp((outData[1] * 6100) / maxLevel, 0, 6100);
+                
+                return (cpuRpm, gpuRpm);
+            }
+        }
+        catch { }
+
+        // 4. Try WMI 0x37 (CMD_FAN_GET_LEVEL_V2 for OMEN Max 2025+ / V2 systems)
+        try
+        {
+            var (ret, outData) = await _biosService.SendCommandAsync(0x20008, 0x37, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 128, ct);
+            if (ret == 0 && outData.Length >= 2 && (outData[0] > 0 || outData[1] > 0))
+            {
+                int maxLevel = Math.Clamp(_boardConfig.MaxFanLevel, 1, 100);
+                int cpuRpm = Math.Clamp((outData[0] * 5800) / maxLevel, 0, 5800);
+                int gpuRpm = Math.Clamp((outData[1] * 6100) / maxLevel, 0, 6100);
+                
                 return (cpuRpm, gpuRpm);
             }
         }
@@ -139,7 +152,6 @@ public class FanControlService : IFanControlService, IDisposable
     private static byte MapPercentToFanLevel(int percent, int maxFanLevel)
     {
         percent = Math.Clamp(percent, 0, 100);
-        if (percent >= 100) return 100; // Ceiling for max fan
         return (byte)(percent * Math.Clamp(maxFanLevel, 1, 100) / 100);
     }
 
@@ -163,6 +175,7 @@ public class FanControlService : IFanControlService, IDisposable
 
     public async Task<bool> SetMaxFanAsync(bool enabled, CancellationToken cancellationToken = default)
     {
+        _isMaxFanPresetActive = enabled;
         if (enabled) 
         {
             _lastManualPercent = 100;
@@ -193,6 +206,8 @@ public class FanControlService : IFanControlService, IDisposable
             {
                 StopCountdownTimer();
                 _isManualControlActive = false;
+                // When disabling Max Fan, we must run the full RestoreAutoControlAsync sequence so BIOS takes back control!
+                await RestoreAutoControlAsync(cancellationToken);
             }
             return true;
         }
@@ -211,9 +226,22 @@ public class FanControlService : IFanControlService, IDisposable
     public async Task<bool> SetFanLevelAsync(int percent, CancellationToken cancellationToken = default)
     {
         percent = Math.Clamp(percent, 0, 100);
-        _lastManualPercent = percent;
 
-        // 1. WMI Attempt
+        // Manual 0% can wedge some firmware states (fans stop and fail to recover).
+        // For safety and model compatibility (matching OmenCore), map 0% to BIOS auto mode.
+        if (percent == 0)
+        {
+            Console.WriteLine("[FanControlService] SetFanLevelAsync(0) mapped to RestoreAutoControlAsync for firmware-safe silent behavior.");
+            return await RestoreAutoControlAsync(cancellationToken);
+        }
+
+        _lastManualPercent = percent;
+        _isMaxFanPresetActive = false;
+
+        // 1. Ensure Max Fan mode (0x27) is disabled before applying custom fan level (0x2E) to prevent conflicts
+        await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
+
+        // 2. WMI Attempt with the clean mapped value
         byte bMapped = MapPercentToFanLevel(percent, _boardConfig.MaxFanLevel);
         
         bool wmiSuccess = false;
@@ -236,7 +264,7 @@ public class FanControlService : IFanControlService, IDisposable
             return true;
         }
 
-        // 2. EC Fallback
+        // 3. EC Fallback
         try
         {
             byte ecMapped = MapPercentToFanLevel(percent, _boardConfig.MaxFanLevel);
@@ -253,13 +281,19 @@ public class FanControlService : IFanControlService, IDisposable
     {
         StopCountdownTimer();
         _isManualControlActive = false;
+        _isMaxFanPresetActive = false;
 
         bool success = false;
 
-        // Try WMI Auto Control first
+        Console.WriteLine("[FanControlService] Starting comprehensive EC Reset to Defaults (OmenCore sequence)...");
+
         try
         {
-            // Reset Thermal Policy to Default (0x1A)
+            // Step 1: Disable Max Fan mode (0x27) first so BIOS can accept thermal policy changes
+            await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
+            await Task.Delay(50, cancellationToken);
+
+            // Step 2: Set Thermal Policy to Default (0x1A, 0x30)
             var (ret1A, _) = await _biosService.SendCommandAsync(
                 0x20008, 0x1A,
                 new byte[] { 0xFF, (byte)ThermalProfile.Default, 0x00, 0x00 },
@@ -269,20 +303,46 @@ public class FanControlService : IFanControlService, IDisposable
             {
                 success = true;
                 UpdateThermalProfileCache(ThermalProfile.Default);
+                Console.WriteLine("  Step 2: SetFanMode(Default) succeeded");
             }
+            await Task.Delay(50, cancellationToken);
 
-            // Disable Max Fan (0x27)
-            await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
+            // Step 3: Extend countdown to prevent immediate timeout (CMD_FAN_GET_COUNT 0x10)
+            await _biosService.SendCommandAsync(0x20008, 0x10, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 4, cancellationToken);
+            await Task.Delay(50, cancellationToken);
 
-            // V1/V2 difference: V1 requires transition hint and floor clear. V2 uses only SetFanMode.
+            // Step 4: Reset EC Fan Profile Register (0x95) to Default (0x00) to clear any manual/override state in EC
+            try
+            {
+                await _ecService.WriteByteAsync(0x95, 0x00, cancellationToken);
+                Console.WriteLine("  Step 4: EC 0x95 ← 0x00 (Balanced/Default) succeeded");
+            }
+            catch { }
+            await Task.Delay(50, cancellationToken);
+
+            // Step 5: Final reinforcement of Thermal Policy Default (0x1A, 0x30)
+            await _biosService.SendCommandAsync(
+                0x20008, 0x1A,
+                new byte[] { 0xFF, (byte)ThermalProfile.Default, 0x00, 0x00 },
+                0, cancellationToken);
+            await Task.Delay(50, cancellationToken);
+
+            // Step 6: V1/V2 difference: V1 requires transition hint (20,20) and floor clear (0,0). 
+            // V2 systems (MaxFanLevel >= 100) use percentage scale where SetFanLevel(0,0) means 
+            // "0% duty cycle", which freezes the fans at 0 RPM. On V2, we skip SetFanLevel entirely!
             if (_boardConfig.MaxFanLevel < 100)
             {
-                // V1 transition hint
+                Console.WriteLine("  Step 6: Sending V1 fan transition hint (20, 20) and floor clear (0, 0)...");
                 await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { 20, 20, 0x00, 0x00 }, 0, cancellationToken);
                 await Task.Delay(50, cancellationToken);
-                // Floor clear
                 await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
             }
+            else
+            {
+                Console.WriteLine("  Step 6: Skipping SetFanLevel(0,0) on V2 system to prevent 0 RPM fan freeze. BIOS has full auto control.");
+            }
+
+            Console.WriteLine("[FanControlService] ✓ EC Reset to Defaults completed successfully. BIOS should now have full control of fans.");
         }
         catch (Exception ex)
         {
@@ -316,46 +376,27 @@ public class FanControlService : IFanControlService, IDisposable
 
     private async void OnCountdownTick(object? state)
     {
-        if (!_isManualControlActive || _lastManualPercent < 0) return;
+        if (!_isManualControlActive) return;
 
         try
         {
-            if (_lastManualPercent == 100)
+            // Send CMD_FAN_GET_COUNT (0x10) to keep WMI interface awake / extend countdown
+            await _biosService.SendCommandAsync(0x20008, 0x10, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 4);
+
+            if (_isMaxFanPresetActive)
             {
                 await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x01, 0x00, 0x00, 0x00 }, 0);
             }
-            else
+            else if (_lastManualPercent >= 0)
             {
-                // Re-apply fan level with proper scaling to extend countdown
                 byte bMapped = MapPercentToFanLevel(_lastManualPercent, _boardConfig.MaxFanLevel);
                 await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { bMapped, bMapped, 0x00, 0x00 }, 0);
             }
-
-            // Also explicitly extend countdown by reading current value and writing it back if possible,
-            // or by issuing a SetIdleMode(false) 0x19 equivalent, but SetFanLevel is usually enough.
-            await ExtendFanCountdownAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[CountdownTick] Error maintaining WMI fan heartbeat: {ex.Message}");
         }
-    }
-
-    private async Task ExtendFanCountdownAsync()
-    {
-        try
-        {
-            var (ret, outData) = await _biosService.SendCommandAsync(0x20008, 0x2D, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 128);
-            if (ret == 0 && outData.Length >= 2)
-            {
-                await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { outData[0], outData[1], 0x00, 0x00 }, 0);
-            }
-            else
-            {
-                await _biosService.SendCommandAsync(0x20008, 0x19, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0);
-            }
-        }
-        catch { }
     }
 
     public void Dispose()

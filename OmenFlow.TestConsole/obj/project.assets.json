@@ -3135,11 +3135,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
+      "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
       "projectName": "OmenFlow.TestConsole",
-      "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
+      "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
       "packagesPath": "C:\\Users\\yeyil\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.TestConsole\\obj\\",
+      "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.TestConsole\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -3161,14 +3161,14 @@
           "framework": "net8.0-windows7.0",
           "targetAlias": "net8.0-windows",
           "projectReferences": {
-            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
-              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
+            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
+              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
             },
-            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
-              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj"
+            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
+              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj"
             },
-            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {
-              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj"
+            "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {
+              "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj"
             }
           }
         }

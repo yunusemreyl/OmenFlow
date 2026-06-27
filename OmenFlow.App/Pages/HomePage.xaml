@@ -11,226 +11,177 @@
     
 
     <Grid Background="{ThemeResource PageBackgroundBrush}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        
-        <!-- Sol Panel: Cihaz Bilgileri -->
-        <Grid Grid.Column="0" Margin="24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <TextBlock Text="Cihaz Kontrol Merkezi" FontSize="24" FontWeight="SemiBold" Margin="12,0,0,16" Foreground="{ThemeResource PrimaryTextBrush}"/>
-            
-            <Border Grid.Row="1" Style="{StaticResource ShadowCardStyle}">
-                <StackPanel>
-                    <TextBlock x:Name="DeviceTitleText" Text="Cihaz Tespiti Yapılıyor..." FontSize="18" FontWeight="Medium" HorizontalAlignment="Center" Foreground="{ThemeResource SecondaryTextBrush}"/>
-                    <TextBlock Text="Dizüstü bilgisayarım" FontSize="14" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,16"/>
-                    
-                    <!-- Dinamik Laptop Resmi -->
-                    <Image x:Name="DeviceImage" Width="150" Height="100" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,16,0,24">
-                        <Image.Source>
-                            <BitmapImage UriSource="ms-appx:///icons/hpomen.png"/>
-                        </Image.Source>
-                    </Image>
-                    
-                    <TextBlock x:Name="BoardNumberText" Text="Sistem Modeli: Bekleniyor" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Bağlantı: IPC Named Pipes" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Alt Mini Kartlar -->
-            <Grid Grid.Row="2" Margin="12,0,12,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource MiniCardStyle}" Margin="0,0,6,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE715;" Foreground="#D97706" FontSize="24" Margin="0,0,0,8"/>
-                        <TextBlock Text="Mesajlar" FontSize="12" HorizontalAlignment="Center"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16,16,16,24" Spacing="16">
+                
+                <!-- Başlık -->
+                <TextBlock Text="Cihaz Kontrol Merkezi" FontSize="22" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                
+                <!-- Cihaz Bilgileri -->
+                <Border Style="{StaticResource ShadowCardStyle}">
+                    <StackPanel>
+                        <TextBlock x:Name="DeviceTitleText" Text="Cihaz Tespiti Yapılıyor..." FontSize="18" FontWeight="Medium" HorizontalAlignment="Center" Foreground="{ThemeResource SecondaryTextBrush}"/>
+                        <TextBlock Text="Dizüstü bilgisayarım" FontSize="14" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,16"/>
+                        
+                        <!-- Dinamik Laptop Resmi -->
+                        <Image x:Name="DeviceImage" Width="140" Height="90" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,8,0,16">
+                            <Image.Source>
+                                <BitmapImage UriSource="ms-appx:///icons/hpomen.png"/>
+                            </Image.Source>
+                        </Image>
+                        
+                        <TextBlock x:Name="BoardNumberText" Text="Sistem Modeli: Bekleniyor" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Bağlantı: IPC Named Pipes" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource MiniCardStyle}" Margin="6,0,0,0">
-                    <StackPanel HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE896;" Foreground="#2563EB" FontSize="24" Margin="0,0,0,8"/>
-                        <TextBlock Text="GitHub'dan Denetle" FontSize="12" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <!-- Activity Log -->
-            <Border Grid.Row="3" Style="{StaticResource ShadowCardStyle}" Margin="12,16,12,12">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Aktivite Geçmişi" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,8"/>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="ActivityLogPanel">
-                            <TextBlock Text="[11:00] Uygulama başlatıldı." FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,2,0,2"/>
-                            <TextBlock Text="[11:01] IPC bağlantısı kuruldu." FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,2,0,2"/>
-                            <TextBlock Text="[11:05] Sıcaklık 95°C'yi aştı!" FontSize="11" Foreground="#DC2626" Margin="0,2,0,2"/>
-                            <TextBlock Text="[11:05] Max Fan devrede." FontSize="11" Foreground="#D97706" Margin="0,2,0,2"/>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <!-- Sağ Panel: Sistem Durumu ve Kontrolleri -->
-        <Grid Grid.Column="1" Margin="0,24,24,24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <TextBlock Text="Sistem Durumu ve Kontrolleri" FontSize="24" FontWeight="SemiBold" Margin="12,0,0,16" Foreground="{ThemeResource PrimaryTextBrush}"/>
-
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Grid.ColumnSpan="2">
+                <!-- Alt Mini Kartlar -->
+                <Grid Margin="0,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource ShadowCardStyle}" Margin="0,0,6,0">
-                        <StackPanel>
-                            <Grid Margin="0,0,0,16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="Güç ve Soğutma Durumu" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" VerticalAlignment="Center"/>
-                                    <Ellipse Width="10" Height="10" Fill="#10B981" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-
-                                <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Tapped="PowerCoolingCard_Tapped" Padding="4,2">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Gelişmiş Ayarlar" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                        <FontIcon Glyph="&#xE76C;" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
-                            
-                            <TextBlock Text="Cihazın güç modunu ve fan ayarlarını yönetin." FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,24" TextWrapping="Wrap" TextAlignment="Center"/>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Güç Modu (Dropdown) -->
-                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                    <FontIcon Glyph="&#xE9A1;" FontSize="48" Foreground="#2563EB" Margin="0,0,0,12"/>
-                                    <ComboBox x:Name="PowerModeComboBox" Width="140" HorizontalAlignment="Center" SelectedIndex="1" SelectionChanged="PowerModeComboBox_SelectionChanged">
-                                        <ComboBoxItem Content="Performance"/>
-                                        <ComboBoxItem Content="Balanced"/>
-                                        <ComboBoxItem Content="Quiet"/>
-                                    </ComboBox>
-                                    <TextBlock Text="Aktif Güç Modu:" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                                    <TextBlock Text="Balanced" FontWeight="SemiBold" FontSize="14" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-
-                                <!-- Fan Modu -->
-                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                    <FontIcon Glyph="&#xE9CA;" FontSize="48" Foreground="#2563EB" Margin="0,0,0,12"/>
-                                    <ComboBox x:Name="FanModeComboBox" Width="140" HorizontalAlignment="Center" SelectedIndex="0" SelectionChanged="FanModeComboBox_SelectionChanged">
-                                        <ComboBoxItem Content="Auto"/>
-                                        <ComboBoxItem Content="Max Fan"/>
-                                        <ComboBoxItem Content="Manual"/>
-                                    </ComboBox>
-                                    <TextBlock Text="Fan Kontrolü:" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                                    <TextBlock Text="Otomatik Yönetim" FontWeight="SemiBold" FontSize="14" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-
-                            <Border Height="1" Margin="0,24,0,24" Background="{ThemeResource CardBorderBrush}"/>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                    <FontIcon Glyph="&#xE7A6;" FontSize="32" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,0,8"/>
-                                    <TextBlock Text="İşlemci (CPU)" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="CpuFanText" Text="--°C - -- RPM" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                    <FontIcon Glyph="&#xE7A6;" FontSize="32" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,0,8"/>
-                                    <TextBlock Text="Ekran Kartı (GPU)" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="GpuFanText" Text="--°C - -- RPM" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
+                    <Border Grid.Column="0" Style="{StaticResource MiniCardStyle}" Margin="0,0,6,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE715;" Foreground="#D97706" FontSize="22" Margin="0,0,0,6"/>
+                            <TextBlock Text="Mesajlar" FontSize="12" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
-                    
-                    <Border Grid.Column="1" Style="{StaticResource ShadowCardStyle}" Margin="6,0,0,0">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
-                                <TextBlock Text="Sistem Metrikleri" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                                <FontIcon Glyph="&#xE9D9;" FontSize="14" Foreground="#10B981" Margin="8,0,0,0"/>
-                            </StackPanel>
-                            
-                            <TextBlock Text="İşlemci (CPU)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" Margin="0,0,0,8"/>
-                            <Grid Margin="0,0,0,16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Sıcaklık" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                    <TextBlock x:Name="CpuTempText" Text="--°C" FontSize="18" FontWeight="Bold" Foreground="#EF4444"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Kullanım" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                    <TextBlock x:Name="CpuUsageText" Text="--%" FontSize="18" FontWeight="Bold" Foreground="#3B82F6"/>
-                                </StackPanel>
-                            </Grid>
 
-                            <TextBlock Text="Ekran Kartı (GPU)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" Margin="0,0,0,8"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Sıcaklık" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                    <TextBlock x:Name="GpuTempText" Text="--°C" FontSize="18" FontWeight="Bold" Foreground="#EF4444"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Kullanım" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                    <TextBlock x:Name="GpuUsageText" Text="--%" FontSize="18" FontWeight="Bold" Foreground="#3B82F6"/>
-                                </StackPanel>
-                            </Grid>
+                    <Border Grid.Column="1" Style="{StaticResource MiniCardStyle}" Margin="6,0,0,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE896;" Foreground="#2563EB" FontSize="22" Margin="0,0,0,6"/>
+                            <TextBlock Text="GitHub'dan Denetle" FontSize="12" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
-                <Border Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource ShadowCardStyle}" Margin="0,12,0,0">
+                <!-- Sistem Durumu ve Kontrolleri Başlık -->
+                <TextBlock Text="Sistem Durumu ve Kontrolleri" FontSize="20" FontWeight="SemiBold" Margin="4,8,0,0" Foreground="{ThemeResource PrimaryTextBrush}"/>
+
+                <!-- Güç ve Soğutma Durumu -->
+                <Border Style="{StaticResource ShadowCardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                                <TextBlock Text="Güç ve Soğutma Durumu" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                <Ellipse Width="8" Height="8" Fill="#10B981" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Tapped="PowerCoolingCard_Tapped" Padding="4,2">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Gelişmiş" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                    <FontIcon Glyph="&#xE76C;" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <TextBlock Text="Cihazın güç modunu ve fan ayarlarını yönetin." FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,16" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Güç Modu (Dropdown) -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE9A1;" FontSize="36" Foreground="#2563EB" Margin="0,0,0,8"/>
+                                <ComboBox x:Name="PowerModeComboBox" Width="130" HorizontalAlignment="Center" SelectedIndex="1" SelectionChanged="PowerModeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Performance"/>
+                                    <ComboBoxItem Content="Balanced"/>
+                                    <ComboBoxItem Content="Quiet"/>
+                                </ComboBox>
+                                <TextBlock Text="Aktif Güç Modu:" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock Text="Balanced" FontWeight="SemiBold" FontSize="13" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Fan Modu -->
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE9CA;" FontSize="36" Foreground="#2563EB" Margin="0,0,0,8"/>
+                                <ComboBox x:Name="FanModeComboBox" Width="130" HorizontalAlignment="Center" SelectedIndex="0" SelectionChanged="FanModeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Auto"/>
+                                    <ComboBoxItem Content="Max Fan"/>
+                                    <ComboBoxItem Content="Manual"/>
+                                </ComboBox>
+                                <TextBlock Text="Fan Kontrolü:" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock Text="Otomatik Yönetim" FontWeight="SemiBold" FontSize="13" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Height="1" Margin="0,8,0,16" Background="{ThemeResource CardBorderBrush}"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE7A6;" FontSize="24" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="İşlemci (CPU)" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="CpuFanText" Text="--°C - -- RPM" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE7A6;" FontSize="24" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Ekran Kartı (GPU)" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="GpuFanText" Text="--°C - -- RPM" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Sistem Metrikleri -->
+                <Border Style="{StaticResource ShadowCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+                            <TextBlock Text="Sistem Metrikleri" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                            <FontIcon Glyph="&#xE9D9;" FontSize="14" Foreground="#10B981" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="İşlemci (CPU)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Sıcaklık" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock x:Name="CpuTempText" Text="--°C" FontSize="18" FontWeight="Bold" Foreground="#EF4444"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Kullanım" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock x:Name="CpuUsageText" Text="--%" FontSize="18" FontWeight="Bold" Foreground="#3B82F6"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Ekran Kartı (GPU)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Sıcaklık" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock x:Name="GpuTempText" Text="--°C" FontSize="18" FontWeight="Bold" Foreground="#EF4444"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Kullanım" FontSize="10" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock x:Name="GpuUsageText" Text="--%" FontSize="18" FontWeight="Bold" Foreground="#3B82F6"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Klavye ve Ek Ayarlar Kartları -->
+                <Border Style="{StaticResource ShadowCardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -240,26 +191,42 @@
 
                         <!-- Klavye -->
                         <Grid Grid.Column="0" Tapped="LightingCard_Tapped" Background="Transparent" CornerRadius="8">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12">
-                                <FontIcon Glyph="&#xE765;" FontSize="32" Foreground="#8B5CF6" Margin="0,0,0,12"/>
-                                <TextBlock Text="Klavye Aydınlatması" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                                <TextBlock Text="Renkleri ve efektleri düzenleyin" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
+                                <FontIcon Glyph="&#xE765;" FontSize="28" Foreground="#8B5CF6" Margin="0,0,0,8"/>
+                                <TextBlock Text="Klavye Aydınlatması" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                                <TextBlock Text="Renk ve efektler" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
 
-                        <Border Grid.Column="1" Background="{ThemeResource CardBorderBrush}" Margin="0,12,0,12"/>
+                        <Border Grid.Column="1" Background="{ThemeResource CardBorderBrush}" Margin="0,8,0,8"/>
 
                         <!-- Ek Ayarlar -->
                         <Grid Grid.Column="2" Tapped="AdditionalSettingsCard_Tapped" Background="Transparent" CornerRadius="8">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12">
-                                <FontIcon Glyph="&#xE713;" FontSize="32" Foreground="#10B981" Margin="0,0,0,12"/>
-                                <TextBlock Text="Ek Ayarlar" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                                <TextBlock Text="Donanım, güç ve kilit ayarları" FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
+                                <FontIcon Glyph="&#xE713;" FontSize="28" Foreground="#10B981" Margin="0,0,0,8"/>
+                                <TextBlock Text="Ek Ayarlar" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                                <TextBlock Text="Güç ve kilit ayarları" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
                 </Border>
-            </Grid>
-        </Grid>
+
+                <!-- Activity Log -->
+                <Border Style="{StaticResource ShadowCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Aktivite Geçmişi" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,8"/>
+                        <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="ActivityLogPanel">
+                                <TextBlock Text="[11:00] Uygulama başlatıldı." FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,2,0,2"/>
+                                <TextBlock Text="[11:01] IPC bağlantısı kuruldu." FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" Margin="0,2,0,2"/>
+                                <TextBlock Text="[11:05] Sıcaklık 95°C'yi aştı!" FontSize="11" Foreground="#DC2626" Margin="0,2,0,2"/>
+                                <TextBlock Text="[11:05] Max Fan devrede." FontSize="11" Foreground="#D97706" Margin="0,2,0,2"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

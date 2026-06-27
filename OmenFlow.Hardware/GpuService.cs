@@ -26,7 +26,7 @@ public class GpuService : IGpuService
 
         if (ret == 0 && outData != null && outData.Length >= 1)
         {
-            return (GpuMuxMode)outData[0];
+            return outData[0] == 0x01 ? GpuMuxMode.Discrete : GpuMuxMode.Hybrid;
         }
 
         return null;
@@ -34,7 +34,8 @@ public class GpuService : IGpuService
 
     public async Task<bool> SetMuxModeAsync(GpuMuxMode mode, CancellationToken cancellationToken = default)
     {
-        byte[] inData = new byte[] { (byte)mode, 0, 0, 0 };
+        byte modeByte = mode == GpuMuxMode.Discrete ? (byte)1 : (byte)0;
+        byte[] inData = new byte[] { modeByte, 0, 0, 0 };
         var (ret, _) = await _biosService.SendCommandAsync(0x00002, 0x52, inData, 0, cancellationToken);
         return ret == 0;
     }

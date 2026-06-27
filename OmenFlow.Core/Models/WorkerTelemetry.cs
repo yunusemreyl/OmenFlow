@@ -23,4 +23,5 @@ public record WorkerTelemetry(
     public bool BacklightOn { get; set; } = false;
     public string ZoneColors { get; set; } = ""; // base64 encoded
     public ThermalProfile ActiveProfile { get; set; } = ThermalProfile.Default;
+    public int ActiveFanMode { get; set; } = 0;
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BLxv4F20jAc=",
+  "dgSpecHash": "vag8pzwck0A=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
+  "projectFilePath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.9\\microsoft.extensions.configuration.abstractions.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.9\\microsoft.extensions.dependencyinjection.abstractions.10.0.9.nupkg.sha512",

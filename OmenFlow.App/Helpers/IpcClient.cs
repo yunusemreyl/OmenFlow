@@ -1,6 +1,7 @@
 using System;
 using System.IO;
-using System.IO.Pipes;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,17 +26,82 @@ public class TelemetryData
     public int KeyboardType { get; set; }
     public bool BacklightOn { get; set; }
     public string ZoneColors { get; set; } = "";
+    public int ActiveFanMode { get; set; }
 }
 
 public class IpcClient
 {
     public event EventHandler<TelemetryData>? TelemetryReceived;
+    public event EventHandler? Connected;
+    public event EventHandler? Disconnected;
 
     private readonly CancellationTokenSource _cts = new();
+    private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(3) };
+    private DateTime _lastWorkerStartAttempt = DateTime.MinValue;
+    private bool _isConnected = false;
 
     public void Connect()
     {
+        EnsureWorkerRunning();
         _ = Task.Run(() => StartTelemetryLoopAsync(_cts.Token));
+    }
+
+    private void EnsureWorkerRunning()
+    {
+        try
+        {
+            if (System.Diagnostics.Process.GetProcessesByName("OmenFlow.Worker").Length > 0)
+            {
+                return; // Already running
+            }
+
+            if ((DateTime.Now - _lastWorkerStartAttempt).TotalSeconds < 10)
+            {
+                return; // Wait at least 10 seconds between attempts
+            }
+
+            _lastWorkerStartAttempt = DateTime.Now;
+
+            string baseDir = AppContext.BaseDirectory;
+            string[] possiblePaths = new[]
+            {
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\OmenFlow.Worker\bin\Release\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\..\OmenFlow.Worker\bin\Release\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\..\..\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\..\..\OmenFlow.Worker\bin\Release\net8.0-windows\win-x64\OmenFlow.Worker.exe")),
+                Path.Combine(baseDir, "OmenFlow.Worker.exe"),
+                @"C:\Users\yeyil\Documents\OmenFlow\OmenFlow\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\OmenFlow.Worker.exe",
+                @"C:\Users\yeyil\Documents\OmenFlow\OmenFlow\OmenFlow.Worker\bin\Release\net8.0-windows\win-x64\OmenFlow.Worker.exe"
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = path,
+                        WorkingDirectory = Path.GetDirectoryName(path) ?? baseDir,
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                    };
+                    System.Diagnostics.Process.Start(psi);
+                    System.Diagnostics.Debug.WriteLine($"[IpcClient] Started worker from: {path}");
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[IpcClient] Error starting worker: {ex.Message}");
+        }
     }
 
     private async Task StartTelemetryLoopAsync(CancellationToken ct)
@@ -44,35 +110,28 @@ public class IpcClient
         {
             try
             {
-                using var pipeClient = new NamedPipeClientStream(".", "OmenFlow_HardwareTelemetry", PipeDirection.In, PipeOptions.Asynchronous);
-                await pipeClient.ConnectAsync(ct);
-
-                using var reader = new StreamReader(pipeClient);
-                while (!ct.IsCancellationRequested && pipeClient.IsConnected)
+                string json = await _httpClient.GetStringAsync("http://localhost:50312/api/telemetry", ct);
+                var telemetry = JsonSerializer.Deserialize<TelemetryData>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (telemetry != null)
                 {
-                    string? line = await reader.ReadLineAsync();
-                    if (!string.IsNullOrWhiteSpace(line))
+                    if (!_isConnected)
                     {
-                        try
-                        {
-                            var telemetry = JsonSerializer.Deserialize<TelemetryData>(line, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                            if (telemetry != null)
-                            {
-                                TelemetryReceived?.Invoke(this, telemetry);
-                            }
-                        }
-                        catch
-                        {
-                            // Ignore parse errors
-                        }
+                        _isConnected = true;
+                        Connected?.Invoke(this, EventArgs.Empty);
                     }
+                    TelemetryReceived?.Invoke(this, telemetry);
                 }
             }
             catch (Exception)
             {
-                // Disconnected or connection failed, retry after a short delay
-                await Task.Delay(2000, ct);
+                if (_isConnected)
+                {
+                    _isConnected = false;
+                    Disconnected?.Invoke(this, EventArgs.Empty);
+                }
+                EnsureWorkerRunning();
             }
+            await Task.Delay(2000, ct);
         }
     }
 
@@ -80,12 +139,8 @@ public class IpcClient
     {
         try
         {
-            using var pipeClient = new NamedPipeClientStream(".", "OmenFlow_HardwareCommand", PipeDirection.Out, PipeOptions.Asynchronous);
-            await pipeClient.ConnectAsync(1000); // 1 second timeout
-
-            using var writer = new StreamWriter(pipeClient);
-            writer.AutoFlush = true;
-
+            EnsureWorkerRunning();
+            
             var payload = new
             {
                 Command = command,
@@ -93,7 +148,10 @@ public class IpcClient
             };
 
             string json = JsonSerializer.Serialize(payload);
-            await writer.WriteLineAsync(json);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            using var response = await _httpClient.PostAsync("http://localhost:50312/api/command", content);
+            response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
         {

@@ -25,6 +25,10 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
     private volatile bool _isMaxModeActive = false;
     private FanCurve? _activeCurve;
 
+    public Func<WorkerTelemetry>? TelemetryProvider { get; set; }
+    private volatile bool _safetyProtectionEnabled = true;
+    private volatile bool _safetyMaxFanActive = false;
+
     // EC write deduplication — prevents hammering EC with identical commands
     // (OmenCore uses 15s window, we use 10s since our poll is 3s)
     private int _lastWrittenFanPercent = -1;
@@ -45,18 +49,22 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         _fanControlService = fanControlService;
     }
 
+    public void SetThermalSafetyEnabled(bool enabled)
+    {
+        _safetyProtectionEnabled = enabled;
+        Console.WriteLine($"[FanCurve] Thermal Safety Protection Enabled: {enabled}");
+    }
+
     public Task ApplyCustomCurveAsync(FanCurve? curve)
     {
         Interlocked.Exchange(ref _activeCurve, curve);
         _immediateApplyRequested = true;
         
-        // Eğri kaldırıldıysa (null), BIOS auto moduna dön
         if (curve == null && _isInManualMode)
         {
             _isInManualMode = false;
             _lastWrittenFanPercent = -1; // Dedup sıfırla
-            Console.WriteLine("[FanCurve] Curve cleared → restoring BIOS auto control");
-            _ = _fanControlService.RestoreAutoControlAsync();
+            Console.WriteLine("[FanCurve] Curve cleared. (Explicit mode change handled by IpcServer)");
         }
         
         return Task.CompletedTask;
@@ -77,6 +85,51 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         {
             do
             {
+                // ===== THERMAL SAFETY HYSTERESIS (95°C -> MAX FAN -> 50°C) =====
+                float maxSafeTemp = 0f;
+                if (TelemetryProvider != null)
+                {
+                    var telemetry = TelemetryProvider();
+                    maxSafeTemp = Math.Max(telemetry.CpuTemp, telemetry.GpuTemp);
+                }
+                if (maxSafeTemp == 0)
+                {
+                    maxSafeTemp = await _fanControlService.GetCpuTemperatureAsync(stoppingToken);
+                }
+
+                if (_safetyProtectionEnabled)
+                {
+                    if (!_safetyMaxFanActive && maxSafeTemp >= 95)
+                    {
+                        Console.WriteLine($"[ThermalSafety] ⚠ CRITICAL TEMPERATURE DETECTED ({maxSafeTemp}°C >= 95°C)! Activating emergency MAX FAN protection.");
+                        _safetyMaxFanActive = true;
+                        await _fanControlService.SetMaxFanAsync(true, stoppingToken);
+                        continue;
+                    }
+                    else if (_safetyMaxFanActive)
+                    {
+                        if (maxSafeTemp <= 50 && maxSafeTemp > 0)
+                        {
+                            Console.WriteLine($"[ThermalSafety] ✓ Temperature cooled down to safe levels ({maxSafeTemp}°C <= 50°C). Restoring normal fan operation.");
+                            _safetyMaxFanActive = false;
+                            await _fanControlService.SetMaxFanAsync(false, stoppingToken);
+                            // Normal akışa devam etsin
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[ThermalSafety] Emergency MAX FAN active. Current Max Temp: {maxSafeTemp}°C (Waiting to drop <= 50°C)");
+                            await _fanControlService.SetMaxFanAsync(true, stoppingToken);
+                            continue; // Normal eğriyi veya diğer modları atla!
+                        }
+                    }
+                }
+                else if (_safetyMaxFanActive)
+                {
+                    Console.WriteLine("[ThermalSafety] Thermal Safety Protection disabled by user. Cancelling emergency MAX FAN.");
+                    _safetyMaxFanActive = false;
+                    await _fanControlService.SetMaxFanAsync(false, stoppingToken);
+                }
+
                 if (_immediateApplyRequested)
                 {
                     _immediateApplyRequested = false;
@@ -224,7 +277,11 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
     private Task RevertToDefaultBiosControlAsync()
     {
-        Console.WriteLine("[FanCurve] Service stopping → restoring BIOS auto control");
-        return _fanControlService.RestoreAutoControlAsync();
+        if (_isInManualMode)
+        {
+            Console.WriteLine("[FanCurve] Service stopping → restoring BIOS auto control");
+            return _fanControlService.RestoreAutoControlAsync();
+        }
+        return Task.CompletedTask;
     }
 }

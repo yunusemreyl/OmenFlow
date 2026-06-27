@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="OmenFlow_App.SubWindows.CustomFanWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Özel Fan Eğrisi"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Background="{ThemeResource PageBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TitleBar
+            x:Name="AppTitleBar"
+            Title="Özel Fan Eğrisi"
+            Height="32"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="Assets/AppIcon.ico" />
+            </TitleBar.IconSource>
+        </TitleBar>
+
+        <!-- Özel Fan Eğrisi Alanı -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Padding="24">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                        <TextBlock Text="Özel Fan Eğrisi Ayarları" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Noktaları sürükleyerek sıcaklık-hız eğrisini belirleyin." FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <Border Background="{ThemeResource CardAltBackgroundBrush}" BorderBrush="{ThemeResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Y Axis Labels (Fan Hızı %) -->
+                            <Grid Grid.Row="0" Grid.Column="0" Margin="0,0,12,0" Width="32">
+                                <TextBlock Text="100%" VerticalAlignment="Top" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="75%" VerticalAlignment="Top" Margin="0,44,0,0" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="50%" VerticalAlignment="Center" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="25%" VerticalAlignment="Bottom" Margin="0,0,0,44" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="0%" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <!-- X Axis Labels (Sıcaklık °C) -->
+                            <Grid Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" Height="20">
+                                <TextBlock Text="0°C" HorizontalAlignment="Left" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock Text="50°C" HorizontalAlignment="Center" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock Text="100°C" HorizontalAlignment="Right" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                            </Grid>
+
+                            <Canvas x:Name="FanCurveCanvas" Grid.Row="0" Grid.Column="1" Height="200" Width="300" HorizontalAlignment="Left" Background="Transparent" 
+                                    PointerMoved="FanCurveCanvas_PointerMoved" PointerReleased="FanCurveCanvas_PointerReleased" PointerCanceled="FanCurveCanvas_PointerReleased">
+                                
+                                <!-- Background Grid Lines -->
+                                <Line X1="0" Y1="50" X2="300" Y2="50" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="0" Y1="100" X2="300" Y2="100" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="0" Y1="150" X2="300" Y2="150" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                
+                                <Line X1="75" Y1="0" X2="75" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="150" Y1="0" X2="150" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="225" Y1="0" X2="225" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+
+                                <!-- Eğri Çizgisi -->
+                                <Polyline x:Name="FanCurveLine" Stroke="#10B981" StrokeThickness="3" />
+                            </Canvas>
+                        </Grid>
+                    </Border>
+
+                    <!-- Uygula Butonu -->
+                    <Button x:Name="ApplyCurveButton" 
+                            Content="Eğriyi Uygula" 
+                            Click="ApplyCurveButton_Click"
+                            HorizontalAlignment="Center" 
+                            Margin="0,8,0,0" 
+                            Padding="32,10"
+                            FontWeight="SemiBold"
+                            Background="#10B981" 
+                            Foreground="White" 
+                            CornerRadius="8"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>

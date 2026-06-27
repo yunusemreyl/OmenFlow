@@ -67,6 +67,13 @@ public sealed partial class SettingsPage : Page
             ComboLanguage.SelectedIndex = 0; // Türkçe (default)
         }
 
+        bool thermalSafety = true; // Default
+        if (localSettings.TryGetValue("ThermalSafetyEnabled", out object? tsVal) && tsVal != null)
+        {
+            thermalSafety = (bool)tsVal;
+        }
+        ToggleThermalSafety.IsOn = thermalSafety;
+
         _isInitializing = false;
     }
 
@@ -114,6 +121,17 @@ public sealed partial class SettingsPage : Page
                 else if (theme == "Dark") rootElement.RequestedTheme = ElementTheme.Dark;
                 else rootElement.RequestedTheme = ElementTheme.Default;
             }
+        }
+    }
+
+    private async void ToggleThermalSafety_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_isInitializing) return;
+        bool isOn = ToggleThermalSafety.IsOn;
+        Helpers.LocalSettings.Values["ThermalSafetyEnabled"] = isOn;
+        if (App.IpcClient != null)
+        {
+            await App.IpcClient.SendCommandAsync("SetThermalSafety", isOn);
         }
     }
 }

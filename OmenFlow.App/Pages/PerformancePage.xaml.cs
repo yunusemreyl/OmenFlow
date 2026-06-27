@@ -1,27 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
-using Microsoft.UI.Xaml.Input;
-using Windows.Foundation;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.UI.Notifications;
+using Windows.Data.Xml.Dom;
+using OmenFlow_App.SubWindows;
 
 namespace OmenFlow_App.Pages;
 
 public sealed partial class PerformancePage : Page
 {
-    private List<Ellipse> _fanCurvePoints = new List<Ellipse>();
-    private Ellipse? _draggingPoint = null;
+    private CustomFanWindow? _customFanWindow;
 
     public PerformancePage()
     {
         this.InitializeComponent();
-        InitializeFanCurve();
         App.IpcClient.TelemetryReceived += IpcClient_TelemetryReceived;
         this.Unloaded += PerformancePage_Unloaded;
     }
@@ -49,14 +46,15 @@ public sealed partial class PerformancePage : Page
             if (BtnPerfDefault != null) BtnPerfDefault.IsChecked = (e.ActiveProfile == 0x30);
             if (BtnPerfPerf != null) BtnPerfPerf.IsChecked = (e.ActiveProfile == 0x31);
 
+            // Sync Fan Mode
+            if (BtnFanAuto != null) BtnFanAuto.IsChecked = (e.ActiveFanMode == 0);
+            if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsChecked = (e.ActiveFanMode == 1);
+            if (BtnFanMax != null) BtnFanMax.IsChecked = (e.ActiveFanMode == 2);
+            if (BtnFanManual != null) BtnFanManual.IsChecked = (e.ActiveFanMode == 3);
+
             // Sync GPU Mode
             if (BtnMuxHybrid != null) BtnMuxHybrid.IsChecked = (e.GpuMode == 0 || e.GpuMode == 2);
             if (BtnMuxDiscrete != null) BtnMuxDiscrete.IsChecked = (e.GpuMode == 1);
-
-            // Sync GPU Power
-            if (BtnGpuBase != null) BtnGpuBase.IsChecked = (e.GpuPowerLevel == 0);
-            if (BtnGpuExtra != null) BtnGpuExtra.IsChecked = (e.GpuPowerLevel == 1);
-            if (BtnGpuMax != null) BtnGpuMax.IsChecked = (e.GpuPowerLevel == 2);
         });
     }
 
@@ -66,18 +64,11 @@ public sealed partial class PerformancePage : Page
         if (e.Parameter is string param && param == "SelectCustomFan")
         {
             SetFanMode(BtnFanManual);
-            CustomFanCurveContainer.Visibility = Visibility.Visible;
+            OpenCustomFanWindow();
         }
     }
 
     // ========== OmenFlow Akıllı Fan Preseti ==========
-    // 60°C altı: Fan sessiz (%0 - BIOS yönetir)
-    // 60°C: Hafif soğutma başlar (%25)
-    // 70°C: Orta düzey soğutma (%40)
-    // 80°C: Efektif soğutma (%65)
-    // 85°C: Agresif soğutma (%80)
-    // 90°C: Yüksek soğutma (%90)
-    // 95°C+: Acil durum - tam güç (%100)
     private static readonly List<FanCurvePointDto> OmenFlowPresetPoints = new()
     {
         new FanCurvePointDto { TemperatureCelsius = 50, FanSpeedPercent = 0 },
@@ -102,121 +93,14 @@ public sealed partial class PerformancePage : Page
         await App.IpcClient.SendCommandAsync("ApplyCurve", curvePayload);
     }
 
-    // ========== Fan Eğrisi Grafiği ==========
-
-    private void InitializeFanCurve()
+    private void OpenCustomFanWindow()
     {
-        // 5 sürüklenebilir nokta
-        double[] defaultTemps = { 30, 50, 70, 85, 100 };
-        double[] defaultSpeeds = { 20, 40, 60, 80, 100 };
-
-        for (int i = 0; i < 5; i++)
+        if (_customFanWindow == null)
         {
-            var ellipse = new Ellipse
-            {
-                Width = 16,
-                Height = 16,
-                Fill = new SolidColorBrush(Colors.White),
-                Stroke = new SolidColorBrush(ColorHelper.FromArgb(255, 16, 185, 129)),
-                StrokeThickness = 3
-            };
-
-            double x = (defaultTemps[i] / 100.0) * 800;
-            double y = 200 - ((defaultSpeeds[i] / 100.0) * 200);
-
-            Canvas.SetLeft(ellipse, x - 8);
-            Canvas.SetTop(ellipse, y - 8);
-
-            ellipse.PointerPressed += Ellipse_PointerPressed;
-
-            _fanCurvePoints.Add(ellipse);
-            FanCurveCanvas.Children.Add(ellipse);
+            _customFanWindow = new CustomFanWindow();
+            _customFanWindow.Closed += (s, args) => { _customFanWindow = null; };
         }
-        UpdateFanCurveLine();
-    }
-
-    private void Ellipse_PointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        _draggingPoint = sender as Ellipse;
-        FanCurveCanvas.CapturePointer(e.Pointer);
-    }
-
-    private void FanCurveCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
-    {
-        if (_draggingPoint != null)
-        {
-            var pos = e.GetCurrentPoint(FanCurveCanvas).Position;
-            
-            double y = Math.Clamp(pos.Y, 0, 200);
-
-            int index = _fanCurvePoints.IndexOf(_draggingPoint);
-            double minX = index > 0 ? Canvas.GetLeft(_fanCurvePoints[index - 1]) + 8 : 0;
-            double maxX = index < _fanCurvePoints.Count - 1 ? Canvas.GetLeft(_fanCurvePoints[index + 1]) + 8 : 800;
-            
-            double x = Math.Clamp(pos.X, minX + 1, maxX - 1);
-
-            Canvas.SetLeft(_draggingPoint, x - 8);
-            Canvas.SetTop(_draggingPoint, y - 8);
-
-            UpdateFanCurveLine();
-        }
-    }
-
-    private void FanCurveCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
-    {
-        if (_draggingPoint != null)
-        {
-            FanCurveCanvas.ReleasePointerCapture(e.Pointer);
-            _draggingPoint = null;
-        }
-    }
-
-    private void UpdateFanCurveLine()
-    {
-        var points = new PointCollection();
-        foreach (var p in _fanCurvePoints)
-        {
-            points.Add(new Point(Canvas.GetLeft(p) + 8, Canvas.GetTop(p) + 8));
-        }
-        FanCurveLine.Points = points;
-    }
-
-    /// <summary>
-    /// Canvas üzerindeki sürüklenebilir noktalardan FanCurvePoint listesi oluşturur.
-    /// Canvas: X ekseni 0-800 → Sıcaklık 0-100°C, Y ekseni 200-0 → Fan Hızı 0-100%
-    /// </summary>
-    private List<FanCurvePointDto> GetCustomCurveFromCanvas()
-    {
-        var result = new List<FanCurvePointDto>();
-        foreach (var ellipse in _fanCurvePoints)
-        {
-            double x = Canvas.GetLeft(ellipse) + 8; // center
-            double y = Canvas.GetTop(ellipse) + 8;
-
-            int tempC = (int)Math.Round((x / 800.0) * 100.0);
-            int speedPercent = (int)Math.Round((1.0 - (y / 200.0)) * 100.0);
-
-            tempC = Math.Clamp(tempC, 0, 100);
-            speedPercent = Math.Clamp(speedPercent, 0, 100);
-
-            result.Add(new FanCurvePointDto { TemperatureCelsius = tempC, FanSpeedPercent = speedPercent });
-        }
-        return result;
-    }
-
-    // ========== "Uygula" Butonu ==========
-    private async void ApplyCurveButton_Click(object sender, RoutedEventArgs e)
-    {
-        var points = GetCustomCurveFromCanvas();
-        await ApplyFanCurveAsync(points);
-
-        // Kısa bir onay göster
-        if (ApplyCurveButton != null)
-        {
-            ApplyCurveButton.Content = "✓ Uygulandı!";
-            await Task.Delay(1500);
-            ApplyCurveButton.Content = "Eğriyi Uygula";
-        }
+        _customFanWindow.Activate();
     }
 
     // ========== Performans Profili ==========
@@ -228,12 +112,34 @@ public sealed partial class PerformancePage : Page
         BtnPerfPerf.IsChecked = (btn == BtnPerfPerf);
 
         int profile = 0x30; // Default
-        if (btn == BtnPerfQuiet) profile = 0x50; // Quiet
-        if (btn == BtnPerfPerf) profile = 0x31; // Performance
+        string modeName = "Varsayılan (Default)";
+        if (btn == BtnPerfQuiet) { profile = 0x50; modeName = "Sessiz (Quiet)"; }
+        if (btn == BtnPerfPerf) { profile = 0x31; modeName = "Performans"; }
 
         if (App.IpcClient != null)
         {
             await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
+            ShowPerformanceToastNotification(modeName);
+        }
+    }
+
+    private async void ShowPerformanceToastNotification(string modeName)
+    {
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Performans Modu Değişti",
+                Content = $"Aktif Profil: {modeName}",
+                CloseButtonText = "Tamam",
+                XamlRoot = this.XamlRoot,
+                RequestedTheme = ElementTheme.Default
+            };
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
         }
     }
 
@@ -245,24 +151,19 @@ public sealed partial class PerformancePage : Page
         
         if (btn == BtnFanManual)
         {
-            CustomFanCurveContainer.Visibility = Visibility.Visible;
-            // Eğri henüz uygulanmaz, kullanıcı "Uygula" butonuna basmalı
+            OpenCustomFanWindow();
         }
         else if (btn == BtnFanOmenFlow)
         {
-            CustomFanCurveContainer.Visibility = Visibility.Collapsed;
-            // OmenFlow akıllı fan eğrisini hemen uygula
             await ApplyFanCurveAsync(OmenFlowPresetPoints);
         }
         else if (btn == BtnFanMax)
         {
-            CustomFanCurveContainer.Visibility = Visibility.Collapsed;
             if (App.IpcClient != null)
                 await App.IpcClient.SendCommandAsync("SetMaxFan");
         }
         else // Auto
         {
-            CustomFanCurveContainer.Visibility = Visibility.Collapsed;
             if (App.IpcClient != null)
                 await App.IpcClient.SendCommandAsync("SetAuto");
         }
@@ -280,29 +181,42 @@ public sealed partial class PerformancePage : Page
     private async void MuxMode_Click(object sender, RoutedEventArgs e)
     {
         var btn = sender as ToggleButton;
+        int oldMode = (btn == BtnMuxDiscrete) ? 0 : 1; // Discrete tıklandıysa eski mod Hybrid(0), Hybrid tıklandıysa eski mod Discrete(1)
+        int newMode = (btn == BtnMuxDiscrete) ? 1 : 0; // Discrete=1, Hybrid=0
+
         BtnMuxHybrid.IsChecked = (btn == BtnMuxHybrid);
         BtnMuxDiscrete.IsChecked = (btn == BtnMuxDiscrete);
 
         if (App.IpcClient != null)
         {
-            int mode = (btn == BtnMuxDiscrete) ? 1 : 2; // Discrete=1, Hybrid=2
-            await App.IpcClient.SendCommandAsync("SetGpuMode", mode);
+            await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
+            ShowMuxToastNotification(oldMode, newMode);
         }
     }
 
-    private async void GpuPower_Click(object sender, RoutedEventArgs e)
+    private async void ShowMuxToastNotification(int oldMode, int newMode)
     {
-        var btn = sender as ToggleButton;
-        BtnGpuBase.IsChecked = (btn == BtnGpuBase);
-        BtnGpuExtra.IsChecked = (btn == BtnGpuExtra);
-        BtnGpuMax.IsChecked = (btn == BtnGpuMax);
-
-        if (App.IpcClient != null)
+        try
         {
-            int power = 0; // BasePower
-            if (btn == BtnGpuExtra) power = 1;
-            if (btn == BtnGpuMax) power = 2;
-            await App.IpcClient.SendCommandAsync("SetGpuPower", power);
+            var dialog = new ContentDialog
+            {
+                Title = "Yeniden Başlatma Gerekli",
+                Content = "GPU MUX Modu değişikliğinin etkinleşmesi için bilgisayarınızı yeniden başlatmanız gerekiyor.",
+                PrimaryButtonText = "Yeniden Başlat",
+                CloseButtonText = "Daha Sonra",
+                XamlRoot = this.XamlRoot,
+                RequestedTheme = ElementTheme.Default
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("shutdown", "/r /t 0") { CreateNoWindow = true, UseShellExecute = false });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
         }
     }
 }
@@ -316,4 +230,3 @@ public class FanCurvePointDto
     public int TemperatureCelsius { get; set; }
     public int FanSpeedPercent { get; set; }
 }
-

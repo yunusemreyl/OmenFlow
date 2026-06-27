@@ -14,17 +14,17 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="32" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TitleBar
             x:Name="AppTitleBar"
-            Title="OmenFlow.App"
+            Title="OmenFlow"
+            Height="32"
             BackRequested="TitleBar_BackRequested"
             IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
-            IsPaneToggleButtonVisible="True"
-            PaneToggleRequested="TitleBar_PaneToggleRequested">
+            IsPaneToggleButtonVisible="False">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="Assets/AppIcon.ico" />
             </TitleBar.IconSource>
@@ -33,37 +33,38 @@
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
+            PaneDisplayMode="Top"
             IsBackButtonVisible="Collapsed"
             IsPaneToggleButtonVisible="False"
             SelectionChanged="NavView_SelectionChanged">
+            <NavigationView.Resources>
+                <x:Double x:Key="NavigationViewTopPaneHeight">36</x:Double>
+                <x:Double x:Key="NavigationViewItemContentHeight">32</x:Double>
+                <Thickness x:Key="NavigationViewItemContentMargin">8,0,8,0</Thickness>
+            </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    Content="Ana Sayfa"
-                    IsSelected="True"
-                    Tag="home">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE80F;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem
                     Content="Performans"
+                    IsSelected="True"
                     Tag="performance">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE9D9;" />
+                        <FontIcon Glyph="&#xE9D9;" FontSize="14" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Klavye" Tag="lighting">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE765;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Ek Ayarlar" Tag="advanced">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;" />
+                        <FontIcon Glyph="&#xE765;" FontSize="14" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
-            <Frame x:Name="NavFrame" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <InfoBar x:Name="BackendConnectionInfoBar" Grid.Row="0" IsOpen="False" Severity="Error" Title="Bağlantı Hatası" Message="Arka plan servisi (OmenFlow.Worker) ile bağlantı kurulamadı. Yeniden bağlanılıyor..." IsClosable="False" Margin="16,8,16,0" />
+                <Frame x:Name="NavFrame" Grid.Row="1" />
+            </Grid>
         </NavigationView>
     </Grid>
 </Window>

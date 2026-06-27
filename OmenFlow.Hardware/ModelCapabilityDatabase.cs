@@ -44,9 +44,9 @@ public static class ModelCapabilityDatabase
             family = DeviceFamily.OmenV1;
         }
 
-        // Fan scale rules: some V2 fan models use 0-100%, others 0-55. 
-        // 8BAB and 8D41 are known to be 0-100% models based on earlier tests.
-        int maxFanLevel = (boardId is "8BAB" or "8D41") ? 100 : 55;
+        // Fan scale rules: HP EC hardware LUT (Look Up Table) has exactly 55 entries (0-55). 
+        // Values > 55 cause out-of-bounds firmware memory reads, resulting in wild PWM spiking ("kudurma").
+        int maxFanLevel = 55;
 
         // Legacy / Standard 2020-2022 Omen Models had EC offset
         bool hasEcThermalOffset = family == DeviceFamily.OmenV1 && (boardId is "8A14" or "8BAD" or "8BAF" or "8BB0" or "8CD0" or "8CD1");
