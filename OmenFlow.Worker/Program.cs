@@ -237,6 +237,14 @@ class Program
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
             _ = fanCurveService.StartAsync(CancellationToken.None);
 
+            // Suspend/resume recovery service
+            var suspendRecovery = new SuspendRecoveryService(fanControlService, fanCurveService, perfModeService);
+            suspendRecovery.GetCurrentFanMode = () => s_activeFanMode;
+            suspendRecovery.GetCurrentCurve = () => LoadFanCurveCache();
+            // Independent curves not yet serialized; will be null on resume (falls back to unified)
+            suspendRecovery.GetCurrentIndependentCurves = () => (null, null);
+            _ = suspendRecovery.StartAsync(CancellationToken.None);
+
             await RestoreLastFanModeAsync(fanCurveService, fanControlService);
 
             var currentMode = await perfModeService.GetCurrentModeAsync();
@@ -300,6 +308,7 @@ class Program
                             Console.WriteLine("[Command] SetAuto");
                             SaveFanMode(0); // Auto
                             SaveFanCurveCache(null, "auto");
+                            fanControlService.NotifyFanTransitionStarted();
                             fanCurveService.SetMaxModeActive(false);
                             await fanCurveService.ApplyCustomCurveAsync(null);
                             await fanControlService.RestoreAutoControlAsync();
@@ -313,8 +322,9 @@ class Program
                                 enabled = root.Value.GetBoolean();
                             }
                             Console.WriteLine($"[Command] SetMaxFan: {enabled}");
-                            SaveFanMode(enabled ? 2 : 0); // Max Fan
+                            SaveFanMode(enabled ? 2 : 0);
                             SaveFanCurveCache(null, "max");
+                            fanControlService.NotifyFanTransitionStarted();
                             fanCurveService.SetMaxModeActive(enabled);
                             await fanCurveService.ApplyCustomCurveAsync(null);
                             await fanControlService.SetMaxFanAsync(enabled);
@@ -463,6 +473,12 @@ class Program
                             SaveThermalSafety(enabled);
                             fanCurveService.SetThermalSafetyEnabled(enabled);
                             break;
+                        }
+                        case "GetFanDiagnostics":
+                        {
+                            Console.WriteLine("[Command] GetFanDiagnostics");
+                            var report = fanCurveService.GetCommandHistoryReport();
+                            return Results.Ok(new { Success = true, Report = report });
                         }
                         default:
                             Console.WriteLine($"[Command] Unknown command: {cmd}");

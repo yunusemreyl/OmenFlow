@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,20 @@ public class FanControlService : IFanControlService, IDisposable
     private bool _isManualControlActive = false;
     private bool _isMaxFanPresetActive = false;
     private readonly object _timerLock = new();
+
+    // Fan transition window: when a preset/mode changes, BIOS briefly resets WMI registers,
+    // causing RPM reads to return 0. Hold transition state for 5s so UI shows last known RPM.
+    private volatile bool _isFanTransitioning = false;
+    private DateTime _fanTransitionUntil = DateTime.MinValue;
+    private const int FanTransitionHoldMs = 5000;
+    public bool IsFanTransitioning => _isFanTransitioning && DateTime.UtcNow < _fanTransitionUntil;
+
+    public void NotifyFanTransitionStarted()
+    {
+        _isFanTransitioning = true;
+        _fanTransitionUntil = DateTime.UtcNow.AddMilliseconds(FanTransitionHoldMs);
+        Console.WriteLine("[FanControlService] Fan transition window started (5s RPM hold).");
+    }
 
     public FanControlService(IBiosService biosService, BoardConfiguration boardConfig, IEcService ecService)
     {
@@ -270,6 +285,66 @@ public class FanControlService : IFanControlService, IDisposable
             byte ecMapped = MapPercentToFanLevel(percent, _boardConfig.MaxFanLevel);
             await _ecService.WriteByteAsync(0x34, ecMapped, cancellationToken);
             await _ecService.WriteByteAsync(0x35, ecMapped, cancellationToken);
+            return true;
+        }
+        catch { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Sets CPU and GPU fans to independent speeds using the V2-capable WMI command.
+    /// Falls back to unified SetFanLevelAsync on single-fan or WMI-only models.
+    /// </summary>
+    public async Task<bool> SetFanLevelIndependentAsync(int cpuPercent, int gpuPercent, CancellationToken cancellationToken = default)
+    {
+        cpuPercent = Math.Clamp(cpuPercent, 0, 100);
+        gpuPercent = Math.Clamp(gpuPercent, 0, 100);
+
+        // Single-fan models or models without EC support: use unified level
+        if (_boardConfig.FanCount <= 1 || !_boardConfig.SupportsFanControlEc)
+        {
+            int unified = Math.Max(cpuPercent, gpuPercent);
+            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync → unified fallback ({unified}%) [FanCount={_boardConfig.FanCount}, EC={_boardConfig.SupportsFanControlEc}]");
+            return await SetFanLevelAsync(unified, cancellationToken);
+        }
+
+        // Disable Max Fan mode first to prevent conflicts
+        await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
+
+        byte bCpu = MapPercentToFanLevel(cpuPercent, _boardConfig.MaxFanLevel);
+        byte bGpu = MapPercentToFanLevel(gpuPercent, _boardConfig.MaxFanLevel);
+
+        bool wmiSuccess = false;
+        for (int i = 0; i < 3 && !wmiSuccess; i++)
+        {
+            try
+            {
+                // CMD_FAN_SET_LEVEL (0x2E): byte[0]=CPU fan level, byte[1]=GPU fan level
+                var (ret, _) = await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { bCpu, bGpu, 0x00, 0x00 }, 0, cancellationToken);
+                if (ret == 0) wmiSuccess = true;
+            }
+            catch { }
+            if (!wmiSuccess) await Task.Delay(100, cancellationToken);
+        }
+
+        if (wmiSuccess)
+        {
+            _lastManualPercent = Math.Max(cpuPercent, gpuPercent);
+            _isManualControlActive = true;
+            StartCountdownTimer();
+            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync: CPU={cpuPercent}% (L={bCpu}), GPU={gpuPercent}% (L={bGpu}) ✓");
+            return true;
+        }
+
+        // EC fallback: write CPU and GPU registers separately
+        try
+        {
+            await _ecService.WriteByteAsync(0x34, bCpu, cancellationToken); // CPU fan
+            await _ecService.WriteByteAsync(0x35, bGpu, cancellationToken); // GPU fan
+            _lastManualPercent = Math.Max(cpuPercent, gpuPercent);
+            _isManualControlActive = true;
+            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync EC fallback: CPU=0x{bCpu:X2}, GPU=0x{bGpu:X2} ✓");
             return true;
         }
         catch { }

@@ -176,3 +176,5 @@ C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\obj\Debug\net8.0-window
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\obj\Debug\net8.0-windows\win-x64\OmenFlow.Worker.pdb
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\obj\Debug\net8.0-windows\win-x64\OmenFlow.Worker.genruntimeconfig.cache
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\obj\Debug\net8.0-windows\win-x64\ref\OmenFlow.Worker.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\bin\Debug\net8.0-windows\win-x64\Microsoft.Win32.SystemEvents.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Worker\obj\Debug\net8.0-windows\win-x64\OmenFlow.Worker.sourcelink.json

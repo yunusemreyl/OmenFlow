@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "GSYpWgo25Dk=",
+  "dgSpecHash": "Zb0Y/h5fNiA=",
   "success": true,
   "projectFilePath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
   "expectedPackageFiles": [
@@ -15,6 +15,7 @@
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure\\3.0.0\\microsoft.management.infrastructure.3.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.unix\\3.0.0\\microsoft.management.infrastructure.runtime.unix.3.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.win\\3.0.0\\microsoft.management.infrastructure.runtime.win.3.0.0.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.codedom\\10.0.9\\system.codedom.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.configuration.configurationmanager\\10.0.9\\system.configuration.configurationmanager.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.9\\system.diagnostics.diagnosticsource.10.0.9.nupkg.sha512",

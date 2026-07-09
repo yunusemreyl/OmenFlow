@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OmenFlow.Worker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+478b421d6895606a9ba2ae8cac817e3281107550")]
 [assembly: System.Reflection.AssemblyProductAttribute("OmenFlow.Worker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OmenFlow.Worker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

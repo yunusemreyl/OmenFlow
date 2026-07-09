@@ -50,3 +50,4 @@ C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\Omen
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\refint\OmenFlow.Hardware.dll
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.pdb
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\ref\OmenFlow.Hardware.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Hardware\obj\Debug\net8.0\OmenFlow.Hardware.sourcelink.json

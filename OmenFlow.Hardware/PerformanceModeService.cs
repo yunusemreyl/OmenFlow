@@ -33,6 +33,14 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
     private readonly object _timerLock = new();
     private const int CountdownExtIntervalMs = 30_000; // 30 seconds
 
+    /// <summary>
+    /// When false (default), switching performance modes does NOT write fan policy or GPU power.
+    /// Users who manage fan curves or presets manually are unaffected by profile switches.
+    /// Set to true to restore legacy coupled behavior where each profile also sets a fan/GPU policy.
+    /// Mirrors OmenCore's LinkFanToPerformanceMode.
+    /// </summary>
+    public bool LinkFanToPerformanceMode { get; set; } = true; // Default true preserves existing OmenFlow behavior
+
     public PerformanceModeService(IBiosService biosService, IEcService ecService, BoardConfiguration boardConfig, GpuControlService gpuControlService)
     {
         _biosService = biosService;
@@ -76,6 +84,14 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
     public async Task<bool> SetPerformanceModeAsync(ThermalProfile mode, CancellationToken ct = default)
     {
         Console.WriteLine($"[PerformanceMode] Setting mode: {mode} (0x{(byte)mode:X2})");
+
+        // Safety gate: never write fan policies on desktop units
+        if (_boardConfig.IsDesktop)
+        {
+            Console.WriteLine("[PerformanceMode] ✗ Desktop unit detected — skipping EC/WMI thermal policy writes.");
+            _currentMode = mode;
+            return true;
+        }
 
         bool success = false;
 
@@ -134,53 +150,69 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
             Console.WriteLine($"[PerformanceMode] Failed to set Windows Power Plan: {ex.Message}");
         }
 
-        // Apply GPU Dynamic Boost Coupling (OmenCore behavior)
-        GpuPowerLevel gpuPower = mode switch
+        // Apply GPU Dynamic Boost Coupling (OmenCore behavior) — only when linked
+        if (LinkFanToPerformanceMode)
         {
-            ThermalProfile.Performance => GpuPowerLevel.MaxPower,
-            ThermalProfile.Quiet => GpuPowerLevel.BasePower,
-            _ => GpuPowerLevel.ExtraPower
-        };
-        await _gpuControlService.SetGpuPowerAsync(gpuPower, ct);
-        Console.WriteLine($"[PerformanceMode] GPU Dynamic Boost coupled to: {gpuPower}");
+            GpuPowerLevel gpuPower = mode switch
+            {
+                ThermalProfile.Performance => GpuPowerLevel.MaxPower,
+                ThermalProfile.Quiet => GpuPowerLevel.BasePower,
+                _ => GpuPowerLevel.ExtraPower
+            };
+            await _gpuControlService.SetGpuPowerAsync(gpuPower, ct);
+            Console.WriteLine($"[PerformanceMode] GPU Dynamic Boost coupled to: {gpuPower}");
+        }
+        else
+        {
+            Console.WriteLine("[PerformanceMode] GPU power not changed — LinkFanToPerformanceMode is off.");
+        }
 
         // Step 4: EC mode byte fallback & Fan Profile Kick Down (0x95 & 0xCE)
-        byte ecFanMode = mode switch
+        // Only runs when fan policy is linked AND the model supports direct EC writes.
+        if (LinkFanToPerformanceMode && _boardConfig.SupportsFanControlEc)
         {
-            ThermalProfile.Default     => 0x00,
-            ThermalProfile.Performance => 0x01,
-            ThermalProfile.Quiet       => 0x02,
-            _                          => 0x00
-        };
-        try
-        {
-            await _ecService.WriteByteAsync(0x95, ecFanMode, ct);
-            Console.WriteLine($"[PerformanceMode] EC 0x95 (Fan Profile) ← 0x{ecFanMode:X2} ✓");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[PerformanceMode] EC 0x95 write failed: {ex.Message}");
-        }
-
-        if (_boardConfig.UseSimplifiedPerformanceMode)
-        {
-            byte ecValue = mode switch
+            byte ecFanMode = mode switch
             {
-                ThermalProfile.Quiet       => 0x00,
-                ThermalProfile.Default     => 0x01,
-                ThermalProfile.Performance => 0x02,
-                _                          => 0x01
+                ThermalProfile.Default     => 0x00,
+                ThermalProfile.Performance => 0x01,
+                ThermalProfile.Quiet       => 0x02,
+                _                          => 0x00
             };
             try
             {
-                await _ecService.WriteByteAsync(0xCE, ecValue, ct);
-                Console.WriteLine($"[PerformanceMode] EC 0xCE ← 0x{ecValue:X2} ✓");
+                await _ecService.WriteByteAsync(0x95, ecFanMode, ct);
+                Console.WriteLine($"[PerformanceMode] EC 0x95 (Fan Profile) ← 0x{ecFanMode:X2} ✓");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PerformanceMode] EC 0xCE write failed: {ex.Message}");
+                Console.WriteLine($"[PerformanceMode] EC 0x95 write failed: {ex.Message}");
+            }
+
+            if (_boardConfig.UseSimplifiedPerformanceMode)
+            {
+                byte ecValue = mode switch
+                {
+                    ThermalProfile.Quiet       => 0x00,
+                    ThermalProfile.Default     => 0x01,
+                    ThermalProfile.Performance => 0x02,
+                    _                          => 0x01
+                };
+                try
+                {
+                    await _ecService.WriteByteAsync(0xCE, ecValue, ct);
+                    Console.WriteLine($"[PerformanceMode] EC 0xCE ← 0x{ecValue:X2} ✓");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[PerformanceMode] EC 0xCE write failed: {ex.Message}");
+                }
             }
         }
+        else
+        {
+            Console.WriteLine($"[PerformanceMode] EC fan policy skipped (LinkedFan={LinkFanToPerformanceMode}, SupportsEC={_boardConfig.SupportsFanControlEc}).");
+        }
+
 
         // Step 5: Countdown Extension
         // Default mode: stop the timer (BIOS auto-manages)

@@ -32,3 +32,4 @@ C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net8.0\OmenFlow
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net8.0\refint\OmenFlow.Core.dll
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net8.0\OmenFlow.Core.pdb
 C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net8.0\ref\OmenFlow.Core.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net8.0\OmenFlow.Core.sourcelink.json
