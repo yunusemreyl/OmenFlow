@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.UI.Notifications;
 using Windows.Data.Xml.Dom;
 using OmenFlow_App.SubWindows;
+using OmenFlow_App.Helpers;
 
 namespace OmenFlow_App.Pages;
 
@@ -38,8 +39,8 @@ public sealed partial class PerformancePage : Page
             if (GpuPowerText != null) GpuPowerText.Text = $"{e.GpuPower:F1} W";
             if (CpuUsageText != null) CpuUsageText.Text = $"%{e.CpuLoad:F0}";
             if (GpuUsageText != null) GpuUsageText.Text = $"%{e.GpuLoad:F0}";
-            if (CpuFanText != null) CpuFanText.Text = $"{e.CpuFanRpm} RPM";
-            if (GpuFanText != null) GpuFanText.Text = $"{e.GpuFanRpm} RPM";
+            if (CpuFanText != null) CpuFanText.Text = TelemetryDisplayHelper.FormatFanRpm(e.CpuFanRpm, e.CpuFanState);
+            if (GpuFanText != null) GpuFanText.Text = TelemetryDisplayHelper.FormatFanRpm(e.GpuFanRpm, e.GpuFanState);
 
             // Sync Performance Profile
             if (BtnPerfQuiet != null) BtnPerfQuiet.IsChecked = (e.ActiveProfile == 0x50);
@@ -93,6 +94,27 @@ public sealed partial class PerformancePage : Page
         await App.IpcClient.SendCommandAsync("ApplyCurve", curvePayload);
     }
 
+    private async Task ShowCommandFailedDialogAsync(string title, string message)
+    {
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "Tamam",
+                XamlRoot = this.XamlRoot,
+                RequestedTheme = ElementTheme.Default
+            };
+
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
+        }
+    }
+
     private void OpenCustomFanWindow()
     {
         if (_customFanWindow == null)
@@ -107,6 +129,10 @@ public sealed partial class PerformancePage : Page
     private async void PerfMode_Click(object sender, RoutedEventArgs e)
     {
         var btn = sender as ToggleButton;
+        bool prevQuiet = BtnPerfQuiet.IsChecked == true;
+        bool prevDefault = BtnPerfDefault.IsChecked == true;
+        bool prevPerf = BtnPerfPerf.IsChecked == true;
+
         BtnPerfQuiet.IsChecked = (btn == BtnPerfQuiet);
         BtnPerfDefault.IsChecked = (btn == BtnPerfDefault);
         BtnPerfPerf.IsChecked = (btn == BtnPerfPerf);
@@ -118,7 +144,16 @@ public sealed partial class PerformancePage : Page
 
         if (App.IpcClient != null)
         {
-            await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
+            bool sent = await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
+            if (!sent)
+            {
+                BtnPerfQuiet.IsChecked = prevQuiet;
+                BtnPerfDefault.IsChecked = prevDefault;
+                BtnPerfPerf.IsChecked = prevPerf;
+                await ShowCommandFailedDialogAsync("Profil uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
+                return;
+            }
+
             ShowPerformanceToastNotification(modeName);
         }
     }
@@ -147,6 +182,11 @@ public sealed partial class PerformancePage : Page
     private async void FanMode_Click(object sender, RoutedEventArgs e)
     {
         var btn = sender as ToggleButton;
+        bool prevAuto = BtnFanAuto.IsChecked == true;
+        bool prevOmenFlow = BtnFanOmenFlow.IsChecked == true;
+        bool prevMax = BtnFanMax.IsChecked == true;
+        bool prevManual = BtnFanManual.IsChecked == true;
+
         SetFanMode(btn);
         
         if (btn == BtnFanManual)
@@ -160,12 +200,32 @@ public sealed partial class PerformancePage : Page
         else if (btn == BtnFanMax)
         {
             if (App.IpcClient != null)
-                await App.IpcClient.SendCommandAsync("SetMaxFan");
+            {
+                bool sent = await App.IpcClient.SendCommandAsync("SetMaxFan");
+                if (!sent)
+                {
+                    BtnFanAuto.IsChecked = prevAuto;
+                    BtnFanOmenFlow.IsChecked = prevOmenFlow;
+                    BtnFanMax.IsChecked = prevMax;
+                    BtnFanManual.IsChecked = prevManual;
+                    await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
+                }
+            }
         }
         else // Auto
         {
             if (App.IpcClient != null)
-                await App.IpcClient.SendCommandAsync("SetAuto");
+            {
+                bool sent = await App.IpcClient.SendCommandAsync("SetAuto");
+                if (!sent)
+                {
+                    BtnFanAuto.IsChecked = prevAuto;
+                    BtnFanOmenFlow.IsChecked = prevOmenFlow;
+                    BtnFanMax.IsChecked = prevMax;
+                    BtnFanManual.IsChecked = prevManual;
+                    await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
+                }
+            }
         }
     }
 
@@ -181,6 +241,8 @@ public sealed partial class PerformancePage : Page
     private async void MuxMode_Click(object sender, RoutedEventArgs e)
     {
         var btn = sender as ToggleButton;
+        bool prevHybrid = BtnMuxHybrid.IsChecked == true;
+        bool prevDiscrete = BtnMuxDiscrete.IsChecked == true;
         int oldMode = (btn == BtnMuxDiscrete) ? 0 : 1; // Discrete tıklandıysa eski mod Hybrid(0), Hybrid tıklandıysa eski mod Discrete(1)
         int newMode = (btn == BtnMuxDiscrete) ? 1 : 0; // Discrete=1, Hybrid=0
 
@@ -189,7 +251,15 @@ public sealed partial class PerformancePage : Page
 
         if (App.IpcClient != null)
         {
-            await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
+            bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
+            if (!sent)
+            {
+                BtnMuxHybrid.IsChecked = prevHybrid;
+                BtnMuxDiscrete.IsChecked = prevDiscrete;
+                await ShowCommandFailedDialogAsync("MUX değiştirilemedi", "Worker servisine erişilemedi ya da komut reddedildi.");
+                return;
+            }
+
             ShowMuxToastNotification(oldMode, newMode);
         }
     }

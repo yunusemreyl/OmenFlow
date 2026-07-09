@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using OmenFlow.Core.Models;
 
 namespace OmenFlow_App.Helpers;
 
@@ -20,6 +21,8 @@ public class TelemetryData
     public float RamTotalGb { get; set; }
     public int CpuFanRpm { get; set; }
     public int GpuFanRpm { get; set; }
+    public FanRpmState CpuFanState { get; set; } = FanRpmState.Unknown;
+    public FanRpmState GpuFanState { get; set; } = FanRpmState.Unknown;
     public int GpuMode { get; set; }
     public int GpuPowerLevel { get; set; }
     public int ActiveProfile { get; set; }
@@ -135,7 +138,7 @@ public class IpcClient
         }
     }
 
-    public async Task SendCommandAsync(string command, object? value = null)
+    public async Task<bool> SendCommandAsync(string command, object? value = null)
     {
         try
         {
@@ -152,10 +155,12 @@ public class IpcClient
             
             using var response = await _httpClient.PostAsync("http://localhost:50312/api/command", content);
             response.EnsureSuccessStatusCode();
+            return true;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[IpcClient] Error sending command '{command}': {ex.Message}");
+            return false;
         }
     }
 

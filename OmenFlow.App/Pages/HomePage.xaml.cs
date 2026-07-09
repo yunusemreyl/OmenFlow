@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml;
 using System;
+using OmenFlow_App.Helpers;
 
 namespace OmenFlow_App.Pages;
 
@@ -29,8 +30,8 @@ public sealed partial class HomePage : Page
             GpuTempText.Text = $"{e.GpuTemp:F0}°C";
             CpuUsageText.Text = $"%{e.CpuLoad:F0}";
             GpuUsageText.Text = $"%{e.GpuLoad:F0}";
-            CpuFanText.Text = $"{e.CpuTemp:F0}°C - {e.CpuFanRpm} RPM";
-            GpuFanText.Text = $"{e.GpuTemp:F0}°C - {e.GpuFanRpm} RPM";
+            CpuFanText.Text = $"{e.CpuTemp:F0}°C - {TelemetryDisplayHelper.FormatFanRpm(e.CpuFanRpm, e.CpuFanState)}";
+            GpuFanText.Text = $"{e.GpuTemp:F0}°C - {TelemetryDisplayHelper.FormatFanRpm(e.GpuFanRpm, e.GpuFanState)}";
 
             _isSyncing = true;
             if (FanModeComboBox != null)

@@ -167,17 +167,20 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
             return;
         }
 
-        // WMI üzerinden CPU sıcaklığını oku (0x23 komutu)
+        // Hardware WMI readback is the authoritative source; telemetry is used to widen
+        // the control signal when the GPU is hotter than the CPU.
         int cpuTempC = await _fanControlService.GetCpuTemperatureAsync(cancellationToken);
-        
-        // Sentinel (0) döndüyse atla
-        if (cpuTempC == 0) return;
-
-        // OmenCore yaklaşımı: max(CPU, GPU) sıcaklığını kullan
-        // GPU sıcaklığı LHM telemetriden gelir; FanCurveHostedService bağımsız olduğu için
-        // CPU sıcaklığını baz alıyoruz — bu çoğu laptop senaryosunda yeterli.
-        // (GPU'nun CPU'dan daha sıcak olduğu durumlarda PerformancePage OmenFlow preset kullanmalı)
         int maxTemp = cpuTempC;
+
+        var telemetry = TelemetryProvider?.Invoke();
+        if (telemetry != null)
+        {
+            maxTemp = Math.Max(maxTemp, (int)Math.Round(telemetry.CpuTemp));
+            maxTemp = Math.Max(maxTemp, (int)Math.Round(telemetry.GpuTemp));
+        }
+
+        // Sentinel (0) döndüyse atla
+        if (maxTemp == 0) return;
 
         byte targetFanLevel = CalculateTargetSpeed(curve, maxTemp);
 

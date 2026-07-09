@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
+      "projectUniqueName": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
       "projectName": "OmenFlow.Core",
-      "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
+      "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
       "packagesPath": "C:\\Users\\yeyil\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\obj\\",
+      "outputPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

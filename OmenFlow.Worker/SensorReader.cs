@@ -9,9 +9,18 @@ namespace OmenFlow.Worker;
 
 public class SensorReader : IDisposable
 {
+    private const int FanTransitionHoldReads = 3;
+    private const float FanUnavailableTemperatureC = 50f;
+
     private readonly Computer _computer;
     private readonly UpdateVisitor _updateVisitor;
     private bool _hardwareLogged = false; // Log hardware list only once
+    private int _cpuFanZeroStreak = 0;
+    private int _gpuFanZeroStreak = 0;
+    private int _cpuFanLastNonZeroRpm = 0;
+    private int _gpuFanLastNonZeroRpm = 0;
+    private FanRpmState _cpuFanState = FanRpmState.Unknown;
+    private FanRpmState _gpuFanState = FanRpmState.Unknown;
 
     public SensorReader()
     {
@@ -121,7 +130,10 @@ public class SensorReader : IDisposable
                 }
             }
 
-            var data = new WorkerTelemetry(cpuTemp, gpuTemp, cpuLoad, gpuLoad, cpuPower, gpuPower, ramUsed, ramTotal, cpuFanRpm, gpuFanRpm);
+            cpuFanRpm = ResolveFanRpm(cpuFanRpm, cpuTemp, ref _cpuFanZeroStreak, ref _cpuFanLastNonZeroRpm, ref _cpuFanState);
+            gpuFanRpm = ResolveFanRpm(gpuFanRpm, gpuTemp, ref _gpuFanZeroStreak, ref _gpuFanLastNonZeroRpm, ref _gpuFanState);
+
+            var data = new WorkerTelemetry(cpuTemp, gpuTemp, cpuLoad, gpuLoad, cpuPower, gpuPower, ramUsed, ramTotal, cpuFanRpm, gpuFanRpm, _cpuFanState, _gpuFanState);
             _hardwareLogged = true; // Suppress repeated hardware enumeration logs
             Console.WriteLine($"READ SENSORS: {data}");
             return data;
@@ -129,8 +141,43 @@ public class SensorReader : IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"SENSOR READ ERROR: {ex}");
-            return new WorkerTelemetry(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0, 0);
+            return new WorkerTelemetry(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0, 0, FanRpmState.Unknown, FanRpmState.Unknown);
         }
+    }
+
+    private static int ResolveFanRpm(int currentRpm, float temperatureC, ref int zeroStreak, ref int lastNonZeroRpm, ref FanRpmState state)
+    {
+        if (currentRpm > 0)
+        {
+            zeroStreak = 0;
+            lastNonZeroRpm = currentRpm;
+            state = FanRpmState.Stable;
+            return currentRpm;
+        }
+
+        if (temperatureC < FanUnavailableTemperatureC)
+        {
+            zeroStreak = 0;
+            state = FanRpmState.IdleStopped;
+            return 0;
+        }
+
+        if (lastNonZeroRpm > 0 && zeroStreak < FanTransitionHoldReads)
+        {
+            zeroStreak++;
+            state = FanRpmState.TransitionHold;
+            return lastNonZeroRpm;
+        }
+
+        if (lastNonZeroRpm > 0)
+        {
+            zeroStreak++;
+            state = FanRpmState.Unavailable;
+            return 0;
+        }
+
+        state = FanRpmState.Unavailable;
+        return 0;
     }
 
     public void Dispose()

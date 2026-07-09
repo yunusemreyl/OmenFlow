@@ -26,6 +26,7 @@ class Program
 {
     static int s_activeFanMode = 0; // 0 = Auto, 1 = OmenFlow, 2 = Max Fan, 3 = Custom
     const string FanModeCacheFile = @"C:\ProgramData\OmenFlow\fan_mode_cache.txt";
+    const string FanCurveCacheFile = @"C:\ProgramData\OmenFlow\fan_curve_cache.json";
 
     static bool s_thermalSafetyEnabled = true;
     const string ThermalSafetyCacheFile = @"C:\ProgramData\OmenFlow\thermal_safety_cache.txt";
@@ -52,6 +53,122 @@ class Program
             System.IO.File.WriteAllText(ThermalSafetyCacheFile, enabled.ToString());
         }
         catch { }
+    }
+
+    private sealed record FanCurveCacheDto(string Kind, FanTarget Target, List<FanCurvePoint> Points);
+
+    static void SaveFanCurveCache(FanCurve? curve, string kind)
+    {
+        try
+        {
+            if (curve == null)
+            {
+                if (System.IO.File.Exists(FanCurveCacheFile))
+                {
+                    System.IO.File.Delete(FanCurveCacheFile);
+                }
+                return;
+            }
+
+            var dir = System.IO.Path.GetDirectoryName(FanCurveCacheFile);
+            if (dir != null) System.IO.Directory.CreateDirectory(dir);
+
+            var dto = new FanCurveCacheDto(kind, curve.Target, curve.Points.ToList());
+            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
+            System.IO.File.WriteAllText(FanCurveCacheFile, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Startup] Failed to save fan curve cache: {ex.Message}");
+        }
+    }
+
+    static FanCurve? LoadFanCurveCache()
+    {
+        try
+        {
+            if (!System.IO.File.Exists(FanCurveCacheFile))
+            {
+                return null;
+            }
+
+            var json = System.IO.File.ReadAllText(FanCurveCacheFile);
+            var dto = JsonSerializer.Deserialize<FanCurveCacheDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (dto == null || dto.Points.Count == 0)
+            {
+                return null;
+            }
+
+            return new FanCurve(dto.Target, dto.Points);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Startup] Failed to load fan curve cache: {ex.Message}");
+            return null;
+        }
+    }
+
+    static FanCurve BuildOmenFlowPresetCurve()
+    {
+        return new FanCurve(FanTarget.Both, new List<FanCurvePoint>
+        {
+            new FanCurvePoint(50, 0),
+            new FanCurvePoint(60, 25),
+            new FanCurvePoint(70, 40),
+            new FanCurvePoint(80, 65),
+            new FanCurvePoint(85, 80),
+            new FanCurvePoint(90, 90),
+            new FanCurvePoint(95, 100),
+        });
+    }
+
+    static async Task RestoreLastFanModeAsync(FanCurveHostedService fanCurveService, FanControlService fanControlService)
+    {
+        try
+        {
+            FanCurve? cachedCurve = LoadFanCurveCache();
+
+            switch (s_activeFanMode)
+            {
+                case 2:
+                    fanCurveService.SetMaxModeActive(true);
+                    await fanCurveService.ApplyCustomCurveAsync(null);
+                    await fanControlService.SetMaxFanAsync(true);
+                    Console.WriteLine("[Startup] Restored Max Fan mode from cache.");
+                    break;
+                case 1:
+                    fanCurveService.SetMaxModeActive(false);
+                    await fanCurveService.ApplyCustomCurveAsync(cachedCurve ?? BuildOmenFlowPresetCurve());
+                    Console.WriteLine(cachedCurve != null
+                        ? "[Startup] Restored cached fan curve from disk."
+                        : "[Startup] Restored OmenFlow fan curve from cache.");
+                    break;
+                case 3:
+                    fanCurveService.SetMaxModeActive(false);
+                    if (cachedCurve != null)
+                    {
+                        await fanCurveService.ApplyCustomCurveAsync(cachedCurve);
+                        Console.WriteLine("[Startup] Restored custom fan curve from disk.");
+                    }
+                    else
+                    {
+                        await fanCurveService.ApplyCustomCurveAsync(null);
+                        await fanControlService.RestoreAutoControlAsync();
+                        Console.WriteLine("[Startup] Custom fan mode was cached but curve data is missing; restored BIOS auto control.");
+                    }
+                    break;
+                default:
+                    fanCurveService.SetMaxModeActive(false);
+                    await fanCurveService.ApplyCustomCurveAsync(null);
+                    await fanControlService.RestoreAutoControlAsync();
+                    Console.WriteLine("[Startup] Restored Auto fan mode from cache.");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Startup] Failed to restore fan mode: {ex.Message}");
+        }
     }
 
     static async Task Main(string[] args)
@@ -120,6 +237,15 @@ class Program
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
             _ = fanCurveService.StartAsync(CancellationToken.None);
 
+            await RestoreLastFanModeAsync(fanCurveService, fanControlService);
+
+            var currentMode = await perfModeService.GetCurrentModeAsync();
+            if (currentMode != ThermalProfile.Default)
+            {
+                await perfModeService.SetPerformanceModeAsync(currentMode);
+                Console.WriteLine($"[Startup] Reinforced current performance mode: {currentMode}");
+            }
+
             Console.WriteLine("Hardware Services initialized. Setting up HTTP Endpoints...");
 
             app.MapGet("/api/telemetry", async () =>
@@ -163,6 +289,7 @@ class Program
                             int level = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 100;
                             Console.WriteLine($"[Command] SetFanLevel: {level}%");
                             SaveFanMode(3); // Custom
+                            SaveFanCurveCache(null, "custom");
                             fanCurveService.SetMaxModeActive(false);
                             await fanCurveService.ApplyCustomCurveAsync(null);
                             await fanControlService.SetFanLevelAsync(level);
@@ -172,6 +299,7 @@ class Program
                         {
                             Console.WriteLine("[Command] SetAuto");
                             SaveFanMode(0); // Auto
+                            SaveFanCurveCache(null, "auto");
                             fanCurveService.SetMaxModeActive(false);
                             await fanCurveService.ApplyCustomCurveAsync(null);
                             await fanControlService.RestoreAutoControlAsync();
@@ -186,6 +314,7 @@ class Program
                             }
                             Console.WriteLine($"[Command] SetMaxFan: {enabled}");
                             SaveFanMode(enabled ? 2 : 0); // Max Fan
+                            SaveFanCurveCache(null, "max");
                             fanCurveService.SetMaxModeActive(enabled);
                             await fanCurveService.ApplyCustomCurveAsync(null);
                             await fanControlService.SetMaxFanAsync(enabled);
@@ -203,6 +332,7 @@ class Program
                             {
                                 SaveFanMode(3); // Custom
                             }
+                            SaveFanCurveCache(curve, curve != null && curve.Points.Count == 7 && curve.Points[0].TemperatureCelsius == 50 && curve.Points[0].FanSpeedPercent == 0 ? "omenflow_preset" : "custom");
                             fanCurveService.SetMaxModeActive(false);
                             await fanCurveService.ApplyCustomCurveAsync(curve);
                             break;
@@ -217,6 +347,7 @@ class Program
                             if (preset.IsMaxMode)
                             {
                                 SaveFanMode(2);
+                                SaveFanCurveCache(null, "max");
                                 fanCurveService.SetMaxModeActive(true);
                                 await fanCurveService.ApplyCustomCurveAsync(null);
                                 await fanControlService.SetMaxFanAsync(true);
@@ -224,12 +355,14 @@ class Program
                             else if (preset.Curve != null)
                             {
                                 SaveFanMode(1);
+                                SaveFanCurveCache(preset.Curve, preset.Id);
                                 fanCurveService.SetMaxModeActive(false);
                                 await fanCurveService.ApplyCustomCurveAsync(preset.Curve);
                             }
                             else
                             {
                                 SaveFanMode(0);
+                                SaveFanCurveCache(null, "auto");
                                 fanCurveService.SetMaxModeActive(false);
                                 await fanCurveService.ApplyCustomCurveAsync(null);
                                 await fanControlService.RestoreAutoControlAsync();

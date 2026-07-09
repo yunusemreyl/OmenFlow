@@ -35,6 +35,8 @@ public sealed partial class MainWindow : Window
         int y = workArea.Y + workArea.Height - height - (int)(12 * dpiScale);
         AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
 
+        NavFrame.Navigate(typeof(PerformancePage));
+
         if (App.IpcClient != null)
         {
             App.IpcClient.Connected += (s, e) => DispatcherQueue.TryEnqueue(() => BackendConnectionInfoBar.IsOpen = false);

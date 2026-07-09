@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3aq7O2rXroc=",
+  "dgSpecHash": "I2+lcDmh0bI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
+  "projectFilePath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\yeyil\\.nuget\\packages\\blacksharp.core\\1.0.7\\blacksharp.core.1.0.7.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\diskinfotoolkit\\1.1.2\\diskinfotoolkit.1.1.2.nupkg.sha512",

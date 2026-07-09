@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {}
+    "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {}
   },
   "projects": {
-    "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
+    "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
+        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
         "projectName": "OmenFlow.Core",
-        "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
+        "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj",
         "packagesPath": "C:\\Users\\yeyil\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\obj\\",
+        "outputPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -71,14 +71,14 @@
         }
       }
     },
-    "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
+    "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
+        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
         "projectName": "OmenFlow.Hardware",
-        "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
+        "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj",
         "packagesPath": "C:\\Users\\yeyil\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\obj\\",
+        "outputPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -100,8 +100,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
-                "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
+              "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
+                "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
               }
             }
           }
@@ -160,14 +160,14 @@
         }
       }
     },
-    "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {
+    "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
+        "projectUniqueName": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
         "projectName": "OmenFlow.Worker",
-        "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
+        "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\OmenFlow.Worker.csproj",
         "packagesPath": "C:\\Users\\yeyil\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Worker\\obj\\",
+        "outputPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Worker\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -189,11 +189,11 @@
             "framework": "net8.0-windows7.0",
             "targetAlias": "net8.0-windows",
             "projectReferences": {
-              "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
-                "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
+              "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj": {
+                "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Core\\OmenFlow.Core.csproj"
               },
-              "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
-                "projectPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj"
+              "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj": {
+                "projectPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.Hardware\\OmenFlow.Hardware.csproj"
               }
             }
           }

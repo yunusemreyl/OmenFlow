@@ -164,6 +164,7 @@ public sealed partial class CustomFanWindow : Window
     private async void ApplyCurveButton_Click(object sender, RoutedEventArgs e)
     {
         var points = GetCustomCurveFromCanvas();
+        bool sent = false;
         if (App.IpcClient != null)
         {
             var curvePayload = new
@@ -171,14 +172,18 @@ public sealed partial class CustomFanWindow : Window
                 Target = 2, // Both (CPU + GPU)
                 Points = points
             };
-            await App.IpcClient.SendCommandAsync("ApplyCurve", curvePayload);
+            sent = await App.IpcClient.SendCommandAsync("ApplyCurve", curvePayload);
         }
 
-        if (ApplyCurveButton != null)
+        if (sent && ApplyCurveButton != null)
         {
             ApplyCurveButton.Content = "✓ Uygulandı!";
             await Task.Delay(500);
             this.Close();
+        }
+        else if (!sent && ApplyCurveButton != null)
+        {
+            ApplyCurveButton.Content = "Uygulanamadı";
         }
     }
 }
