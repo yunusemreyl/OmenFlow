@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Interfaces;
@@ -68,7 +68,7 @@ public class TelemetryService : ITelemetryService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Telemetry error: {ex}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[ERROR] Telemetry error: {ex}");
         }
     }
 
@@ -82,3 +82,4 @@ public class TelemetryService : ITelemetryService, IDisposable
         _timer?.Dispose();
     }
 }
+

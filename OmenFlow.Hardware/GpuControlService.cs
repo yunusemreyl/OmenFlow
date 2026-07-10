@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Models;
@@ -22,45 +22,60 @@ public class GpuControlService
             return _pendingGpuMode.Value;
         }
 
-        // Try empty payload first (standard Omen WMI read for 0x52)
-        var (ret, data) = await _biosService.SendCommandAsync(0x00002, 0x52, Array.Empty<byte>(), 4, ct);
+        // Primary detection: Nvidia Advanced Optimus Registry Key
+        try
+        {
+            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NvHybrid\Persistence\ACE", false))
+            {
+                if (key != null)
+                {
+                    object value = key.GetValue("InternalMuxState");
+                    if (value != null)
+                    {
+                        int muxState = (int)value;
+                        if (muxState == 2)
+                        {
+                            return GpuMode.Discrete;
+                        }
+                        else if (muxState == 1)
+                        {
+                            return GpuMode.Hybrid; // OmenMon's Optimus = 1, but we use Hybrid as the general enum for software switching
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync Registry check error: {ex.Message}");
+        }
+
+        // Fallback to BIOS WMI if Registry fails or does not exist
+        var payload = Array.Empty<byte>();
+        var (ret, data) = await _biosService.SendCommandAsync(0x00002, 0x52, payload, 4, ct);
+        
         if (ret != 0)
         {
-            var (ret2, data2) = await _biosService.SendCommandAsync(0x00001, 0x52, Array.Empty<byte>(), 4, ct);
+            var (ret2, data2) = await _biosService.SendCommandAsync(0x00001, 0x52, payload, 4, ct);
             ret = ret2;
             data = data2;
         }
 
-        // Fallback to direction byte payload
-        if (ret != 0)
-        {
-            var payload = new byte[] { 0x00, 0x04, 0x00, 0x00 };
-            var (ret3, data3) = await _biosService.SendCommandAsync(0x00002, 0x52, payload, 4, ct);
-            ret = ret3;
-            data = data3;
-            if (ret != 0)
-            {
-                var (ret4, data4) = await _biosService.SendCommandAsync(0x00001, 0x52, payload, 4, ct);
-                ret = ret4;
-                data = data4;
-            }
-        }
-
         if (ret == 0 && data != null && data.Length >= 1)
         {
-            Console.WriteLine($"[GpuControl] GetGpuModeAsync ret=0, data[0]=0x{data[0]:X2}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync WMI BIOS ret=0, data[0]=0x{data[0]:X2}");
             if (data[0] == 0x01) return GpuMode.Discrete;
             if (data[0] == 0x00 || data[0] == 0x02) return GpuMode.Hybrid;
             return (GpuMode)data[0];
         }
 
-        Console.WriteLine($"[GpuControl] GetGpuModeAsync failed with ret={ret}.");
+        OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync all methods failed, returning Hybrid.");
         return GpuMode.Hybrid;
     }
 
     public async Task<(bool success, bool rebootRequired)> SetGpuModeAsync(GpuMode mode, CancellationToken ct = default)
     {
-        _pendingGpuMode = mode == GpuMode.Optimus ? GpuMode.Hybrid : mode; // Arayüzdeki butonun geri atmaması için pending modunu sakla
+        _pendingGpuMode = mode == GpuMode.Optimus ? GpuMode.Hybrid : mode; // ArayÃ¼zdeki butonun geri atmamasÄ± iÃ§in pending modunu sakla
         
         byte modeByte = (byte)(mode == GpuMode.Optimus ? GpuMode.Hybrid : mode);
         var payload = new byte[] { modeByte, 0x00, 0x00, 0x00 };
@@ -186,3 +201,4 @@ public class GpuControlService
         return s_cachedGpuMaxTgp.Value;
     }
 }
+

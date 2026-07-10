@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Models;
@@ -101,15 +101,16 @@ public class KeyboardLightingService
             // else all 0s (black)
 
             var (ret, _) = await _biosService.SendCommandAsync(0x20009, 0x03, payload, 0, ct);
-            Console.WriteLine($"[KeyboardLighting] SetLightingAsync (FourZoneRgb) ret={ret}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[KeyboardLighting] SetLightingAsync (FourZoneRgb) ret={ret}");
             return ret == 0;
         }
         else // Standard
         {
             byte cmdByte = (byte)(backlightOn ? 0xE4 : 0x64);
             var (ret, _) = await _biosService.SendCommandAsync(0x20009, 0x05, new byte[] { cmdByte, 0x00, 0x00, 0x00 }, 0, ct);
-            Console.WriteLine($"[KeyboardLighting] SetLightingAsync (Standard) ret={ret}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[KeyboardLighting] SetLightingAsync (Standard) ret={ret}");
             return ret == 0;
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -9,7 +9,7 @@ using OmenFlow.Core.Models;
 namespace OmenFlow.Hardware;
 
 /// <summary>
-/// Provides model-specific RPM ↔ fan-percent calibration data.
+/// Provides model-specific RPM â†” fan-percent calibration data.
 ///
 /// Mirrors OmenCore's FanCalibrationService approach:
 /// - Each model family has a characteristic RPM range for CPU and GPU fans.
@@ -37,21 +37,21 @@ public class FanCalibrationService
         LoadCalibrationOverride();
     }
 
-    // ── Public API ─────────────────────────────────────────────────────────
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>Current active calibration profile.</summary>
     public FanCalibrationProfile Profile => _profile;
 
     /// <summary>
     /// Converts a fan level percent (0-100) to an estimated RPM range for the CPU fan.
-    /// Returns (minRpm, maxRpm) with ±tolerance applied.
+    /// Returns (minRpm, maxRpm) with Â±tolerance applied.
     /// </summary>
     public (int minRpm, int maxRpm) EstimateCpuRpm(int percent)
         => EstimateRpm(percent, _profile.CpuMaxRpm, _profile.CpuMinIdleRpm, _profile.RpmTolerance);
 
     /// <summary>
     /// Converts a fan level percent (0-100) to an estimated RPM range for the GPU fan.
-    /// Returns (minRpm, maxRpm) with ±tolerance applied.
+    /// Returns (minRpm, maxRpm) with Â±tolerance applied.
     /// </summary>
     public (int minRpm, int maxRpm) EstimateGpuRpm(int percent)
         => EstimateRpm(percent, _profile.GpuMaxRpm, _profile.GpuMinIdleRpm, _profile.RpmTolerance);
@@ -77,12 +77,12 @@ public class FanCalibrationService
         if (percent >= 90 && cpuRpm > _profile.CpuObservedMaxRpm)
         {
             _profile = _profile with { CpuObservedMaxRpm = cpuRpm };
-            Console.WriteLine($"[FanCalib] New CPU max RPM observed: {cpuRpm} at {percent}%");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCalib] New CPU max RPM observed: {cpuRpm} at {percent}%");
         }
         if (percent >= 90 && gpuRpm > _profile.GpuObservedMaxRpm && gpuRpm > 0)
         {
             _profile = _profile with { GpuObservedMaxRpm = gpuRpm };
-            Console.WriteLine($"[FanCalib] New GPU max RPM observed: {gpuRpm} at {percent}%");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCalib] New GPU max RPM observed: {gpuRpm} at {percent}%");
         }
 
         // Record the sample
@@ -110,7 +110,7 @@ public class FanCalibrationService
         sb.AppendLine($"FanCount      : {_boardConfig.FanCount}");
         sb.AppendLine($"CPU MaxRPM    : {_profile.CpuMaxRpm} (observed: {_profile.CpuObservedMaxRpm})");
         sb.AppendLine($"GPU MaxRPM    : {_profile.GpuMaxRpm} (observed: {_profile.GpuObservedMaxRpm})");
-        sb.AppendLine($"Tolerance     : ±{_profile.RpmTolerance * 100:F0}%");
+        sb.AppendLine($"Tolerance     : Â±{_profile.RpmTolerance * 100:F0}%");
         sb.AppendLine($"DataPoints    : {_profile.DataPoints.Count}");
 
         if (_profile.DataPoints.Count > 0)
@@ -118,13 +118,13 @@ public class FanCalibrationService
             sb.AppendLine("\nRecent calibration points:");
             foreach (var p in _profile.DataPoints.TakeLast(10))
             {
-                sb.AppendLine($"  {p.TimestampUtc:HH:mm:ss} | {p.FanPercent,3}% → CPU={p.CpuRpm}RPM, GPU={p.GpuRpm}RPM");
+                sb.AppendLine($"  {p.TimestampUtc:HH:mm:ss} | {p.FanPercent,3}% â†’ CPU={p.CpuRpm}RPM, GPU={p.GpuRpm}RPM");
             }
         }
         return sb.ToString();
     }
 
-    // ── Internals ──────────────────────────────────────────────────────────
+    // â”€â”€ Internals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static (int min, int max) EstimateRpm(int percent, int maxRpm, int minIdleRpm, double tolerance)
     {
@@ -215,13 +215,13 @@ public class FanCalibrationService
                 if (saved.DataPoints?.Count > 0)
                     _profile.DataPoints.AddRange(saved.DataPoints);
 
-                Console.WriteLine($"[FanCalib] Loaded calibration override for {_boardConfig.BoardId}: " +
+                OmenFlow.Core.Services.Logger.LogInfo($"[FanCalib] Loaded calibration override for {_boardConfig.BoardId}: " +
                                   $"CPU max={_profile.CpuObservedMaxRpm}, GPU max={_profile.GpuObservedMaxRpm}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[FanCalib] Failed to load calibration override: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCalib] Failed to load calibration override: {ex.Message}");
         }
     }
 
@@ -256,7 +256,7 @@ public class FanCalibrationService
     }
 }
 
-// ── Data models ────────────────────────────────────────────────────────────
+// â”€â”€ Data models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 public record FanCalibrationProfile
 {
@@ -276,3 +276,4 @@ public record CalibrationDataPoint(
     int CpuRpm,
     int GpuRpm,
     string BoardId);
+

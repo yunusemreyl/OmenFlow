@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Interfaces;
@@ -29,7 +29,7 @@ public class PowerService : IPowerService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] GetBatteryCareModeAsync failed: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[ERROR] GetBatteryCareModeAsync failed: {ex.Message}");
         }
         return BatteryCareMode.Disabled;
     }
@@ -49,8 +49,9 @@ public class PowerService : IPowerService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] SetBatteryCareModeAsync failed: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[ERROR] SetBatteryCareModeAsync failed: {ex.Message}");
             return false;
         }
     }
 }
+

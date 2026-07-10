@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "tDBEniPyazg=",
+  "dgSpecHash": "jXcUT1DojCM=",
   "success": true,
   "projectFilePath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
   "expectedPackageFiles": [
@@ -41,13 +41,12 @@
     "C:\\Users\\yeyil\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\10.0.3\\runtime.osx-x64.runtime.native.system.io.ports.10.0.3.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.codedom\\10.0.9\\system.codedom.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.configuration.configurationmanager\\10.0.9\\system.configuration.configurationmanager.10.0.9.nupkg.sha512",
-    "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.9\\system.diagnostics.diagnosticsource.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.9\\system.diagnostics.eventlog.10.0.9.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.diagnostics.performancecounter\\10.0.9\\system.diagnostics.performancecounter.10.0.9.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.io.filesystem.accesscontrol\\5.0.0\\system.io.filesystem.accesscontrol.5.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.io.ports\\10.0.3\\system.io.ports.10.0.3.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\system.management\\10.0.9\\system.management.10.0.9.nupkg.sha512",
-    "C:\\Users\\yeyil\\.nuget\\packages\\system.security.cryptography.protecteddata\\10.0.9\\system.security.cryptography.protecteddata.10.0.9.nupkg.sha512",
-    "C:\\Users\\yeyil\\.nuget\\packages\\system.threading.accesscontrol\\10.0.9\\system.threading.accesscontrol.10.0.9.nupkg.sha512"
+    "C:\\Users\\yeyil\\.nuget\\packages\\system.security.cryptography.protecteddata\\10.0.9\\system.security.cryptography.protecteddata.10.0.9.nupkg.sha512"
   ],
   "logs": []
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -20,13 +20,13 @@ namespace OmenFlow.Hardware;
 /// - ZIP is saved to the user's Desktop for easy access
 ///
 /// Contents of the ZIP:
-///   diagnostics.txt           — Human-readable overview (model, mode, temp, RPM)
-///   fan_command_history.txt   — Last 80 fan commands with timing and success
-///   fan_calibration.txt       — Per-model RPM calibration data and data points
-///   model_capabilities.txt    — BoardConfiguration dump
-///   power_limits.txt          — Last known CPU PL1/PL2 and GPU TGP
-///   ec_snapshot.txt           — Key EC register values (0x95, 0xCE, 0x34/35, 0xD0-D3)
-///   event_log.txt             — Recent console log tail (if available)
+///   diagnostics.txt           â€” Human-readable overview (model, mode, temp, RPM)
+///   fan_command_history.txt   â€” Last 80 fan commands with timing and success
+///   fan_calibration.txt       â€” Per-model RPM calibration data and data points
+///   model_capabilities.txt    â€” BoardConfiguration dump
+///   power_limits.txt          â€” Last known CPU PL1/PL2 and GPU TGP
+///   ec_snapshot.txt           â€” Key EC register values (0x95, 0xCE, 0x34/35, 0xD0-D3)
+///   event_log.txt             â€” Recent console log tail (if available)
 /// </summary>
 public class DiagnosticsExportService
 {
@@ -63,7 +63,7 @@ public class DiagnosticsExportService
         _verificationService = verificationService;
     }
 
-    // ── Static log capture (call from Console.WriteLine replacement) ────────
+    // â”€â”€ Static log capture (call from Console.WriteLine replacement) â”€â”€â”€â”€â”€â”€â”€â”€
 
     public static void AppendLog(string line)
     {
@@ -75,7 +75,7 @@ public class DiagnosticsExportService
         }
     }
 
-    // ── Public API ──────────────────────────────────────────────────────────
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Generates the diagnostics ZIP and saves it to the Desktop.
@@ -88,7 +88,7 @@ public class DiagnosticsExportService
         string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         string zipPath = Path.Combine(desktopPath, fileName);
 
-        Console.WriteLine($"[Diagnostics] Starting export → {zipPath}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[Diagnostics] Starting export â†’ {zipPath}");
 
         using var zipStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: false);
@@ -126,11 +126,11 @@ public class DiagnosticsExportService
         }
         await AddEntryAsync(archive, "event_log.txt", logReport, ct);
 
-        Console.WriteLine($"[Diagnostics] ✓ Export complete: {zipPath}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[Diagnostics] âœ“ Export complete: {zipPath}");
         return zipPath;
     }
 
-    // ── Internal report builders ────────────────────────────────────────────
+    // â”€â”€ Internal report builders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task<string> BuildOverviewAsync(CancellationToken ct)
     {
@@ -140,7 +140,7 @@ public class DiagnosticsExportService
         sb.AppendLine($"Version    : OmenFlow (fan+perf diagnostics export)");
         sb.AppendLine();
 
-        sb.AppendLine("── System ──");
+        sb.AppendLine("â”€â”€ System â”€â”€");
         sb.AppendLine($"BoardId    : {_boardConfig.BoardId}");
         sb.AppendLine($"Family     : {_boardConfig.Family}");
         sb.AppendLine($"MaxFanLvl  : {_boardConfig.MaxFanLevel}");
@@ -152,9 +152,9 @@ public class DiagnosticsExportService
         if (TelemetryProvider != null)
         {
             var tel = TelemetryProvider();
-            sb.AppendLine("── Current Telemetry ──");
-            sb.AppendLine($"CPU Temp   : {tel.CpuTemp}°C");
-            sb.AppendLine($"GPU Temp   : {tel.GpuTemp}°C");
+            sb.AppendLine("â”€â”€ Current Telemetry â”€â”€");
+            sb.AppendLine($"CPU Temp   : {tel.CpuTemp}Â°C");
+            sb.AppendLine($"GPU Temp   : {tel.GpuTemp}Â°C");
             sb.AppendLine($"CPU Fan    : {tel.CpuFanRpm} RPM");
             sb.AppendLine($"GPU Fan    : {tel.GpuFanRpm} RPM");
             sb.AppendLine($"CPU Load   : {tel.CpuLoad:F1}%");
@@ -235,3 +235,4 @@ public class DiagnosticsExportService
         await writer.WriteAsync(content);
     }
 }
+

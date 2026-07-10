@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,44 +70,44 @@ public class EcService : IEcService, IDisposable
             string? libPath = FindPawnIOLibPath();
             if (libPath == null)
             {
-                Console.WriteLine("[EC] PawnIOLib.dll not found.");
+                OmenFlow.Core.Services.Logger.LogInfo("[EC] PawnIOLib.dll not found.");
                 return;
             }
 
             _pawnIOLib = NativeMethods.LoadLibrary(libPath);
             if (_pawnIOLib == IntPtr.Zero)
             {
-                Console.WriteLine($"[EC] Failed to load PawnIOLib.dll from {libPath}. Error: {Marshal.GetLastWin32Error()}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[EC] Failed to load PawnIOLib.dll from {libPath}. Error: {Marshal.GetLastWin32Error()}");
                 return;
             }
 
             if (!ResolveFunctions())
             {
-                Console.WriteLine("[EC] Failed to resolve functions from PawnIOLib.dll.");
+                OmenFlow.Core.Services.Logger.LogInfo("[EC] Failed to resolve functions from PawnIOLib.dll.");
                 return;
             }
 
             int hr = _pawnioOpen!(out _handle);
             if (hr < 0 || _handle == IntPtr.Zero)
             {
-                Console.WriteLine($"[EC] pawnio_open failed with HR {hr:X8}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[EC] pawnio_open failed with HR {hr:X8}");
                 return;
             }
 
             if (!LoadEcModule())
             {
-                Console.WriteLine("[EC] Failed to load LpcACPIEC module.");
+                OmenFlow.Core.Services.Logger.LogInfo("[EC] Failed to load LpcACPIEC module.");
                 _pawnioClose!(_handle);
                 _handle = IntPtr.Zero;
                 return;
             }
 
             _moduleLoaded = true;
-            Console.WriteLine("[EC] PawnIO EC access initialized.");
+            OmenFlow.Core.Services.Logger.LogInfo("[EC] PawnIO EC access initialized.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[EC] Init error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[EC] Init error: {ex.Message}");
         }
     }
 
@@ -154,7 +154,7 @@ public class EcService : IEcService, IDisposable
             {
                 _lpcAcpiEcModule = File.ReadAllBytes(modulePath);
                 int hr = _pawnioLoad!(_handle, _lpcAcpiEcModule, (IntPtr)_lpcAcpiEcModule.Length);
-                if (hr < 0) Console.WriteLine($"[EC] pawnio_load failed with HR {hr:X8} for {modulePath}");
+                if (hr < 0) OmenFlow.Core.Services.Logger.LogInfo($"[EC] pawnio_load failed with HR {hr:X8} for {modulePath}");
                 return hr >= 0;
             }
         }
@@ -167,12 +167,12 @@ public class EcService : IEcService, IDisposable
             {
                 _lpcAcpiEcModule = File.ReadAllBytes(modulePath);
                 int hr = _pawnioLoad!(_handle, _lpcAcpiEcModule, (IntPtr)_lpcAcpiEcModule.Length);
-                if (hr < 0) Console.WriteLine($"[EC] pawnio_load failed with HR {hr:X8} for {modulePath}");
+                if (hr < 0) OmenFlow.Core.Services.Logger.LogInfo($"[EC] pawnio_load failed with HR {hr:X8} for {modulePath}");
                 return hr >= 0;
             }
         }
         
-        Console.WriteLine($"[EC] LpcACPIEC module not found in bundled drivers or {Path.Combine(pawnIOPath, "modules")}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[EC] LpcACPIEC module not found in bundled drivers or {Path.Combine(pawnIOPath, "modules")}");
         return false;
     }
 
@@ -205,7 +205,7 @@ public class EcService : IEcService, IDisposable
         if (!_moduleLoaded) return Task.CompletedTask;
         if (!AllowedWriteAddresses.Contains(register))
         {
-            Console.WriteLine($"[EC] Blocked write to 0x{register:X2}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[EC] Blocked write to 0x{register:X2}");
             return Task.CompletedTask;
         }
 
@@ -290,3 +290,4 @@ public class EcService : IEcService, IDisposable
         public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
     }
 }
+

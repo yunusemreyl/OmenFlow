@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -35,18 +35,18 @@ public class TelemetryData
 
 public class IpcClient
 {
-    // ── Olaylar ───────────────────────────────────────────────────────────
+    // â”€â”€ Olaylar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public event EventHandler<TelemetryData>? TelemetryReceived;
     public event EventHandler? Connected;
     public event EventHandler? Disconnected;
 
-    // ── Dahili Durum ──────────────────────────────────────────────────────
+    // â”€â”€ Dahili Durum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private readonly CancellationTokenSource _cts = new();
     private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(3) };
     private DateTime _lastWorkerStartAttempt = DateTime.MinValue;
     private bool _isConnected = false;
 
-    // Adaptif poll: bağlantı yokken backoff; bağlıyken normal.
+    // Adaptif poll: baÄŸlantÄ± yokken backoff; baÄŸlÄ±yken normal.
     private int _normalPollMs    = 2000;
     private int _backoffPollMs   = 5000;
     private int _maxBackoffMs    = 30_000;
@@ -55,14 +55,14 @@ public class IpcClient
 
     private const string WorkerUrl = "http://localhost:50312";
 
-    // ── Başlatma ──────────────────────────────────────────────────────────
+    // â”€â”€ BaÅŸlatma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public void Connect()
     {
         EnsureWorkerRunning();
         _ = Task.Run(() => StartTelemetryLoopAsync(_cts.Token));
     }
 
-    // ── Worker Başlatma ───────────────────────────────────────────────────
+    // â”€â”€ Worker BaÅŸlatma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void EnsureWorkerRunning()
     {
         try
@@ -78,7 +78,7 @@ public class IpcClient
             string? workerPath = FindWorkerExe();
             if (workerPath == null)
             {
-                System.Diagnostics.Debug.WriteLine("[IpcClient] OmenFlow.Worker.exe bulunamadı.");
+                OmenFlow.Core.Services.Logger.LogInfo("[IpcClient] OmenFlow.Worker.exe bulunamadÄ±.");
                 return;
             }
 
@@ -91,18 +91,18 @@ public class IpcClient
                 WindowStyle      = System.Diagnostics.ProcessWindowStyle.Hidden
             };
             System.Diagnostics.Process.Start(psi);
-            System.Diagnostics.Debug.WriteLine($"[IpcClient] Worker başlatıldı: {workerPath}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] Worker baÅŸlatÄ±ldÄ±: {workerPath}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[IpcClient] Worker başlatma hatası: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] Worker baÅŸlatma hatasÄ±: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// OmenFlow.Worker.exe'yi üç mantıksal kategoride arar:
-    ///   1. Uygulama ile aynı dizin (üretim kurulumu)
-    ///   2. Debug build çıktısı (geliştirme ortamı)
+    /// OmenFlow.Worker.exe'yi Ã¼Ã§ mantÄ±ksal kategoride arar:
+    ///   1. Uygulama ile aynÄ± dizin (Ã¼retim kurulumu)
+    ///   2. Debug build Ã§Ä±ktÄ±sÄ± (geliÅŸtirme ortamÄ±)
     ///   3. Program Files kurulum konumu
     /// </summary>
     private string? FindWorkerExe()
@@ -111,11 +111,11 @@ public class IpcClient
         const string exe = "OmenFlow.Worker.exe";
         const string tf  = "net10.0-windows";
 
-        // 1. Üretim: aynı dizin
+        // 1. Ãœretim: aynÄ± dizin
         string local = Path.Combine(baseDir, exe);
         if (File.Exists(local)) return local;
 
-        // 2. Debug build (geliştirici ortamı — çeşitli proje derinliklerine göre)
+        // 2. Debug build (geliÅŸtirici ortamÄ± â€” Ã§eÅŸitli proje derinliklerine gÃ¶re)
         foreach (int depth in new[] { 4, 5, 6 })
         {
             string relative = Path.GetFullPath(
@@ -138,7 +138,7 @@ public class IpcClient
         return null;
     }
 
-    // ── Telemetri Döngüsü (Adaptif Poll) ─────────────────────────────────
+    // â”€â”€ Telemetri DÃ¶ngÃ¼sÃ¼ (Adaptif Poll) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private async Task StartTelemetryLoopAsync(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
@@ -169,7 +169,7 @@ public class IpcClient
                     Disconnected?.Invoke(this, EventArgs.Empty);
                 }
 
-                // Üstel backoff: 5s → 10s → 20s → 30s (max)
+                // Ãœstel backoff: 5s â†’ 10s â†’ 20s â†’ 30s (max)
                 _failStreak++;
                 _currentPollMs = Math.Min(_backoffPollMs * (1 << Math.Min(_failStreak - 1, 3)), _maxBackoffMs);
 
@@ -180,7 +180,7 @@ public class IpcClient
         }
     }
 
-    // ── Komut Gönderme ────────────────────────────────────────────────────
+    // â”€â”€ Komut GÃ¶nderme â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public async Task<bool> SendCommandAsync(string command, object? value = null)
     {
         try
@@ -194,7 +194,7 @@ public class IpcClient
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[IpcClient] Komut hatası '{command}': {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] Komut hatasÄ± '{command}': {ex.Message}");
             return false;
         }
     }
@@ -212,10 +212,11 @@ public class IpcClient
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[IpcClient] Komut sonuç hatası '{command}': {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] Komut sonuÃ§ hatasÄ± '{command}': {ex.Message}");
             return null;
         }
     }
 
     public void Disconnect() => _cts.Cancel();
 }
+

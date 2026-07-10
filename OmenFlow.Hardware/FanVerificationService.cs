@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Models;
@@ -14,7 +14,7 @@ namespace OmenFlow.Hardware;
 /// - Logs a warning if actual RPM is outside acceptable bounds.
 /// - Does NOT retry automatically; verification is diagnostic/informational only.
 /// 
-/// RPM bounds are deliberately wide (±35%) to account for:
+/// RPM bounds are deliberately wide (Â±35%) to account for:
 /// - Thermal load variation affecting actual fan speed
 /// - LUT quantization differences between fan firmware generations
 /// - Brief spin-up delays on V1 EC hardware
@@ -28,11 +28,11 @@ public class FanVerificationService
     // V1 EC models need ~1.5s to settle; V2 WMI is faster but we use the same window.
     private const int VerificationDelayMs = 1800;
 
-    // Acceptable RPM band: ±35% of expected.
+    // Acceptable RPM band: Â±35% of expected.
     // Wide range accounts for ambient temp variation and LUT rounding.
     private const double RpmToleranceFactor = 0.35;
 
-    // Estimated max RPM per fan type (conservative — actual hardware may be higher)
+    // Estimated max RPM per fan type (conservative â€” actual hardware may be higher)
     private const int EstimatedMaxCpuRpm = 6000;
     private const int EstimatedMaxGpuRpm = 6200;
 
@@ -58,7 +58,7 @@ public class FanVerificationService
     }
 
     /// <summary>
-    /// Awaitable verification check — returns true if RPM is within expected range.
+    /// Awaitable verification check â€” returns true if RPM is within expected range.
     /// </summary>
     public async Task<bool> VerifyAsync(int targetPercent, bool isModeSwitch = false, CancellationToken ct = default)
     {
@@ -70,7 +70,7 @@ public class FanVerificationService
         // Skip verification on models without EC readback capability
         if (!_boardConfig.SupportsFanControlEc && !_boardConfig.SupportsFanCurves)
         {
-            Console.WriteLine("[FanVerify] Skipping — model does not support EC readback.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanVerify] Skipping â€” model does not support EC readback.");
             return true;
         }
 
@@ -87,16 +87,16 @@ public class FanVerificationService
             {
                 if (targetPercent == 0)
                 {
-                    Console.WriteLine("[FanVerify] ✓ RPM=0 matches target=0% (BIOS auto).");
+                    OmenFlow.Core.Services.Logger.LogInfo("[FanVerify] âœ“ RPM=0 matches target=0% (BIOS auto).");
                     _consecutiveFailures = 0;
                     return true;
                 }
 
                 _consecutiveFailures++;
-                Console.WriteLine($"[FanVerify] ⚠ Both fans report 0 RPM after commanding {targetPercent}% (failure #{_consecutiveFailures})");
+                OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] âš  Both fans report 0 RPM after commanding {targetPercent}% (failure #{_consecutiveFailures})");
                 if (_consecutiveFailures >= FailureAlarmThreshold)
                 {
-                    Console.WriteLine($"[FanVerify] ⛔ {_consecutiveFailures} consecutive zero-RPM verifications. Possible stuck fan or EC communication issue.");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] â›” {_consecutiveFailures} consecutive zero-RPM verifications. Possible stuck fan or EC communication issue.");
                 }
                 return false;
             }
@@ -107,7 +107,7 @@ public class FanVerificationService
                 bool fastEnough = cpuRpm > EstimatedMaxCpuRpm * 0.55 || gpuRpm > EstimatedMaxGpuRpm * 0.55;
                 if (fastEnough)
                 {
-                    Console.WriteLine($"[FanVerify] ✓ Max mode: CPU={cpuRpm}RPM, GPU={gpuRpm}RPM — fans spinning.");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] âœ“ Max mode: CPU={cpuRpm}RPM, GPU={gpuRpm}RPM â€” fans spinning.");
                     _consecutiveFailures = 0;
                     return true;
                 }
@@ -127,13 +127,13 @@ public class FanVerificationService
 
             if (cpuOk && gpuOk)
             {
-                Console.WriteLine($"[FanVerify] ✓ Target={targetPercent}% → CPU={cpuRpm}RPM (exp={expectedCpuRpm}), GPU={gpuRpm}RPM (exp={expectedGpuRpm})");
+                OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] âœ“ Target={targetPercent}% â†’ CPU={cpuRpm}RPM (exp={expectedCpuRpm}), GPU={gpuRpm}RPM (exp={expectedGpuRpm})");
                 _consecutiveFailures = 0;
                 return true;
             }
 
             _consecutiveFailures++;
-            Console.WriteLine($"[FanVerify] ⚠ RPM mismatch at target={targetPercent}%: " +
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] âš  RPM mismatch at target={targetPercent}%: " +
                               $"CPU={cpuRpm} (exp {cpuLow}-{cpuHigh}), " +
                               $"GPU={gpuRpm} (exp {gpuLow}-{gpuHigh}) " +
                               $"[failure #{_consecutiveFailures}]");
@@ -145,7 +145,7 @@ public class FanVerificationService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[FanVerify] Verification error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanVerify] Verification error: {ex.Message}");
             return false;
         }
     }
@@ -158,3 +158,4 @@ public class FanVerificationService
         return $"ConsecutiveFailures={_consecutiveFailures}, AlarmThreshold={FailureAlarmThreshold}";
     }
 }
+

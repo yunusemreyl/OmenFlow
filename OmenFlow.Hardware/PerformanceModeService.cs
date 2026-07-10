@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,7 +63,7 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
                 0x02 => ThermalProfile.Quiet,
                 _ => ThermalProfile.Default
             };
-            Console.WriteLine($"[PerformanceMode] Initial mode read from EC 0x95: 0x{modeByte:X2} -> {_currentMode}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Initial mode read from EC 0x95: 0x{modeByte:X2} -> {_currentMode}");
             
             if (_currentMode != ThermalProfile.Default)
             {
@@ -72,7 +72,7 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PerformanceMode] Failed to read initial mode from EC: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Failed to read initial mode from EC: {ex.Message}");
         }
     }
 
@@ -83,19 +83,19 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
 
     public async Task<bool> SetPerformanceModeAsync(ThermalProfile mode, CancellationToken ct = default)
     {
-        Console.WriteLine($"[PerformanceMode] Setting mode: {mode} (0x{(byte)mode:X2})");
+        OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Setting mode: {mode} (0x{(byte)mode:X2})");
 
         // Safety gate: never write fan policies on desktop units
         if (_boardConfig.IsDesktop)
         {
-            Console.WriteLine("[PerformanceMode] ✗ Desktop unit detected — skipping EC/WMI thermal policy writes.");
+            OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âœ— Desktop unit detected â€” skipping EC/WMI thermal policy writes.");
             _currentMode = mode;
             return true;
         }
 
         bool success = false;
 
-        // Step 1: WMI Thermal Policy (0x1A) — with retry
+        // Step 1: WMI Thermal Policy (0x1A) â€” with retry
         byte wmiByte = (byte)mode;
         for (int i = 0; i < 3; i++)
         {
@@ -105,17 +105,17 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
                 success = true;
                 break;
             }
-            Console.WriteLine($"[PerformanceMode] WMI 0x1A attempt {i + 1} failed (ret={ret}), retrying...");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] WMI 0x1A attempt {i + 1} failed (ret={ret}), retrying...");
             await Task.Delay(150, ct);
         }
 
         if (!success)
         {
-            Console.WriteLine("[PerformanceMode] ✗ WMI thermal policy command failed after retries. Proceeding to EC fallback.");
+            OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âœ— WMI thermal policy command failed after retries. Proceeding to EC fallback.");
         }
         else
         {
-            Console.WriteLine($"[PerformanceMode] ✓ WMI 0x1A applied: {mode}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] âœ“ WMI 0x1A applied: {mode}");
         }
 
         _currentMode = mode;
@@ -137,20 +137,20 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
         try
         {
             uint res = PowerSetActiveScheme(IntPtr.Zero, ref planGuid);
-            Console.WriteLine($"[PerformanceMode] Windows Power Plan {planGuid} activation result: {res}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Windows Power Plan {planGuid} activation result: {res}");
 
             var processorGroup = ProcessorSubGroup;
             var boostSetting = ProcessorBoost;
             PowerWriteACValueIndex(IntPtr.Zero, IntPtr.Zero, ref processorGroup, ref boostSetting, boostIndex);
             PowerWriteDCValueIndex(IntPtr.Zero, IntPtr.Zero, ref processorGroup, ref boostSetting, boostIndex);
-            Console.WriteLine($"[PerformanceMode] Processor boost index set to {boostIndex}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Processor boost index set to {boostIndex}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PerformanceMode] Failed to set Windows Power Plan: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Failed to set Windows Power Plan: {ex.Message}");
         }
 
-        // Apply GPU Dynamic Boost Coupling (OmenCore behavior) — only when linked
+        // Apply GPU Dynamic Boost Coupling (OmenCore behavior) â€” only when linked
         if (LinkFanToPerformanceMode)
         {
             GpuPowerLevel gpuPower = mode switch
@@ -160,11 +160,11 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
                 _ => GpuPowerLevel.ExtraPower
             };
             await _gpuControlService.SetGpuPowerAsync(gpuPower, ct);
-            Console.WriteLine($"[PerformanceMode] GPU Dynamic Boost coupled to: {gpuPower}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] GPU Dynamic Boost coupled to: {gpuPower}");
         }
         else
         {
-            Console.WriteLine("[PerformanceMode] GPU power not changed — LinkFanToPerformanceMode is off.");
+            OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] GPU power not changed â€” LinkFanToPerformanceMode is off.");
         }
 
         // Step 4: EC mode byte fallback & Fan Profile Kick Down (0x95 & 0xCE)
@@ -181,11 +181,11 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
             try
             {
                 await _ecService.WriteByteAsync(0x95, ecFanMode, ct);
-                Console.WriteLine($"[PerformanceMode] EC 0x95 (Fan Profile) ← 0x{ecFanMode:X2} ✓");
+                OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] EC 0x95 (Fan Profile) â† 0x{ecFanMode:X2} âœ“");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PerformanceMode] EC 0x95 write failed: {ex.Message}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] EC 0x95 write failed: {ex.Message}");
             }
 
             if (_boardConfig.UseSimplifiedPerformanceMode)
@@ -200,17 +200,17 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
                 try
                 {
                     await _ecService.WriteByteAsync(0xCE, ecValue, ct);
-                    Console.WriteLine($"[PerformanceMode] EC 0xCE ← 0x{ecValue:X2} ✓");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] EC 0xCE â† 0x{ecValue:X2} âœ“");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[PerformanceMode] EC 0xCE write failed: {ex.Message}");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] EC 0xCE write failed: {ex.Message}");
                 }
             }
         }
         else
         {
-            Console.WriteLine($"[PerformanceMode] EC fan policy skipped (LinkedFan={LinkFanToPerformanceMode}, SupportsEC={_boardConfig.SupportsFanControlEc}).");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] EC fan policy skipped (LinkedFan={LinkFanToPerformanceMode}, SupportsEC={_boardConfig.SupportsFanControlEc}).");
         }
 
 
@@ -220,12 +220,12 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
         if (mode == ThermalProfile.Default)
         {
             StopCountdownExtension();
-            Console.WriteLine("[PerformanceMode] Countdown extension stopped (Default mode).");
+            OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] Countdown extension stopped (Default mode).");
         }
         else
         {
             StartCountdownExtension(mode);
-            Console.WriteLine($"[PerformanceMode] Countdown extension started for {mode} mode.");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Countdown extension started for {mode} mode.");
         }
 
         return true;
@@ -270,13 +270,13 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
                 0);
 
             if (ret == 0)
-                Console.WriteLine($"[PerformanceMode] Countdown extension tick: {mode} ✓");
+                OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Countdown extension tick: {mode} âœ“");
             else
-                Console.WriteLine($"[PerformanceMode] Countdown extension tick failed: ret={ret}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Countdown extension tick failed: ret={ret}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PerformanceMode] Countdown extension tick error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Countdown extension tick error: {ex.Message}");
         }
     }
 
@@ -300,3 +300,4 @@ public class PerformanceModeService : IPerformanceModeService, IDisposable
         StopCountdownExtension();
     }
 }
+

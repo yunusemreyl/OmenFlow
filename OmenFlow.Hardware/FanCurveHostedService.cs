@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,14 +21,14 @@ namespace OmenFlow.Hardware;
 /// - Adaptive polling: slower when temps are stable, faster when changing
 /// - Suspend guard: pauses curve engine during system suspend
 /// - Zero-RPM wake-kick: detects stalled fan during active curve and issues a recovery kick
-/// - Thermal safety hysteresis: 95°C → MAX FAN, releases at ≤ 50°C
+/// - Thermal safety hysteresis: 95Â°C â†’ MAX FAN, releases at â‰¤ 50Â°C
 /// - Fan transition window: skips one poll cycle on preset change (BIOS register reset)
 /// </summary>
 public class FanCurveHostedService : BackgroundService, IFanCurveService
 {
     private readonly IFanControlService _fanControlService;
 
-    // ── Active curve state ──────────────────────────────────────────────
+    // â”€â”€ Active curve state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private volatile bool _immediateApplyRequested = false;
     private volatile bool _isMaxModeActive = false;
     private FanCurve? _activeCurve;       // Unified (CPU+GPU same speed)
@@ -39,57 +39,57 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
     public Func<WorkerTelemetry>? TelemetryProvider { get; set; }
 
-    // ── Thermal safety ──────────────────────────────────────────────────
+    // â”€â”€ Thermal safety â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private volatile bool _safetyProtectionEnabled = true;
     private volatile bool _safetyMaxFanActive = false;
     private const double ThermalEmergencyThresholdC = 95.0;
     private const double ThermalSafeReleaseC = 50.0;
 
-    // ── EC write deduplication ──────────────────────────────────────────
+    // â”€â”€ EC write deduplication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // OmenCore uses 15s window; we use 10s (poll is 3s)
     private int _lastWrittenCpuPercent = -1;
     private int _lastWrittenGpuPercent = -1;
     private DateTime _lastWriteTime = DateTime.MinValue;
     private const double DeduplicationWindowSeconds = 10.0;
 
-    // ── Watchdog ─────────────────────────────────────────────────────────
+    // â”€â”€ Watchdog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private int _consecutiveFailures = 0;
     private const int MaxFailuresBeforeDisable = 3;
     private DateTime _disabledUntil = DateTime.MinValue;
     private const int DisableCooldownSeconds = 60;
 
-    // ── Mode tracking ────────────────────────────────────────────────────
+    // â”€â”€ Mode tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private bool _isInManualMode = false;
 
-    // ── Suspend guard ────────────────────────────────────────────────────
+    // â”€â”€ Suspend guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private volatile bool _systemSuspendActive = false;
 
-    // ── Temperature smoothing (OmenCore-inspired) ────────────────────────
+    // â”€â”€ Temperature smoothing (OmenCore-inspired) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Limits how fast the "smoothed" temp can rise or fall per evaluation cycle.
     // This prevents brief CPU spikes from immediately slamming fans to max.
     private double _smoothedCpuTemp = double.NaN;
     private double _smoothedGpuTemp = double.NaN;
-    private const double MaxTempRisePerPollC = 6.0;   // Max °C rise per 3s poll
-    private const double MaxTempDropPerPollC = 4.0;   // Max °C drop per 3s poll
+    private const double MaxTempRisePerPollC = 6.0;   // Max Â°C rise per 3s poll
+    private const double MaxTempDropPerPollC = 4.0;   // Max Â°C drop per 3s poll
     private const double SmoothingBypassThresholdC = 75.0; // Bypass smoothing above this temp
 
-    // ── Hysteresis state (OmenCore-inspired) ────────────────────────────
+    // â”€â”€ Hysteresis state (OmenCore-inspired) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Prevents fan from rapidly toggling between two speeds near a curve breakpoint.
     private readonly FanHysteresisSettings _hysteresis = new();
     private int _pendingFanPercent = -1;
     private bool _pendingIsIncrease = false;
     private DateTime _pendingDebounceStart = DateTime.MinValue;
 
-    // ── Adaptive polling ─────────────────────────────────────────────────
+    // â”€â”€ Adaptive polling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private double _lastPollCpuTemp = 0;
     private double _lastPollGpuTemp = 0;
     private int _stableReadings = 0;
-    private const int StableThreshold = 3;     // Consecutive stable readings → slow down
-    private const double TempChangeThresholdC = 3.0;  // °C change to trigger faster polling
+    private const int StableThreshold = 3;     // Consecutive stable readings â†’ slow down
+    private const double TempChangeThresholdC = 3.0;  // Â°C change to trigger faster polling
     private const int FastPollMs = 3000;
     private const int SlowPollMs = 5000;
 
-    // ── Zero-RPM wake-kick ───────────────────────────────────────────────
+    // â”€â”€ Zero-RPM wake-kick â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // If the fan reports 0 RPM for too long while a curve is active and temps are elevated,
     // issue a temporary kick to wake the fan firmware.
     private DateTime _zeroRpmCurveSince = DateTime.MinValue;
@@ -100,7 +100,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
     private const int WakeKickMaxPercent = 60;
     private const double WakeKickMinTempC = 55.0;
 
-    // ── IsCurveOrHoldActive ──────────────────────────────────────────────
+    // â”€â”€ IsCurveOrHoldActive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public bool IsCurveOrHoldActive
     {
         get
@@ -119,12 +119,12 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         _fanControlService = fanControlService;
     }
 
-    // ── Public API ───────────────────────────────────────────────────────
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void SetThermalSafetyEnabled(bool enabled)
     {
         _safetyProtectionEnabled = enabled;
-        Console.WriteLine($"[FanCurve] Thermal Safety Protection: {enabled}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] Thermal Safety Protection: {enabled}");
     }
 
     public Task ApplyCustomCurveAsync(FanCurve? curve)
@@ -142,7 +142,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         {
             _isInManualMode = false;
             ResetDedup();
-            Console.WriteLine("[FanCurve] Unified curve cleared.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] Unified curve cleared.");
         }
 
         return Task.CompletedTask;
@@ -163,7 +163,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         {
             _isInManualMode = false;
             ResetDedup();
-            Console.WriteLine("[FanCurve] Independent curves cleared.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] Independent curves cleared.");
         }
 
         return Task.CompletedTask;
@@ -193,17 +193,17 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         _systemSuspendActive = active;
         if (active)
         {
-            Console.WriteLine("[FanCurve] System suspend detected — pausing curve engine.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] System suspend detected â€” pausing curve engine.");
         }
         else
         {
-            Console.WriteLine("[FanCurve] System resume detected — resuming curve engine.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] System resume detected â€” resuming curve engine.");
             _immediateApplyRequested = true;  // Re-apply immediately after wake
             ResetDedup();                      // Force write on next poll
         }
     }
 
-    // ── Main loop ─────────────────────────────────────────────────────────
+    // â”€â”€ Main loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -218,7 +218,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                 // Suspend guard: skip all EC interaction during low-power state
                 if (_systemSuspendActive)
                 {
-                    Console.WriteLine("[FanCurve] Skipping poll — system suspended.");
+                    OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] Skipping poll â€” system suspended.");
                     continue;
                 }
 
@@ -228,7 +228,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                     continue;
                 }
 
-                // ── Read current temperatures ───────────────────────────
+                // â”€â”€ Read current temperatures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 float rawCpuTemp = 0f, rawGpuTemp = 0f;
                 int cpuFanRpm = 0, gpuFanRpm = 0;
 
@@ -248,28 +248,28 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
                 float maxRawTemp = Math.Max(rawCpuTemp, rawGpuTemp);
 
-                // ── THERMAL SAFETY (emergency override) ─────────────────
+                // â”€â”€ THERMAL SAFETY (emergency override) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (_safetyProtectionEnabled)
                 {
                     if (!_safetyMaxFanActive && maxRawTemp >= ThermalEmergencyThresholdC)
                     {
-                        Console.WriteLine($"[ThermalSafety] ⚠ CRITICAL {maxRawTemp}°C >= {ThermalEmergencyThresholdC}°C! Activating emergency MAX FAN.");
+                        OmenFlow.Core.Services.Logger.LogInfo($"[ThermalSafety] âš  CRITICAL {maxRawTemp}Â°C >= {ThermalEmergencyThresholdC}Â°C! Activating emergency MAX FAN.");
                         _safetyMaxFanActive = true;
                         await _fanControlService.SetMaxFanAsync(true, stoppingToken);
-                        RecordCommand("EmergencyMaxFan", "ON", true, $"temp={maxRawTemp}°C");
+                        RecordCommand("EmergencyMaxFan", "ON", true, $"temp={maxRawTemp}Â°C");
                         continue;
                     }
                     else if (_safetyMaxFanActive)
                     {
                         if (maxRawTemp <= ThermalSafeReleaseC && maxRawTemp > 0)
                         {
-                            Console.WriteLine($"[ThermalSafety] ✓ Cooled to {maxRawTemp}°C ≤ {ThermalSafeReleaseC}°C. Restoring normal control.");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[ThermalSafety] âœ“ Cooled to {maxRawTemp}Â°C â‰¤ {ThermalSafeReleaseC}Â°C. Restoring normal control.");
                             _safetyMaxFanActive = false;
                             await _fanControlService.SetMaxFanAsync(false, stoppingToken);
                         }
                         else
                         {
-                            Console.WriteLine($"[ThermalSafety] MAX FAN active. Waiting for ≤ {ThermalSafeReleaseC}°C (current: {maxRawTemp}°C)");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[ThermalSafety] MAX FAN active. Waiting for â‰¤ {ThermalSafeReleaseC}Â°C (current: {maxRawTemp}Â°C)");
                             await _fanControlService.SetMaxFanAsync(true, stoppingToken);
                             continue;
                         }
@@ -281,14 +281,14 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                     await _fanControlService.SetMaxFanAsync(false, stoppingToken);
                 }
 
-                // ── Immediate apply (reset dedup) ────────────────────────
+                // â”€â”€ Immediate apply (reset dedup) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (_immediateApplyRequested)
                 {
                     _immediateApplyRequested = false;
                     ResetDedup();
                 }
 
-                // ── Zero-RPM wake-kick ───────────────────────────────────
+                // â”€â”€ Zero-RPM wake-kick â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 FanCurve? unified; FanCurve? cpuC; FanCurve? gpuC; bool indep;
                 lock (_curveLock) { unified = _activeCurve; cpuC = _cpuCurve; gpuC = _gpuCurve; indep = _independentCurvesEnabled; }
                 bool curveActive = unified != null || (cpuC != null && gpuC != null);
@@ -305,7 +305,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                         if (overThreshold && kickCooledDown)
                         {
                             int kickPercent = Math.Clamp((int)(maxRawTemp - 30), WakeKickMinPercent, WakeKickMaxPercent);
-                            Console.WriteLine($"[FanCurve] ⚡ Zero-RPM wake-kick! Fans stalled for >{ZeroRpmThresholdSeconds}s at {maxRawTemp}°C. Kicking to {kickPercent}%.");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] âš¡ Zero-RPM wake-kick! Fans stalled for >{ZeroRpmThresholdSeconds}s at {maxRawTemp}Â°C. Kicking to {kickPercent}%.");
                             _lastWakeKick = DateTime.UtcNow;
                             await _fanControlService.SetFanLevelAsync(kickPercent, stoppingToken);
                             ResetDedup();
@@ -319,7 +319,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                     }
                 }
 
-                // ── MAIN FAN CONTROL ─────────────────────────────────────
+                // â”€â”€ MAIN FAN CONTROL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (indep && cpuC != null && gpuC != null)
                 {
                     await ApplyIndependentCurvesInternalAsync(cpuC, gpuC, rawCpuTemp, rawGpuTemp, stoppingToken);
@@ -333,7 +333,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                     await _fanControlService.SetMaxFanAsync(true, stoppingToken);
                 }
 
-                // ── Adaptive polling ─────────────────────────────────────
+                // â”€â”€ Adaptive polling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 double cpuChange = Math.Abs(rawCpuTemp - _lastPollCpuTemp);
                 double gpuChange = Math.Abs(rawGpuTemp - _lastPollGpuTemp);
                 bool tempStable = cpuChange < TempChangeThresholdC && gpuChange < TempChangeThresholdC;
@@ -356,13 +356,13 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         }
     }
 
-    // ── Unified curve apply (with smoothing + hysteresis) ────────────────
+    // â”€â”€ Unified curve apply (with smoothing + hysteresis) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task ApplyActiveCurveAsync(FanCurve curve, float rawCpuTemp, float rawGpuTemp, CancellationToken ct)
     {
         if (DateTime.UtcNow < _disabledUntil)
         {
-            Console.WriteLine($"[FanCurve] EC writes disabled by watchdog until {_disabledUntil:HH:mm:ss}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] EC writes disabled by watchdog until {_disabledUntil:HH:mm:ss}");
             return;
         }
 
@@ -386,12 +386,12 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
             (now - _lastWriteTime).TotalSeconds < DeduplicationWindowSeconds)
             return;
 
-        // Fan %0 → BIOS auto restore
+        // Fan %0 â†’ BIOS auto restore
         if (targetPercent == 0)
         {
             if (_isInManualMode)
             {
-                Console.WriteLine($"[FanCurve] Temp={rawMax:F1}°C (smoothed={smoothed:F1}) → Fan=0% → Restoring BIOS auto control");
+                OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] Temp={rawMax:F1}Â°C (smoothed={smoothed:F1}) â†’ Fan=0% â†’ Restoring BIOS auto control");
                 await _fanControlService.RestoreAutoControlAsync(ct);
                 _isInManualMode = false;
                 _lastWrittenCpuPercent = 0;
@@ -403,7 +403,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
         try
         {
-            Console.WriteLine($"[FanCurve] Temp={rawMax:F1}°C (smoothed={smoothed:F1}°C) → Fan={targetPercent}%");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] Temp={rawMax:F1}Â°C (smoothed={smoothed:F1}Â°C) â†’ Fan={targetPercent}%");
             await _fanControlService.SetFanLevelAsync(targetPercent, ct);
             _isInManualMode = true;
             _lastWrittenCpuPercent = dedupPercent;
@@ -411,7 +411,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
             _lastWriteTime = now;
             _consecutiveFailures = 0;
             _pendingFanPercent = -1;
-            RecordCommand("SetFanLevel", $"{targetPercent}%", true, $"smoothed={smoothed:F1}°C");
+            RecordCommand("SetFanLevel", $"{targetPercent}%", true, $"smoothed={smoothed:F1}Â°C");
         }
         catch (Exception ex)
         {
@@ -419,7 +419,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         }
     }
 
-    // ── Independent CPU + GPU curve apply ────────────────────────────────
+    // â”€â”€ Independent CPU + GPU curve apply â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task ApplyIndependentCurvesInternalAsync(FanCurve cpuCurve, FanCurve gpuCurve, float rawCpuTemp, float rawGpuTemp, CancellationToken ct)
     {
@@ -454,7 +454,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
         try
         {
-            Console.WriteLine($"[FanCurve] Independent: CPU={smoothedCpu:F1}°C→{cpuTarget}%, GPU={smoothedGpu:F1}°C→{gpuTarget}%");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] Independent: CPU={smoothedCpu:F1}Â°Câ†’{cpuTarget}%, GPU={smoothedGpu:F1}Â°Câ†’{gpuTarget}%");
             await _fanControlService.SetFanLevelIndependentAsync(cpuTarget, gpuTarget, ct);
             _isInManualMode = true;
             _lastWrittenCpuPercent = cpuTarget;
@@ -468,7 +468,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         }
     }
 
-    // ── Temperature smoothing ────────────────────────────────────────────
+    // â”€â”€ Temperature smoothing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static double ApplyTempSmoothing(ref double smoothed, double rawTemp)
     {
@@ -494,7 +494,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         return smoothed;
     }
 
-    // ── Hysteresis ────────────────────────────────────────────────────────
+    // â”€â”€ Hysteresis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private bool ShouldApplyHysteresis(int targetPercent, int lastPercent, out bool isIncrease)
     {
@@ -511,14 +511,14 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
         if (_pendingFanPercent != targetPercent || _pendingIsIncrease != isIncrease)
         {
-            // New candidate — reset debounce
+            // New candidate â€” reset debounce
             _pendingFanPercent = targetPercent;
             _pendingIsIncrease = isIncrease;
             _pendingDebounceStart = DateTime.UtcNow;
             return false; // Don't apply yet, start debounce
         }
 
-        // Still the same candidate — check if debounce elapsed
+        // Still the same candidate â€” check if debounce elapsed
         if ((DateTime.UtcNow - _pendingDebounceStart).TotalSeconds >= debounceSeconds)
         {
             _pendingFanPercent = -1; // Reset after applying
@@ -528,7 +528,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         return false;
     }
 
-    // ── Interpolation ────────────────────────────────────────────────────
+    // â”€â”€ Interpolation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static byte CalculateTargetSpeed(FanCurve curve, int currentTemp)
     {
@@ -563,7 +563,7 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         return (byte)sorted[^1].FanSpeedPercent;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void ResetDedup()
     {
@@ -578,11 +578,11 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
     private void HandleWriteFailure(Exception ex)
     {
         _consecutiveFailures++;
-        Console.WriteLine($"[FanCurve] EC write failed (count={_consecutiveFailures}): {ex.Message}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] EC write failed (count={_consecutiveFailures}): {ex.Message}");
         if (_consecutiveFailures >= MaxFailuresBeforeDisable)
         {
             _disabledUntil = DateTime.UtcNow.AddSeconds(DisableCooldownSeconds);
-            Console.WriteLine($"[FanCurve] ⚠ EC writes disabled for {DisableCooldownSeconds}s after {_consecutiveFailures} consecutive failures");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanCurve] âš  EC writes disabled for {DisableCooldownSeconds}s after {_consecutiveFailures} consecutive failures");
         }
     }
 
@@ -590,17 +590,17 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
     {
         if (_isInManualMode)
         {
-            Console.WriteLine("[FanCurve] Service stopping → restoring BIOS auto control");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanCurve] Service stopping â†’ restoring BIOS auto control");
             return _fanControlService.RestoreAutoControlAsync();
         }
         return Task.CompletedTask;
     }
 
-    // ── Diagnostics ──────────────────────────────────────────────────────
+    // â”€â”€ Diagnostics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void RecordCommand(string command, string target, bool success, string details = "")
     {
-        _fanControlService.RecordCommand(command, target, success, $"[Curve Engine] CPU={_smoothedCpuTemp:F1}°C GPU={_smoothedGpuTemp:F1}°C | {details}");
+        _fanControlService.RecordCommand(command, target, success, $"[Curve Engine] CPU={_smoothedCpuTemp:F1}Â°C GPU={_smoothedGpuTemp:F1}Â°C | {details}");
     }
 
     /// <summary>Returns a formatted text report of fan command history.</summary>
@@ -609,3 +609,4 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         return _fanControlService.GetCommandHistoryReport();
     }
 }
+

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using OmenFlow.Core.Models;
 
@@ -8,9 +8,9 @@ namespace OmenFlow.Hardware;
 /// Per-model capability database for HP OMEN and Victus laptops.
 /// 
 /// Approach (mirrors OmenCore's ModelCapabilityDatabase):
-/// 1. Exact ProductId match → highest confidence, model-specific profile
-/// 2. Family fallback → conservative defaults for unrecognized models in a known family
-/// 3. Unknown → most conservative: WMI-only, no EC fan writes, no curves
+/// 1. Exact ProductId match â†’ highest confidence, model-specific profile
+/// 2. Family fallback â†’ conservative defaults for unrecognized models in a known family
+/// 3. Unknown â†’ most conservative: WMI-only, no EC fan writes, no curves
 ///
 /// Safety principle: capabilities are widened only after field evidence confirms
 /// the hardware path works. They are never pre-emptively enabled on unverified models.
@@ -24,13 +24,13 @@ public static class ModelCapabilityDatabase
 
     private static readonly Dictionary<string, BoardConfiguration> ExactModels = new(System.StringComparer.OrdinalIgnoreCase)
     {
-        // ── OMEN 15 Legacy ───────────────────────────────────────────────
+        // â”€â”€ OMEN 15 Legacy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         ["84DA"] = Make("84DA", DeviceFamily.OmenLegacy, maxFanLevel: 55, supportsCurves: false),
         ["84DB"] = Make("84DB", DeviceFamily.OmenLegacy, maxFanLevel: 55, supportsCurves: false),
         ["84DC"] = Make("84DC", DeviceFamily.OmenLegacy, maxFanLevel: 55, supportsCurves: false),
         ["8607"] = Make("8607", DeviceFamily.OmenLegacy, maxFanLevel: 55, supportsCurves: false),
 
-        // ── OMEN V1 (2020–2022) ───────────────────────────────────────────
+        // â”€â”€ OMEN V1 (2020â€“2022) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         ["8572"] = Make("8572", DeviceFamily.OmenV1, maxFanLevel: 55),
         ["8573"] = Make("8573", DeviceFamily.OmenV1, maxFanLevel: 55),
         ["8574"] = Make("8574", DeviceFamily.OmenV1, maxFanLevel: 55),
@@ -77,8 +77,8 @@ public static class ModelCapabilityDatabase
         ["8C58"] = Make("8C58", DeviceFamily.OmenV1, maxFanLevel: 55),   // OMEN Transcend 14
         ["8E41"] = Make("8E41", DeviceFamily.OmenV1, maxFanLevel: 55),   // OMEN Transcend 14 fb1xxx
 
-        // ── OMEN V2 (2023+ percentage scale) ─────────────────────────────
-        // These use 0-100% scale (MaxFanLevel=100). SetFanLevel(0,0) freezes fans → skip on V2!
+        // â”€â”€ OMEN V2 (2023+ percentage scale) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // These use 0-100% scale (MaxFanLevel=100). SetFanLevel(0,0) freezes fans â†’ skip on V2!
         ["8A14"] = Make("8A14", DeviceFamily.OmenV2, maxFanLevel: 100, hasEcThermalOffset: true, simplifiedPerfMode: false),
         ["8BAF"] = Make("8BAF", DeviceFamily.OmenV2, maxFanLevel: 100, hasEcThermalOffset: true, simplifiedPerfMode: false),
         ["8BB0"] = Make("8BB0", DeviceFamily.OmenV2, maxFanLevel: 100, hasEcThermalOffset: true, simplifiedPerfMode: false),
@@ -89,12 +89,12 @@ public static class ModelCapabilityDatabase
         ["8D40"] = Make("8D40", DeviceFamily.OmenV2, maxFanLevel: 55),   // OMEN Slim 16-an0xxx
         ["8D41"] = Make("8D41", DeviceFamily.OmenV2, maxFanLevel: 100, simplifiedPerfMode: false), // OMEN MAX 16
 
-        // ── Victus (Standard) ─────────────────────────────────────────────
+        // â”€â”€ Victus (Standard) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // Victus: WMI fan control only, no direct EC curve writes (conservative)
         ["88F8"] = Make("88F8", DeviceFamily.Victus, maxFanLevel: 55, supportsCurves: false, supportsEc: false),
         ["8A25"] = Make("8A25", DeviceFamily.Victus, maxFanLevel: 55, supportsCurves: false, supportsEc: false),
 
-        // ── Victus S (newer, some support EC) ────────────────────────────
+        // â”€â”€ Victus S (newer, some support EC) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         ["88C5"] = Make("88C5", DeviceFamily.VictusS, maxFanLevel: 55),
         ["8902"] = Make("8902", DeviceFamily.VictusS, maxFanLevel: 55),
         ["8A44"] = Make("8A44", DeviceFamily.VictusS, maxFanLevel: 55),
@@ -103,7 +103,7 @@ public static class ModelCapabilityDatabase
         ["8BBE"] = Make("8BBE", DeviceFamily.VictusS, maxFanLevel: 55),  // Victus 15/16, LUT fan level
         ["8BC2"] = Make("8BC2", DeviceFamily.VictusS, maxFanLevel: 55),
         ["8BCA"] = Make("8BCA", DeviceFamily.VictusS, maxFanLevel: 55),
-        ["8BCD"] = Make("8BCD", DeviceFamily.VictusS, maxFanLevel: 55),  // OMEN 16-xd0010AX — known fan oscillation
+        ["8BCD"] = Make("8BCD", DeviceFamily.VictusS, maxFanLevel: 55),  // OMEN 16-xd0010AX â€” known fan oscillation
         ["8BD4"] = Make("8BD4", DeviceFamily.VictusS, maxFanLevel: 55, supportsCurves: false, supportsEc: false), // Victus 16 conservative
         ["8BD5"] = Make("8BD5", DeviceFamily.VictusS, maxFanLevel: 55),
         ["8C76"] = Make("8C76", DeviceFamily.VictusS, maxFanLevel: 55),
@@ -112,8 +112,8 @@ public static class ModelCapabilityDatabase
         ["8C9C"] = Make("8C9C", DeviceFamily.VictusS, maxFanLevel: 55),
         ["8D87"] = Make("8D87", DeviceFamily.VictusS, maxFanLevel: 100, simplifiedPerfMode: false), // OMEN Max
         ["8C3F"] = Make("8C3F", DeviceFamily.VictusS, maxFanLevel: 55),  // HP Victus 15-fa1xxx
-        ["8DCD"] = Make("8DCD", DeviceFamily.VictusS, maxFanLevel: 55, supportsCurves: false), // Victus 15 — fan speed collapse risk
-        ["8E9A"] = Make("8E9A", DeviceFamily.VictusS, maxFanLevel: 55, supportsCurves: false), // HyperX OMEN MAX — conservative
+        ["8DCD"] = Make("8DCD", DeviceFamily.VictusS, maxFanLevel: 55, supportsCurves: false), // Victus 15 â€” fan speed collapse risk
+        ["8E9A"] = Make("8E9A", DeviceFamily.VictusS, maxFanLevel: 55, supportsCurves: false), // HyperX OMEN MAX â€” conservative
     };
 
     // =====================================================================
@@ -142,7 +142,7 @@ public static class ModelCapabilityDatabase
             "8A18" or "8C77" or "8D40" or "8D41")
             return DeviceFamily.OmenV2;
 
-        // Victus S range (8BA0–8DFF approximate)
+        // Victus S range (8BA0â€“8DFF approximate)
         if (boardId.Length == 4)
         {
             if (boardId.StartsWith("8B") || boardId.StartsWith("8C") || boardId.StartsWith("8D") || boardId.StartsWith("8E"))
@@ -174,7 +174,7 @@ public static class ModelCapabilityDatabase
         // 1. Exact match
         if (ExactModels.TryGetValue(boardId, out var exact))
         {
-            Console.WriteLine($"[ModelDB] Exact match: {boardId} → Family={exact.Family}, MaxFanLevel={exact.MaxFanLevel}, Curves={exact.SupportsFanCurves}, EC={exact.SupportsFanControlEc}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[ModelDB] Exact match: {boardId} â†’ Family={exact.Family}, MaxFanLevel={exact.MaxFanLevel}, Curves={exact.SupportsFanCurves}, EC={exact.SupportsFanControlEc}");
             return exact;
         }
 
@@ -184,7 +184,7 @@ public static class ModelCapabilityDatabase
             ? fb with { BoardId = boardId }
             : FamilyFallbacks[DeviceFamily.Unknown] with { BoardId = boardId };
 
-        Console.WriteLine($"[ModelDB] Family fallback: {boardId} → Family={fallback.Family} (unrecognized ProductId), MaxFanLevel={fallback.MaxFanLevel}, Curves={fallback.SupportsFanCurves}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[ModelDB] Family fallback: {boardId} â†’ Family={fallback.Family} (unrecognized ProductId), MaxFanLevel={fallback.MaxFanLevel}, Curves={fallback.SupportsFanCurves}");
         return fallback;
     }
 
@@ -217,3 +217,4 @@ public static class ModelCapabilityDatabase
         );
     }
 }
+

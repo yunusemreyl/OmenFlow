@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -123,7 +123,8 @@ public class PresetService : IPresetService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save user presets: {ex}");
+            OmenFlow.Core.Services.Logger.LogInfo($"Failed to save user presets: {ex}");
         }
     }
 }
+

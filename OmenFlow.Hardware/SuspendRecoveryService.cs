@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +18,7 @@ namespace OmenFlow.Hardware;
 /// - On Resume: re-applies the last active fan curve/mode and performance profile so
 ///   hardware state matches what the user set before suspend.
 ///
-/// Safety: if the resume restore throws, it is swallowed and logged — we never let
+/// Safety: if the resume restore throws, it is swallowed and logged â€” we never let
 /// a failed restore block the application from starting normally after wakeup.
 /// </summary>
 public class SuspendRecoveryService : BackgroundService
@@ -58,7 +58,7 @@ public class SuspendRecoveryService : BackgroundService
         var thread = new Thread(() =>
         {
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
-            Console.WriteLine("[SuspendRecovery] PowerModeChanged hook registered.");
+            OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] PowerModeChanged hook registered.");
 
             // Keep the thread alive until cancellation
             while (!stoppingToken.IsCancellationRequested)
@@ -67,7 +67,7 @@ public class SuspendRecoveryService : BackgroundService
             }
 
             SystemEvents.PowerModeChanged -= OnPowerModeChanged;
-            Console.WriteLine("[SuspendRecovery] PowerModeChanged hook removed.");
+            OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] PowerModeChanged hook removed.");
         });
 
         thread.IsBackground = true;
@@ -93,7 +93,7 @@ public class SuspendRecoveryService : BackgroundService
 
     private void HandleSuspend()
     {
-        Console.WriteLine("[SuspendRecovery] System suspending — capturing state snapshot.");
+        OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] System suspending â€” capturing state snapshot.");
 
         try
         {
@@ -105,23 +105,23 @@ public class SuspendRecoveryService : BackgroundService
             _preSuspendGpuCurve = gpu;
             _preSuspendProfile = _perfModeService.GetCurrentModeAsync().GetAwaiter().GetResult();
 
-            Console.WriteLine($"[SuspendRecovery] Snapshot: FanMode={_preSuspendFanMode}, Curve={(_preSuspendCurve != null ? "active" : "none")}, Profile={_preSuspendProfile}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Snapshot: FanMode={_preSuspendFanMode}, Curve={(_preSuspendCurve != null ? "active" : "none")}, Profile={_preSuspendProfile}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SuspendRecovery] Failed to capture state snapshot: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Failed to capture state snapshot: {ex.Message}");
         }
 
         // CRITICAL (OmenCore v3.8.2 fix): Stop Max Fan keepalive BEFORE suspend.
-        // If keepalive keeps running during suspend, fans stay at max → BIOS thermal shutdown.
+        // If keepalive keeps running during suspend, fans stay at max â†’ BIOS thermal shutdown.
         try
         {
             _fanCurveService.SetSuspendActive(true);
-            Console.WriteLine("[SuspendRecovery] Curve engine paused. System is safe to suspend.");
+            OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] Curve engine paused. System is safe to suspend.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SuspendRecovery] Error pausing curve engine: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Error pausing curve engine: {ex.Message}");
         }
 
         _suspendEventReceived = true;
@@ -129,14 +129,14 @@ public class SuspendRecoveryService : BackgroundService
 
     private async Task HandleResumeAsync()
     {
-        Console.WriteLine("[SuspendRecovery] System resuming — waiting before restore...");
+        OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] System resuming â€” waiting before restore...");
 
         // Brief delay to allow BIOS/ACPI to stabilize after resume before we issue WMI commands
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         if (!await _resumeLock.WaitAsync(TimeSpan.FromSeconds(10)))
         {
-            Console.WriteLine("[SuspendRecovery] Resume restore skipped — already in progress.");
+            OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] Resume restore skipped â€” already in progress.");
             return;
         }
 
@@ -147,11 +147,11 @@ public class SuspendRecoveryService : BackgroundService
 
             if (!_suspendEventReceived)
             {
-                Console.WriteLine("[SuspendRecovery] No suspend event captured; skipping explicit restore.");
+                OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] No suspend event captured; skipping explicit restore.");
                 return;
             }
 
-            Console.WriteLine($"[SuspendRecovery] Restoring: FanMode={_preSuspendFanMode}, Profile={_preSuspendProfile}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Restoring: FanMode={_preSuspendFanMode}, Profile={_preSuspendProfile}");
 
             // Restore performance profile
             await RestoreProfileSafeAsync();
@@ -160,11 +160,11 @@ public class SuspendRecoveryService : BackgroundService
             await RestoreFanModeSafeAsync();
 
             _suspendEventReceived = false;
-            Console.WriteLine("[SuspendRecovery] ✓ Post-resume restore complete.");
+            OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] âœ“ Post-resume restore complete.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SuspendRecovery] Resume restore error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Resume restore error: {ex.Message}");
         }
         finally
         {
@@ -177,11 +177,11 @@ public class SuspendRecoveryService : BackgroundService
         try
         {
             await _perfModeService.SetPerformanceModeAsync(_preSuspendProfile);
-            Console.WriteLine($"[SuspendRecovery] ✓ Performance profile restored: {_preSuspendProfile}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] âœ“ Performance profile restored: {_preSuspendProfile}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SuspendRecovery] Failed to restore performance profile: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Failed to restore performance profile: {ex.Message}");
         }
     }
 
@@ -194,7 +194,7 @@ public class SuspendRecoveryService : BackgroundService
                 case 2: // Max Fan
                     _fanCurveService.SetMaxModeActive(true);
                     await _fanControlService.SetMaxFanAsync(true);
-                    Console.WriteLine("[SuspendRecovery] ✓ Max Fan mode restored.");
+                    OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] âœ“ Max Fan mode restored.");
                     break;
 
                 case 1: // OmenFlow preset / custom curve
@@ -203,18 +203,18 @@ public class SuspendRecoveryService : BackgroundService
                     if (_preSuspendCpuCurve != null && _preSuspendGpuCurve != null)
                     {
                         await _fanCurveService.ApplyIndependentCurvesAsync(_preSuspendCpuCurve, _preSuspendGpuCurve);
-                        Console.WriteLine("[SuspendRecovery] ✓ Independent CPU+GPU curves restored.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] âœ“ Independent CPU+GPU curves restored.");
                     }
                     else if (_preSuspendCurve != null)
                     {
                         await _fanCurveService.ApplyCustomCurveAsync(_preSuspendCurve);
-                        Console.WriteLine("[SuspendRecovery] ✓ Fan curve restored.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] âœ“ Fan curve restored.");
                     }
                     else
                     {
-                        // Curve data missing — fall back to BIOS auto
+                        // Curve data missing â€” fall back to BIOS auto
                         await _fanControlService.RestoreAutoControlAsync();
-                        Console.WriteLine("[SuspendRecovery] Fan curve data unavailable; restored BIOS auto control.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] Fan curve data unavailable; restored BIOS auto control.");
                     }
                     break;
 
@@ -222,13 +222,14 @@ public class SuspendRecoveryService : BackgroundService
                     _fanCurveService.SetMaxModeActive(false);
                     await _fanCurveService.ApplyCustomCurveAsync(null);
                     await _fanControlService.RestoreAutoControlAsync();
-                    Console.WriteLine("[SuspendRecovery] ✓ Auto fan mode restored.");
+                    OmenFlow.Core.Services.Logger.LogInfo("[SuspendRecovery] âœ“ Auto fan mode restored.");
                     break;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SuspendRecovery] Failed to restore fan mode: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[SuspendRecovery] Failed to restore fan mode: {ex.Message}");
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,7 +39,7 @@ public class FanControlService : IFanControlService, IDisposable
     {
         _isFanTransitioning = true;
         _fanTransitionUntil = DateTime.UtcNow.AddMilliseconds(FanTransitionHoldMs);
-        Console.WriteLine("[FanControlService] Fan transition window started (5s RPM hold).");
+        OmenFlow.Core.Services.Logger.LogInfo("[FanControlService] Fan transition window started (5s RPM hold).");
     }
 
     public FanControlService(IBiosService biosService, BoardConfiguration boardConfig, IEcService ecService)
@@ -67,7 +67,7 @@ public class FanControlService : IFanControlService, IDisposable
 
     private async Task WakeUpWmiAsync()
     {
-        Console.WriteLine("[FanControlService] Sending Wake-Up sequence to WMI...");
+        OmenFlow.Core.Services.Logger.LogInfo("[FanControlService] Sending Wake-Up sequence to WMI...");
         for (int i = 0; i < 3; i++)
         {
             try
@@ -257,7 +257,7 @@ public class FanControlService : IFanControlService, IDisposable
         // For safety and model compatibility (matching OmenCore), map 0% to BIOS auto mode.
         if (percent == 0)
         {
-            Console.WriteLine("[FanControlService] SetFanLevelAsync(0) mapped to RestoreAutoControlAsync for firmware-safe silent behavior.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanControlService] SetFanLevelAsync(0) mapped to RestoreAutoControlAsync for firmware-safe silent behavior.");
             return await RestoreAutoControlAsync(cancellationToken);
         }
 
@@ -321,7 +321,7 @@ public class FanControlService : IFanControlService, IDisposable
         if (_boardConfig.FanCount <= 1 || !_boardConfig.SupportsFanControlEc)
         {
             int unified = Math.Max(cpuPercent, gpuPercent);
-            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync → unified fallback ({unified}%) [FanCount={_boardConfig.FanCount}, EC={_boardConfig.SupportsFanControlEc}]");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanControlService] SetFanLevelIndependentAsync â†’ unified fallback ({unified}%) [FanCount={_boardConfig.FanCount}, EC={_boardConfig.SupportsFanControlEc}]");
             return await SetFanLevelAsync(unified, cancellationToken);
         }
 
@@ -349,7 +349,7 @@ public class FanControlService : IFanControlService, IDisposable
             _lastManualPercent = Math.Max(cpuPercent, gpuPercent);
             _isManualControlActive = true;
             StartCountdownTimer();
-            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync: CPU={cpuPercent}% (L={bCpu}), GPU={gpuPercent}% (L={bGpu}) ✓");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanControlService] SetFanLevelIndependentAsync: CPU={cpuPercent}% (L={bCpu}), GPU={gpuPercent}% (L={bGpu}) âœ“");
             RecordCommand("SetFanLevelIndep", $"CPU={cpuPercent}%, GPU={gpuPercent}%", true, $"WMI 0x2E set independent level (C={bCpu}, G={bGpu}) succeeded.");
             return true;
         }
@@ -361,7 +361,7 @@ public class FanControlService : IFanControlService, IDisposable
             await _ecService.WriteByteAsync(0x35, bGpu, cancellationToken); // GPU fan
             _lastManualPercent = Math.Max(cpuPercent, gpuPercent);
             _isManualControlActive = true;
-            Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync EC fallback: CPU=0x{bCpu:X2}, GPU=0x{bGpu:X2} ✓");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanControlService] SetFanLevelIndependentAsync EC fallback: CPU=0x{bCpu:X2}, GPU=0x{bGpu:X2} âœ“");
             RecordCommand("SetFanLevelIndep", $"CPU={cpuPercent}%, GPU={gpuPercent}%", true, $"EC 0x34/0x35 set independent level (C={bCpu}, G={bGpu}) succeeded.");
             return true;
         }
@@ -393,36 +393,42 @@ public class FanControlService : IFanControlService, IDisposable
         catch { }
 
         bool success = false;
-        Console.WriteLine($"[FanControlService] Starting EC Reset to Defaults (respecting profile {activeProfile})...");
+        OmenFlow.Core.Services.Logger.LogInfo($"[FanControlService] RestoreAutoControl (profile={activeProfile}, MaxFanLevel={_boardConfig.MaxFanLevel})...");
 
         try
         {
-            // Step 1: Disable Max Fan mode (0x27) first so BIOS can accept thermal policy changes
+            // Step 1: Disable Max Fan mode (0x27) â€” unconditional, always safe
             await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
-            await Task.Delay(50, cancellationToken);
+            OmenFlow.Core.Services.Logger.LogInfo("  Step 1: SetFanMax(false) sent");
+            await Task.Delay(30, cancellationToken);
 
-            // Step 2: Set Thermal Policy to Default (30) as a safe intermediate state (OmenCore ritual)
+            // Step 2: Set Thermal Policy to Default first (OmenCore ritual â€” intermediate safe state)
             await _biosService.SendCommandAsync(
                 0x20008, 0x1A,
                 new byte[] { 0xFF, (byte)ThermalProfile.Default, 0x00, 0x00 },
                 0, cancellationToken);
-            await Task.Delay(50, cancellationToken);
+            OmenFlow.Core.Services.Logger.LogInfo("  Step 2: SetFanMode(Default) intermediate succeeded");
+            await Task.Delay(30, cancellationToken);
 
-            // Step 3: Apply physical fan kick (Level 20) to prevent firmware freeze (OmenCore ritual) - V1 systems ONLY
+            // Step 3: V1-only fan kick â€” on V2 systems (MaxFanLevel >= 100), SetFanLevel uses
+            // percentage scale where ANY value puts EC into manual mode and overrides BIOS auto.
+            // OmenCore explicitly skips this on V2 (ClearV1AutoModeFloor checks _maxFanLevel >= 100).
             if (_boardConfig.MaxFanLevel < 100)
             {
+                // V1 (krpm scale): send a transition hint so EC physically ramps fans
                 await _biosService.SendCommandAsync(
                     0x20008, 0x2E,
                     new byte[] { 20, 20, 0x00, 0x00 },
                     0, cancellationToken);
-                await Task.Delay(50, cancellationToken);
+                OmenFlow.Core.Services.Logger.LogInfo("  Step 3: V1 fan kick SetFanLevel(20,20) sent");
+                await Task.Delay(30, cancellationToken);
             }
             else
             {
-                Console.WriteLine("  Step 3: Skipped SetFanLevel kick on V2 system to prevent overriding BIOS auto control");
+                OmenFlow.Core.Services.Logger.LogInfo("  Step 3: Skipped (V2 system â€” SetFanLevel would override BIOS auto)");
             }
 
-            // Step 4: Set Thermal Policy to the actual target profile
+            // Step 4: Set Thermal Policy to actual target profile
             var (ret1A, _) = await _biosService.SendCommandAsync(
                 0x20008, 0x1A,
                 new byte[] { 0xFF, (byte)activeProfile, 0x00, 0x00 },
@@ -432,33 +438,19 @@ public class FanControlService : IFanControlService, IDisposable
             {
                 success = true;
                 UpdateThermalProfileCache(activeProfile);
-                Console.WriteLine($"  Step 4: SetFanMode({activeProfile}) succeeded");
+                OmenFlow.Core.Services.Logger.LogInfo($"  Step 4: SetFanMode({activeProfile}) succeeded");
             }
-            await Task.Delay(50, cancellationToken);
 
-            // Step 5: Extend countdown to prevent immediate timeout (CMD_FAN_GET_COUNT 0x10)
-            await _biosService.SendCommandAsync(0x20008, 0x10, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 4, cancellationToken);
-            await Task.Delay(50, cancellationToken);
-
-            // Step 6: Reset EC Fan Profile Register to match active profile
-            byte ecFanMode = activeProfile switch
-            {
-                ThermalProfile.Performance => 0x01,
-                ThermalProfile.Quiet => 0x02,
-                _ => 0x00
-            };
-            try
-            {
-                await _ecService.WriteByteAsync(0x95, ecFanMode, cancellationToken);
-                Console.WriteLine($"  Step 6: EC 0x95 ← 0x{ecFanMode:X2} ({activeProfile}) succeeded");
-            }
-            catch { }
+            // NOTE: OmenCore does NOT send CMD_FAN_GET_COUNT (0x10) during auto restore.
+            // That command is a countdown keep-alive that tells EC to stay in manual mode.
+            // NOTE: OmenCore does NOT write EC register 0x95 during auto restore either.
+            // SetFanMode(Default) via WMI is sufficient to hand full control back to BIOS.
             
-            Console.WriteLine("[FanControlService] ✓ EC Reset to Defaults (OmenCore Safe Sequence) completed successfully. BIOS should now have full control of fans.");
+            OmenFlow.Core.Services.Logger.LogInfo("[FanControlService] âœ“ BIOS auto control restored. Fans should now be managed by firmware thermal policy.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WMI Auto Restore] failed: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FanControlService] RestoreAutoControl failed: {ex.Message}");
             RecordCommand("RestoreAutoControl", activeProfile.ToString(), false, $"Exception: {ex.Message}");
         }
 
@@ -509,7 +501,7 @@ public class FanControlService : IFanControlService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CountdownTick] Error maintaining WMI fan heartbeat: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[CountdownTick] Error maintaining WMI fan heartbeat: {ex.Message}");
         }
     }
 
@@ -562,3 +554,4 @@ public class FanControlService : IFanControlService, IDisposable
         return sb.ToString();
     }
 }
+

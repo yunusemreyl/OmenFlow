@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Management;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,6 +16,38 @@ public sealed partial class GraphicsSwitcherPage : Page
         this.InitializeComponent();
         App.IpcClient.TelemetryReceived += IpcClient_TelemetryReceived;
         this.Unloaded += GraphicsSwitcherPage_Unloaded;
+        this.Loaded += GraphicsSwitcherPage_Loaded;
+    }
+
+    private void GraphicsSwitcherPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string? discreteGpu = null;
+            using (var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController"))
+            {
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    string name = obj["Name"]?.ToString() ?? "";
+                    if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) || 
+                        name.Contains("AMD Radeon RX", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("RTX", StringComparison.OrdinalIgnoreCase))
+                    {
+                        discreteGpu = name;
+                        break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(discreteGpu))
+            {
+                TxtDiscreteDesc.Text = $"Ekran gÃ¶rÃ¼ntÃ¼nÃ¼z {discreteGpu} Ã¼zerinden verilir.";
+            }
+        }
+        catch
+        {
+            // Ignore WMI errors
+        }
     }
 
     private void GraphicsSwitcherPage_Unloaded(object sender, RoutedEventArgs e)
@@ -21,13 +55,18 @@ public sealed partial class GraphicsSwitcherPage : Page
         App.IpcClient.TelemetryReceived -= IpcClient_TelemetryReceived;
     }
 
+    private static int? _pendingGpuMode = null;
+    private bool _isSwitching = false;
+
     private void IpcClient_TelemetryReceived(object? sender, TelemetryData e)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            if (_isSwitching) return; // KullanÄ±cÄ± seÃ§im yaparken arayÃ¼zÃ¼ telemetri ile ezme
+            int currentMode = _pendingGpuMode.HasValue ? _pendingGpuMode.Value : e.GpuMode;
             // GpuMode 0 = Hybrid, 1 = Dedicated/Discrete, 2 = Optimus
-            if (BtnMuxHybrid != null) BtnMuxHybrid.IsChecked = (e.GpuMode == 0 || e.GpuMode == 2);
-            if (BtnMuxDiscrete != null) BtnMuxDiscrete.IsChecked = (e.GpuMode == 1);
+            if (BtnMuxHybrid != null) BtnMuxHybrid.IsChecked = (currentMode == 0 || currentMode == 2);
+            if (BtnMuxDiscrete != null) BtnMuxDiscrete.IsChecked = (currentMode == 1);
         });
     }
 
@@ -39,46 +78,71 @@ public sealed partial class GraphicsSwitcherPage : Page
         int newMode = (btn == BtnMuxDiscrete) ? 1 : 0;
         int oldMode = (newMode == 1) ? 0 : 1;
 
-        if (App.IpcClient != null)
+        if (_isSwitching)
         {
-            bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
-            if (!sent)
-            {
-                // Rollback
-                if (newMode == 1)
-                {
-                    BtnMuxHybrid.IsChecked = true;
-                }
-                else
-                {
-                    BtnMuxDiscrete.IsChecked = true;
-                }
-                await ShowCommandFailedDialogAsync("MUX değiştirilemedi", "Worker servisine erişilemedi ya da komut reddedildi.");
-                return;
-            }
+            // EÄŸer halihazÄ±rda iÅŸlem yapÄ±lÄ±yorsa, gÃ¶rsel olarak tÄ±klamayÄ± geri al
+            if (newMode == 1) BtnMuxHybrid.IsChecked = true;
+            else BtnMuxDiscrete.IsChecked = true;
+            return;
+        }
 
-            ShowMuxToastNotification(oldMode, newMode);
+        _isSwitching = true;
+        try
+        {
+            _pendingGpuMode = newMode;
+
+            if (App.IpcClient != null)
+            {
+                bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
+                if (!sent)
+                {
+                    _pendingGpuMode = null;
+                    // Rollback
+                    if (newMode == 1) BtnMuxHybrid.IsChecked = true;
+                    else BtnMuxDiscrete.IsChecked = true;
+                    
+                    await ShowCommandFailedDialogAsync("MUX deÄŸiÅŸtirilemedi", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                    return;
+                }
+
+                await ShowMuxToastNotificationAsync(oldMode, newMode);
+            }
+        }
+        finally
+        {
+            _isSwitching = false;
         }
     }
 
     private async void BtnResetDefault_Click(object sender, RoutedEventArgs e)
     {
-        // Reset default GPU mode to Hybrid (0)
         if (BtnMuxHybrid.IsChecked == true) return; // Already hybrid
+        if (_isSwitching) return;
 
-        if (App.IpcClient != null)
+        _isSwitching = true;
+        try
         {
-            bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", 0);
-            if (sent)
+            _pendingGpuMode = 0;
+
+            if (App.IpcClient != null)
             {
-                BtnMuxHybrid.IsChecked = true;
-                BtnMuxDiscrete.IsChecked = false;
-                ShowMuxToastNotification(1, 0);
+                bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", 0);
+                if (sent)
+                {
+                    BtnMuxHybrid.IsChecked = true;
+                    BtnMuxDiscrete.IsChecked = false;
+                    await ShowMuxToastNotificationAsync(1, 0);
+                }
+                else
+                {
+                    _pendingGpuMode = null;
+                    await ShowCommandFailedDialogAsync("SÄ±fÄ±rlama baÅŸarÄ±sÄ±z", "VarsayÄ±lan moda geÃ§iÅŸ yapÄ±lamadÄ±.");
+                }
             }
-            else
-            {
-                await ShowCommandFailedDialogAsync("Sıfırlama başarısız", "Varsayılan moda geçiş yapılamadı.");
-            }
+        }
+        finally
+        {
+            _isSwitching = false;
         }
     }
 
@@ -98,19 +162,19 @@ public sealed partial class GraphicsSwitcherPage : Page
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"Dialog error: {ex.Message}");
         }
     }
 
-    private async void ShowMuxToastNotification(int oldMode, int newMode)
+    private async Task ShowMuxToastNotificationAsync(int oldMode, int newMode)
     {
         try
         {
             var dialog = new ContentDialog
             {
-                Title = "Yeniden Başlatma Gerekli",
-                Content = "GPU MUX Modu değişikliğinin etkinleşmesi için bilgisayarınızı yeniden başlatmanız gerekiyor.",
-                PrimaryButtonText = "Yeniden Başlat",
+                Title = "Yeniden BaÅŸlatma Gerekli",
+                Content = "GPU MUX Modu deÄŸiÅŸikliÄŸinin etkinleÅŸmesi iÃ§in bilgisayarÄ±nÄ±zÄ± yeniden baÅŸlatmanÄ±z gerekiyor.",
+                PrimaryButtonText = "Yeniden BaÅŸlat",
                 CloseButtonText = "Daha Sonra",
                 XamlRoot = this.XamlRoot,
                 RequestedTheme = ElementTheme.Default
@@ -124,7 +188,8 @@ public sealed partial class GraphicsSwitcherPage : Page
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"Dialog error: {ex.Message}");
         }
     }
 }
+

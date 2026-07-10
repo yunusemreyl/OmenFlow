@@ -57,16 +57,30 @@
                                     </VisualState>
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Unchecked">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#111113"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#222226"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="1.5"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
                                     <VisualState x:Name="Checked">
                                         <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#131316"/>
+                                            </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource OmenGradientBrush}"/>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="2.0"/>
                                             </ObjectAnimationUsingKeyFrames>
-                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#131316" Duration="0:0:0.1"/>
                                         </Storyboard>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -106,8 +120,12 @@
                                     <VisualState x:Name="Normal"/>
                                     <VisualState x:Name="PointerOver">
                                         <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#25252B" Duration="0:0:0.1"/>
-                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#3F3F46" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#25252B"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#3F3F46"/>
+                                            </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
                                             </ObjectAnimationUsingKeyFrames>
@@ -115,11 +133,27 @@
                                     </VisualState>
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Unchecked">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#1A1A1E"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#2A2A30"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#9CA3AF"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
                                     <VisualState x:Name="Checked">
                                         <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#2563EB" Duration="0:0:0.1"/>
-                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#3B82F6" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#2563EB"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#3B82F6"/>
+                                            </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
                                             </ObjectAnimationUsingKeyFrames>
@@ -213,7 +247,7 @@
                             <RadioButton x:Name="BtnFanMax" Grid.Column="2" Content="Max" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
                             <RadioButton x:Name="BtnFanManual" Grid.Column="3" Content="Custom" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="4,0,0,0"/>
                         </Grid>
-                        <TextBlock Text="OmenFlow akıllı eğrisi veya BIOS otomatik modunu seçin." FontSize="11" Foreground="#7C7C82"/>
+                        <TextBlock x:Name="FanModeDescText" Text="OmenFlow akıllı eğrisi veya BIOS otomatik modunu seçin." FontSize="11" Foreground="#7C7C82"/>
                     </StackPanel>
                 </Border>
 
@@ -268,6 +302,48 @@
                                     <TextBlock Text="GPU Yükü:" FontSize="11" Foreground="#7C7C82"/>
                                     <TextBlock x:Name="GpuUsageText" Text="%4" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
                                 </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+ 
+                <!-- Section 4: Power Consumption Dashboard -->
+                <Border Background="#0C0C0E" BorderBrush="#1B1B1E" BorderThickness="1.5" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
+                            <FontIcon Glyph="&#xE9D2;" FontSize="15" Foreground="#FFB000"/>
+                            <TextBlock Text="ANLIK GÜÇ TÜKETİMİ (WATT)" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="#9CA3AF"/>
+                        </StackPanel>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Column 1: CPU Power -->
+                            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="CpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#FF9F1C" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="CPU Gücü" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <Border Grid.Column="1" Background="#222226" Width="1" Margin="0,5,0,5"/>
+
+                            <!-- Column 2: GPU Power -->
+                            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="GpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#10B981" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="GPU Gücü" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <Border Grid.Column="3" Background="#222226" Width="1" Margin="0,5,0,5"/>
+
+                            <!-- Column 3: Total Power -->
+                            <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="TotalPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#EC4899" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Toplam Tüketim" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

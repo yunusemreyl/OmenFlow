@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -12,12 +12,12 @@ namespace OmenFlow.Hardware;
 ///
 /// Problem (from OmenCore field reports):
 ///   Quiet mode aggressively limits fan speed and CPU power. On some workloads
-///   (video export, compilation, VMs) the CPU can hit 95°C+ even in Quiet mode.
-///   The user may not be watching the temperature — this monitor acts as a guardian.
+///   (video export, compilation, VMs) the CPU can hit 95Â°C+ even in Quiet mode.
+///   The user may not be watching the temperature â€” this monitor acts as a guardian.
 ///
 /// Behavior (mirrors OmenCore's QuietSafetyMonitor):
 ///   - Only active when current thermal profile == Quiet
-///   - If CPU temp exceeds EscalationThresholdC for EscalationDwellSeconds → switch to Balanced
+///   - If CPU temp exceeds EscalationThresholdC for EscalationDwellSeconds â†’ switch to Balanced
 ///   - Logs the escalation event prominently
 ///   - Does NOT automatically return to Quiet (user must do this manually)
 ///   - A "cooldown" prevents repeated rapid escalations within CooldownMinutes
@@ -40,7 +40,7 @@ public class QuietSafetyMonitor : BackgroundService
     private const int CooldownMinutes    = 5;
     private const int PollIntervalMs     = 3000;
 
-    // Telemetry source (injected from Worker — same as FanCurveHostedService)
+    // Telemetry source (injected from Worker â€” same as FanCurveHostedService)
     public Func<WorkerTelemetry>? TelemetryProvider { get; set; }
 
     public QuietSafetyMonitor(PerformanceModeService perfModeService)
@@ -50,7 +50,7 @@ public class QuietSafetyMonitor : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Console.WriteLine("[QuietSafety] Monitor started.");
+        OmenFlow.Core.Services.Logger.LogInfo("[QuietSafety] Monitor started.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -65,11 +65,11 @@ public class QuietSafetyMonitor : BackgroundService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[QuietSafety] Poll error: {ex.Message}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] Poll error: {ex.Message}");
             }
         }
 
-        Console.WriteLine("[QuietSafety] Monitor stopped.");
+        OmenFlow.Core.Services.Logger.LogInfo("[QuietSafety] Monitor stopped.");
     }
 
     private async Task EvaluateAsync(CancellationToken ct)
@@ -100,7 +100,7 @@ public class QuietSafetyMonitor : BackgroundService
             if (_overThresholdSince == DateTime.MinValue)
             {
                 _overThresholdSince = DateTime.UtcNow;
-                Console.WriteLine($"[QuietSafety] ⚠ CPU temp {cpuTemp}°C ≥ {EscalationThresholdC}°C in Quiet mode — starting escalation timer.");
+                OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] âš  CPU temp {cpuTemp}Â°C â‰¥ {EscalationThresholdC}Â°C in Quiet mode â€” starting escalation timer.");
                 return;
             }
 
@@ -111,7 +111,7 @@ public class QuietSafetyMonitor : BackgroundService
                 // Check cooldown
                 if ((DateTime.UtcNow - _lastEscalationAt).TotalMinutes < CooldownMinutes)
                 {
-                    Console.WriteLine($"[QuietSafety] Escalation suppressed — cooldown active ({CooldownMinutes}min).");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] Escalation suppressed â€” cooldown active ({CooldownMinutes}min).");
                     return;
                 }
 
@@ -119,15 +119,15 @@ public class QuietSafetyMonitor : BackgroundService
             }
             else
             {
-                Console.WriteLine($"[QuietSafety] CPU={cpuTemp}°C — waiting for dwell {dwellSeconds:F1}/{EscalationDwellSeconds}s before escalating...");
+                OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] CPU={cpuTemp}Â°C â€” waiting for dwell {dwellSeconds:F1}/{EscalationDwellSeconds}s before escalating...");
             }
         }
         else
         {
-            // Back below threshold — reset dwell
+            // Back below threshold â€” reset dwell
             if (_overThresholdSince != DateTime.MinValue)
             {
-                Console.WriteLine($"[QuietSafety] CPU temp {cpuTemp}°C dropped below threshold — resetting dwell timer.");
+                OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] CPU temp {cpuTemp}Â°C dropped below threshold â€” resetting dwell timer.");
                 _overThresholdSince = DateTime.MinValue;
             }
         }
@@ -135,8 +135,8 @@ public class QuietSafetyMonitor : BackgroundService
 
     private async Task EscalateAsync(double cpuTemp, double dwellSeconds, CancellationToken ct)
     {
-        Console.WriteLine($"[QuietSafety] 🔴 ESCALATING: CPU={cpuTemp}°C ≥ {EscalationThresholdC}°C for {dwellSeconds:F1}s in Quiet mode → switching to {EscalateTo}");
-        Console.WriteLine($"[QuietSafety] The profile will NOT automatically return to Quiet. User must change it manually.");
+        OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] ğŸ”´ ESCALATING: CPU={cpuTemp}Â°C â‰¥ {EscalationThresholdC}Â°C for {dwellSeconds:F1}s in Quiet mode â†’ switching to {EscalateTo}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] The profile will NOT automatically return to Quiet. User must change it manually.");
 
         _lastEscalationAt = DateTime.UtcNow;
         _overThresholdSince = DateTime.MinValue;
@@ -144,13 +144,14 @@ public class QuietSafetyMonitor : BackgroundService
         try
         {
             bool ok = await _perfModeService.SetPerformanceModeAsync(EscalateTo, ct);
-            Console.WriteLine(ok
-                ? $"[QuietSafety] ✓ Escalated to {EscalateTo} successfully."
-                : $"[QuietSafety] ⚠ Escalation profile write failed.");
+            OmenFlow.Core.Services.Logger.LogInfo(ok
+                ? $"[QuietSafety] âœ“ Escalated to {EscalateTo} successfully."
+                : $"[QuietSafety] âš  Escalation profile write failed.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[QuietSafety] Escalation error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[QuietSafety] Escalation error: {ex.Message}");
         }
     }
 }
+

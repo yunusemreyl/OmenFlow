@@ -6,6 +6,12 @@ public static class TelemetryDisplayHelper
 {
     public static string FormatFanRpm(int rpm, FanRpmState state)
     {
+        if (state == FanRpmState.Stable || state == FanRpmState.TransitionHold)
+        {
+            int roundedRpm = (int)(System.Math.Round(rpm / 100.0) * 100);
+            return $"{roundedRpm} RPM";
+        }
+
         return state switch
         {
             FanRpmState.Unavailable => "RPM kullanılamıyor",

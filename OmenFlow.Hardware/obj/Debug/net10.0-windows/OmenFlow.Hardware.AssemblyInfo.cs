@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OmenFlow.Hardware")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7ceaec6cf5ff8b99c2f0fda4fa87bf4a07358dfa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71cb8135adfe3bd5becf1aa8752f446c7baa4e93")]
 [assembly: System.Reflection.AssemblyProductAttribute("OmenFlow.Hardware")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OmenFlow.Hardware")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

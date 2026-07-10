@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -79,7 +79,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Startup] Failed to save fan curve cache: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[Startup] Failed to save fan curve cache: {ex.Message}");
         }
     }
 
@@ -103,7 +103,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Startup] Failed to load fan curve cache: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[Startup] Failed to load fan curve cache: {ex.Message}");
             return null;
         }
     }
@@ -134,12 +134,12 @@ class Program
                     fanCurveService.SetMaxModeActive(true);
                     await fanCurveService.ApplyCustomCurveAsync(null);
                     await fanControlService.SetMaxFanAsync(true);
-                    Console.WriteLine("[Startup] Restored Max Fan mode from cache.");
+                    OmenFlow.Core.Services.Logger.LogInfo("[Startup] Restored Max Fan mode from cache.");
                     break;
                 case 1:
                     fanCurveService.SetMaxModeActive(false);
                     await fanCurveService.ApplyCustomCurveAsync(cachedCurve ?? BuildOmenFlowPresetCurve());
-                    Console.WriteLine(cachedCurve != null
+                    OmenFlow.Core.Services.Logger.LogInfo(cachedCurve != null
                         ? "[Startup] Restored cached fan curve from disk."
                         : "[Startup] Restored OmenFlow fan curve from cache.");
                     break;
@@ -148,32 +148,32 @@ class Program
                     if (cachedCurve != null)
                     {
                         await fanCurveService.ApplyCustomCurveAsync(cachedCurve);
-                        Console.WriteLine("[Startup] Restored custom fan curve from disk.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[Startup] Restored custom fan curve from disk.");
                     }
                     else
                     {
                         await fanCurveService.ApplyCustomCurveAsync(null);
                         await fanControlService.RestoreAutoControlAsync();
-                        Console.WriteLine("[Startup] Custom fan mode was cached but curve data is missing; restored BIOS auto control.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[Startup] Custom fan mode was cached but curve data is missing; restored BIOS auto control.");
                     }
                     break;
                 default:
                     fanCurveService.SetMaxModeActive(false);
                     await fanCurveService.ApplyCustomCurveAsync(null);
                     await fanControlService.RestoreAutoControlAsync();
-                    Console.WriteLine("[Startup] Restored Auto fan mode from cache.");
+                    OmenFlow.Core.Services.Logger.LogInfo("[Startup] Restored Auto fan mode from cache.");
                     break;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Startup] Failed to restore fan mode: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[Startup] Failed to restore fan mode: {ex.Message}");
         }
     }
 
     static async Task Main(string[] args)
     {
-        Console.WriteLine("OmenFlow Worker Process (HTTP Minimal API) starting...");
+        OmenFlow.Core.Services.Logger.LogInfo("OmenFlow Worker Process (HTTP Minimal API) starting...");
         try
         {
             if (System.IO.File.Exists(FanModeCacheFile))
@@ -200,7 +200,7 @@ class Program
             {
                 try
                 {
-                    Console.WriteLine($"Killing existing worker process (ID: {p.Id})...");
+                    OmenFlow.Core.Services.Logger.LogInfo($"Killing existing worker process (ID: {p.Id})...");
                     p.Kill();
                     p.WaitForExit(2000);
                 }
@@ -225,7 +225,7 @@ class Program
             using var ecService        = new EcService(boardConfig);
             using var biosService      = new BiosService();
             using var fanControlService  = new FanControlService(biosService, boardConfig, ecService);
-            using var wmiBiosMonitor     = new WmiBiosMonitor(biosService, sensorReader);
+            using var wmiBiosMonitor     = new WmiBiosMonitor(biosService, sensorReader, fanControlService);
             using var fanCurveService    = new FanCurveHostedService(fanControlService);
             var gpuControlService        = new GpuControlService(biosService);
             var lightingService          = new KeyboardLightingService(biosService);
@@ -238,7 +238,7 @@ class Program
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
             _ = fanCurveService.StartAsync(CancellationToken.None);
 
-            // ── New Services (Faz 4-6) ──────────────────────────────────────
+            // â”€â”€ New Services (Faz 4-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             var fanVerifyService  = new FanVerificationService(fanControlService, boardConfig);
             var fanCalibService   = new FanCalibrationService(boardConfig);
             var powerLimitService = new PowerLimitService(biosService, ecService, boardConfig);
@@ -272,27 +272,26 @@ class Program
             if (currentMode != ThermalProfile.Default)
             {
                 await perfModeService.SetPerformanceModeAsync(currentMode);
-                Console.WriteLine($"[Startup] Reinforced current performance mode: {currentMode}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[Startup] Reinforced current performance mode: {currentMode}");
             }
 
-            Console.WriteLine("Hardware Services initialized. Setting up HTTP Endpoints...");
+            OmenFlow.Core.Services.Logger.LogInfo("Hardware Services initialized. Setting up HTTP Endpoints...");
 
             app.MapGet("/api/telemetry", async () =>
             {
-                var rpmTask      = fanControlService.GetFanRpmAsync();
+                // Fan RPM'i LHM Ã¶nbelleÄŸinden al (GetFanRpmAsync her istekte
+                // birden fazla engelleyici WMI Ã§aÄŸrÄ±sÄ± yapÄ±yordu â€” performans sorunu).
+                // WmiBiosMonitor arka planda 2sn'de bir LHM'yi gÃ¼ncelliyor.
+                var telemetry = wmiBiosMonitor.Read();
+
                 var gpuModeTask  = gpuControlService.GetGpuModeAsync();
                 var gpuPowerTask = gpuControlService.GetGpuPowerAsync();
                 var lightingTask = lightingService.GetLightingAsync();
                 var profileTask  = perfModeService.GetCurrentModeAsync();
 
-                await Task.WhenAll(rpmTask, gpuModeTask, gpuPowerTask, lightingTask, profileTask);
+                await Task.WhenAll(gpuModeTask, gpuPowerTask, lightingTask, profileTask);
 
-                var rpm = rpmTask.Result;
-
-                // WmiBiosMonitor önbelleğinden al; WMI RPM değerlerini enjekte et
-                var telemetry = wmiBiosMonitor.Read(rpm.CpuFanRpm, rpm.GpuFanRpm);
-
-                telemetry.GpuMode      = gpuModeTask.Result;
+                telemetry.GpuMode       = gpuModeTask.Result;
                 telemetry.GpuPowerLevel = gpuPowerTask.Result;
                 telemetry.ActiveProfile = profileTask.Result;
                 telemetry.ActiveFanMode = s_activeFanMode;
@@ -311,7 +310,7 @@ class Program
             {
                 string cmd = req.Command;
                 var root = req.Value;
-                Console.WriteLine($"[Command API] Received: {cmd}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[Command API] Received: {cmd}");
 
                 try
                 {
@@ -320,7 +319,7 @@ class Program
                         case "SetFanLevel":
                         {
                             int level = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 100;
-                            Console.WriteLine($"[Command] SetFanLevel: {level}%");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetFanLevel: {level}%");
                             SaveFanMode(3); // Custom
                             SaveFanCurveCache(null, "custom");
                             fanCurveService.SetMaxModeActive(false);
@@ -330,7 +329,7 @@ class Program
                         }
                         case "SetAuto":
                         {
-                            Console.WriteLine("[Command] SetAuto");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] SetAuto");
                             SaveFanMode(0); // Auto
                             SaveFanCurveCache(null, "auto");
                             fanControlService.NotifyFanTransitionStarted();
@@ -346,7 +345,7 @@ class Program
                             {
                                 enabled = root.Value.GetBoolean();
                             }
-                            Console.WriteLine($"[Command] SetMaxFan: {enabled}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetMaxFan: {enabled}");
                             SaveFanMode(enabled ? 2 : 0);
                             SaveFanCurveCache(null, "max");
                             fanControlService.NotifyFanTransitionStarted();
@@ -357,7 +356,7 @@ class Program
                         }
                         case "ApplyCurve":
                         {
-                            Console.WriteLine("[Command] ApplyCurve");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] ApplyCurve");
                             FanCurve? curve = ParseFanCurve(root);
                             if (curve != null && curve.Points.Count == 7 && curve.Points[0].TemperatureCelsius == 50 && curve.Points[0].FanSpeedPercent == 0)
                             {
@@ -375,7 +374,7 @@ class Program
                         case "ApplyPreset":
                         {
                             string presetId = root?.ValueKind == JsonValueKind.String ? root.Value.GetString() ?? "" : "";
-                            Console.WriteLine($"[Command] ApplyPreset: {presetId}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] ApplyPreset: {presetId}");
                             var preset = presetService.GetAll().FirstOrDefault(p => p.Id == presetId);
                             if (preset == null) break;
 
@@ -407,7 +406,7 @@ class Program
                         case "SetThermalProfile":
                         {
                             int profile = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 0;
-                            Console.WriteLine($"[Command] SetThermalProfile: 0x{profile:X2}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetThermalProfile: 0x{profile:X2}");
                             bool perfSuccess = await perfModeService.SetPerformanceModeAsync((ThermalProfile)profile);
                             fanControlService.RecordCommand("SetThermalProfile", $"0x{profile:X2}", perfSuccess, $"Switched thermal profile to {(ThermalProfile)profile}");
 
@@ -418,7 +417,7 @@ class Program
                                 {
                                     try
                                     {
-                                        Console.WriteLine("[PerformanceMode] ⚡ Starting profile switch fan kick to 55%...");
+                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âš¡ Starting profile switch fan kick to 55%...");
                                         fanCurveService.SetTemporaryOverride(true);
                                         await fanControlService.SetFanLevelAsync(55);
                                         await Task.Delay(3000);
@@ -436,11 +435,11 @@ class Program
                                         {
                                             fanCurveService.TriggerImmediateApply();
                                         }
-                                        Console.WriteLine("[PerformanceMode] ✓ Profile switch fan kick complete.");
+                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âœ“ Profile switch fan kick complete.");
                                     }
                                     catch (Exception ex)
                                     {
-                                        Console.WriteLine($"[PerformanceMode] Profile switch fan kick failed: {ex.Message}");
+                                        OmenFlow.Core.Services.Logger.LogInfo($"[PerformanceMode] Profile switch fan kick failed: {ex.Message}");
                                     }
                                 });
                             }
@@ -449,14 +448,14 @@ class Program
                         case "SetGpuMode":
                         {
                             int mode = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 2;
-                            Console.WriteLine($"[Command] SetGpuMode: {(GpuMode)mode}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetGpuMode: {(GpuMode)mode}");
                             await gpuControlService.SetGpuModeAsync((GpuMode)mode);
                             break;
                         }
                         case "SetGpuPower":
                         {
                             int power = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 0;
-                            Console.WriteLine($"[Command] SetGpuPower: {(GpuPowerLevel)power}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetGpuPower: {(GpuPowerLevel)power}");
                             await gpuControlService.SetGpuPowerAsync((GpuPowerLevel)power);
                             break;
                         }
@@ -475,7 +474,7 @@ class Program
                                 on = root.Value.ValueKind == JsonValueKind.True;
                             }
 
-                            Console.WriteLine($"[Command] SetLighting: On={on}, Colors={colors}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetLighting: On={on}, Colors={colors}");
                             rgbEffectEngine.Stop();
                             await lightingService.SetLightingAsync(on, colors);
                             break;
@@ -509,7 +508,7 @@ class Program
                                 } catch {}
                             }
 
-                            Console.WriteLine($"[Command] SetLightingEffect: {effectName}, Speed={speed}, Brightness={brightness}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetLightingEffect: {effectName}, Speed={speed}, Brightness={brightness}");
                             rgbEffectEngine.SetEffect(effectName.ToLowerInvariant() switch
                             {
                                 "breathing"  => new OmenFlow.Hardware.Lighting.BreathingEffect(r, g, b, speed),
@@ -522,33 +521,33 @@ class Program
                         case "SetBatteryCare":
                         {
                             bool enabled = root?.ValueKind == JsonValueKind.True;
-                            Console.WriteLine($"[Command] SetBatteryCare: {enabled}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetBatteryCare: {enabled}");
                             await powerService.SetBatteryCareModeAsync(enabled ? BatteryCareMode.Enabled : BatteryCareMode.Disabled);
                             break;
                         }
                         case "SetThermalSafety":
                         {
                             bool enabled = root?.ValueKind == JsonValueKind.True;
-                            Console.WriteLine($"[Command] SetThermalSafety: {enabled}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetThermalSafety: {enabled}");
                             SaveThermalSafety(enabled);
                             fanCurveService.SetThermalSafetyEnabled(enabled);
                             break;
                         }
                         case "GetFanDiagnostics":
                         {
-                            Console.WriteLine("[Command] GetFanDiagnostics");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] GetFanDiagnostics");
                             var report = fanCurveService.GetCommandHistoryReport();
                             return Results.Ok(new { Success = true, Report = report });
                         }
                         case "ExportDiagnostics":
                         {
-                            Console.WriteLine("[Command] ExportDiagnostics");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] ExportDiagnostics");
                             string zipPath = await diagnosticsService.ExportAsync();
                             return Results.Ok(new { Success = true, ZipPath = zipPath });
                         }
                         case "SetPowerLimits":
                         {
-                            Console.WriteLine("[Command] SetPowerLimits");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] SetPowerLimits");
                             int pl1 = 0, pl2 = 0, tgp = 0;
                             if (root?.ValueKind == JsonValueKind.Object)
                             {
@@ -564,7 +563,7 @@ class Program
                         }
                         case "SetPowerAutomation":
                         {
-                            Console.WriteLine("[Command] SetPowerAutomation");
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] SetPowerAutomation");
                             if (root?.ValueKind == JsonValueKind.Object)
                             {
                                 if (root.Value.TryGetProperty("IsEnabled", out var en)) powerAutoService.IsEnabled = en.GetBoolean();
@@ -578,32 +577,32 @@ class Program
                         case "SetQuietSafety":
                         {
                             bool enabled = root?.ValueKind != JsonValueKind.False;
-                            Console.WriteLine($"[Command] SetQuietSafety: {enabled}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetQuietSafety: {enabled}");
                             quietSafety.IsEnabled = enabled;
                             return Results.Ok(new { Success = true, IsEnabled = enabled });
                         }
                         default:
-                            Console.WriteLine($"[Command] Unknown command: {cmd}");
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] Unknown command: {cmd}");
                             break;
                     }
                     return Results.Ok(new { Success = true });
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[Command API Error] {ex.Message}");
+                    OmenFlow.Core.Services.Logger.LogInfo($"[Command API Error] {ex.Message}");
                     return Results.Problem(ex.Message);
                 }
             });
 
-            Console.WriteLine("HTTP Server starting on http://localhost:50312...");
+            OmenFlow.Core.Services.Logger.LogInfo("HTTP Server starting on http://localhost:50312...");
             await app.RunAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[FATAL ERROR] Worker crashed: {ex}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[FATAL ERROR] Worker crashed: {ex}");
         }
 
-        Console.WriteLine("Worker Process exited cleanly.");
+        OmenFlow.Core.Services.Logger.LogInfo("Worker Process exited cleanly.");
     }
 
     static FanCurve? ParseFanCurve(JsonElement? root)
@@ -634,3 +633,4 @@ class Program
         }
     }
 }
+

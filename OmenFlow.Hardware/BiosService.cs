@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -27,7 +27,7 @@ public class BiosService : IBiosService, IDisposable
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
 
-        // 2023+ Omen/Victus cihazların WMI komutlarını kilitlemesini engellemek için 60 saniyelik Heartbeat
+        // 2023+ Omen/Victus cihazlarÄ±n WMI komutlarÄ±nÄ± kilitlemesini engellemek iÃ§in 60 saniyelik Heartbeat
         _heartbeatTimer = new Timer(
             _ => _ = SendCommandAsync(0x20008, 0x10, new byte[4], 4, CancellationToken.None),
             null,
@@ -112,7 +112,7 @@ public class BiosService : IBiosService, IDisposable
 
                     if (request.Command == 0x52 && request.InData.Length == 4 && request.InData[1] == 0x00 && returnCode == 0)
                     {
-                        Console.WriteLine("[BiosService] MUX mode change command (0x52) successful. Locking WMI buffer until reboot.");
+                        OmenFlow.Core.Services.Logger.LogInfo("[BiosService] MUX mode change command (0x52) successful. Locking WMI buffer until reboot.");
                         _isMuxChangePending = true;
                     }
 
@@ -164,7 +164,7 @@ public class BiosService : IBiosService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[BiosService] GetBothTemperaturesAsync error: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[BiosService] GetBothTemperaturesAsync error: {ex.Message}");
         }
         
         return null;
@@ -178,3 +178,4 @@ public class BiosService : IBiosService, IDisposable
         TaskCompletionSource<(int, byte[])> Tcs, 
         CancellationToken CancellationToken);
 }
+

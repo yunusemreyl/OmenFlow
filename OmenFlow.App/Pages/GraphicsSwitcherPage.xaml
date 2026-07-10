@@ -21,7 +21,7 @@
             <Setter Property="BorderBrush" Value="#222226"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Padding" Value="16"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -56,7 +56,20 @@
                                     </VisualState>
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Unchecked">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0">
+                                                    <DiscreteObjectKeyFrame.Value>
+                                                        <SolidColorBrush Color="#222226"/>
+                                                    </DiscreteObjectKeyFrame.Value>
+                                                </DiscreteObjectKeyFrame>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="1.5"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
                                     <VisualState x:Name="Checked">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
@@ -92,33 +105,46 @@
             </StackPanel>
         </Grid>
 
-        <!-- Main Switcher Buttons (Fluid Grid, stretching responsive with max-width container) -->
-        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" MaxWidth="900">
+        <!-- Main Switcher Buttons -->
+        <Grid Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Center" MaxWidth="500">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="24"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
 
             <!-- Hybrid (Optimus/Dynamic) Card -->
-            <RadioButton x:Name="BtnMuxHybrid" Grid.Column="0" GroupName="GpuModes" Style="{StaticResource OmenGpuCardStyle}" IsChecked="True" Click="MuxMode_Click" Height="220">
-                <Grid RowDefinitions="Auto,Auto,*" Margin="8">
+            <RadioButton x:Name="BtnMuxHybrid" Grid.Row="1" Grid.Column="0" GroupName="GpuModes" Style="{StaticResource OmenGpuCardStyle}" IsChecked="True" Click="MuxMode_Click" Height="130">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
                     <!-- Sprout / Eco Path Icon -->
-                    <Path Grid.Row="0" Data="M12.04 2.05C11.39 2 10.74 2.11 10.12 2.37C8.17 3.2 6.89 5 6.45 7.1C5.7 6.94 4.9 7 4.19 7.3C2.24 8.13.96 9.93.52 12.03C.11 14.03.88 16.03 2.5 17.24L2.5 22L7.26 22L7.26 19.34C9 19.8 10.87 19.46 12.33 18.39C13.9 17.23 14.81 15.35 14.96 13.38C15.93 13.06 16.8 12.44 17.43 11.58C19.14 9.25 18.9 5.95 16.87 3.92C15.6 2.65 13.84 2.05 12.04 2.05M12.27 15.82C11.36 16.48 10.2 16.69 9.12 16.41C7.88 16.09 6.86 15.22 6.45 14.07C6.27 13.56 6.18 13.04 6.18 12.5C7.15 12.5 8.1 12.18 8.87 11.62C9.78 10.96 10.37 9.94 10.45 8.82C11.42 8.5 12.29 7.88 12.92 7.02C13.23 6.6 13.46 6.14 13.62 5.66C14.86 5.98 15.88 6.85 16.29 8C16.5 8.6 16.59 9.22 16.56 9.84C15.59 9.84 14.64 10.16 13.87 10.72C12.96 11.38 12.37 12.4 12.29 13.52C11.32 13.84 10.45 14.46 9.82 15.32" Fill="#10B981" Height="40" Width="40" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                    <TextBlock Grid.Row="1" Text="Hybrid" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="2" Text="For productivity, media consumption, internet browsing, etc. Dynamically switches between Intel/AMD and Nvidia graphics." FontSize="12" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                    <Path Grid.Row="0" Data="M12.04 2.05C11.39 2 10.74 2.11 10.12 2.37C8.17 3.2 6.89 5 6.45 7.1C5.7 6.94 4.9 7 4.19 7.3C2.24 8.13.96 9.93.52 12.03C.11 14.03.88 16.03 2.5 17.24L2.5 22L7.26 22L7.26 19.34C9 19.8 10.87 19.46 12.33 18.39C13.9 17.23 14.81 15.35 14.96 13.38C15.93 13.06 16.8 12.44 17.43 11.58C19.14 9.25 18.9 5.95 16.87 3.92C15.6 2.65 13.84 2.05 12.04 2.05M12.27 15.82C11.36 16.48 10.2 16.69 9.12 16.41C7.88 16.09 6.86 15.22 6.45 14.07C6.27 13.56 6.18 13.04 6.18 12.5C7.15 12.5 8.1 12.18 8.87 11.62C9.78 10.96 10.37 9.94 10.45 8.82C11.42 8.5 12.29 7.88 12.92 7.02C13.23 6.6 13.46 6.14 13.62 5.66C14.86 5.98 15.88 6.85 16.29 8C16.5 8.6 16.59 9.22 16.56 9.84C15.59 9.84 14.64 10.16 13.87 10.72C12.96 11.38 12.37 12.4 12.29 13.52C11.32 13.84 10.45 14.46 9.82 15.32" Fill="#10B981" Height="32" Width="32" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                    <TextBlock Grid.Row="1" Text="HYBRID" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Grid>
             </RadioButton>
+            <TextBlock x:Name="TxtHybridDesc" Grid.Row="2" Grid.Column="0" Text="Ekran görüntünüz Dahili GPU üzerinden verilir." Foreground="#8F8F98" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,12,0,0"/>
 
             <!-- Discrete (Dedicated GPU only) Card -->
-            <RadioButton x:Name="BtnMuxDiscrete" Grid.Column="2" GroupName="GpuModes" Style="{StaticResource OmenGpuCardStyle}" Click="MuxMode_Click" Height="220">
-                <Grid RowDefinitions="Auto,Auto,*" Margin="8">
+            <RadioButton x:Name="BtnMuxDiscrete" Grid.Row="1" Grid.Column="2" GroupName="GpuModes" Style="{StaticResource OmenGpuCardStyle}" Click="MuxMode_Click" Height="130">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
                     <!-- Monitor with Diamond inside Path Icon -->
-                    <Path Grid.Row="0" Data="M21,2H3C1.9,2 1,2.9 1,4V16C1,17.1 1.9,18 3,18H10V20H8V22H16V20H14V18H21C22.1,18 23,17.1 23,16V4C23,2.9 22.1,2 21,2M21,16H3V4H21V16M12,6L16,10L12,14L8,10L12,6Z" Fill="#FF3B30" Height="40" Width="40" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                    <TextBlock Grid.Row="1" Text="Discrete" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="2" Text="For gaming, media creation, Graphics Intensive task, etc. Bypasses the integrated graphics entirely for maximum performance." FontSize="12" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                    <Path Grid.Row="0" Data="M21,2H3C1.9,2 1,2.9 1,4V16C1,17.1 1.9,18 3,18H10V20H8V22H16V20H14V18H21C22.1,18 23,17.1 23,16V4C23,2.9 22.1,2 21,2M21,16H3V4H21V16M12,6L16,10L12,14L8,10L12,6Z" Fill="#FF3B30" Height="32" Width="32" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                    <TextBlock Grid.Row="1" Text="DISCRETE" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Grid>
             </RadioButton>
+            <TextBlock x:Name="TxtDiscreteDesc" Grid.Row="2" Grid.Column="2" Text="Ekran görüntünüz Harici GPU üzerinden verilir." Foreground="#8F8F98" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,12,0,0"/>
         </Grid>
 
         <!-- Bottom Controls / Reset to Default -->

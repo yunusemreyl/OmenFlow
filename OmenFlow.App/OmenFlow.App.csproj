@@ -72,6 +72,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.3.2" />
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <PackageReference Include="System.Management" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OmenFlow.Core\OmenFlow.Core.csproj" />

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Management;
 using OmenFlow.Core.Models;
 
@@ -20,12 +20,13 @@ public class CapabilityDetectionService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CapabilityDetection] Failed to read Win32_BaseBoard: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[CapabilityDetection] Failed to read Win32_BaseBoard: {ex.Message}");
         }
 
-        Console.WriteLine($"[CapabilityDetection] Detected Board ID: {boardId}");
+        OmenFlow.Core.Services.Logger.LogInfo($"[CapabilityDetection] Detected Board ID: {boardId}");
 
         // Build config based on BoardId (Safety first: default to safe fallback)
         return ModelCapabilityDatabase.GetCapabilities(boardId);
     }
 }
+
