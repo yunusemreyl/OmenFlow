@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Models;
@@ -50,7 +50,32 @@ public class GpuControlService
             OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync Registry check error: {ex.Message}");
         }
 
-        // Fallback to BIOS WMI if Registry fails or does not exist
+        // Secondary detection: Count active GPUs (The easiest and most reliable way for Normal MUX)
+        try
+        {
+            int gpuCount = 0;
+            using (var searcher = new System.Management.ManagementObjectSearcher("SELECT Name FROM Win32_VideoController"))
+            {
+                gpuCount = searcher.Get().Count;
+            }
+            
+            if (gpuCount == 1)
+            {
+                OmenFlow.Core.Services.Logger.LogInfo("[GpuControl] Only 1 GPU detected. Mode is Discrete.");
+                return GpuMode.Discrete;
+            }
+            else if (gpuCount >= 2)
+            {
+                OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] {gpuCount} GPUs detected. Mode is Hybrid.");
+                return GpuMode.Hybrid;
+            }
+        }
+        catch (Exception ex)
+        {
+            OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync VideoController check error: {ex.Message}");
+        }
+
+        // Tertiary fallback to BIOS WMI if both fail
         var payload = Array.Empty<byte>();
         var (ret, data) = await _biosService.SendCommandAsync(0x00002, 0x52, payload, 4, ct);
         
