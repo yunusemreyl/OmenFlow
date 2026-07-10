@@ -120,4 +120,69 @@ public class GpuControlService
         var (writeRet, _) = await _biosService.SendCommandAsync(0x20008, 0x22, payload, 0, ct);
         return writeRet == 0;
     }
+
+    private static int? s_cachedGpuMaxTgp;
+
+    public int GetGpuMaxPowerLimit()
+    {
+        if (s_cachedGpuMaxTgp.HasValue)
+            return s_cachedGpuMaxTgp.Value;
+
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "nvidia-smi",
+                Arguments = "--query-gpu=power.max_limit --format=csv,noheader,nounits",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+            using var proc = System.Diagnostics.Process.Start(psi);
+            if (proc != null)
+            {
+                string output = proc.StandardOutput.ReadToEnd();
+                proc.WaitForExit(1000);
+                if (double.TryParse(output.Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                {
+                    s_cachedGpuMaxTgp = (int)Math.Round(val);
+                    return s_cachedGpuMaxTgp.Value;
+                }
+            }
+        }
+        catch
+        {
+            // fallback: check common system folders if nvidia-smi not in PATH
+            try
+            {
+                string fullPath = @"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi.exe";
+                if (System.IO.File.Exists(fullPath))
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        Arguments = "--query-gpu=power.max_limit --format=csv,noheader,nounits",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+                    using var proc = System.Diagnostics.Process.Start(psi);
+                    if (proc != null)
+                    {
+                        string output = proc.StandardOutput.ReadToEnd();
+                        proc.WaitForExit(1000);
+                        if (double.TryParse(output.Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                        {
+                            s_cachedGpuMaxTgp = (int)Math.Round(val);
+                            return s_cachedGpuMaxTgp.Value;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        s_cachedGpuMaxTgp = 150; // default fallback if nvidia-smi failed or no Nvidia card
+        return s_cachedGpuMaxTgp.Value;
+    }
 }

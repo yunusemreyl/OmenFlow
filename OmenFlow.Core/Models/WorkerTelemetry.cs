@@ -27,4 +27,5 @@ public record WorkerTelemetry(
     public string ZoneColors { get; set; } = ""; // base64 encoded
     public ThermalProfile ActiveProfile { get; set; } = ThermalProfile.Default;
     public int ActiveFanMode { get; set; } = 0;
+    public int GpuMaxTgp { get; set; } = 150;
 }

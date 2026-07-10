@@ -7,154 +7,273 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Background="{ThemeResource PageBackgroundBrush}">
+    <Page.Resources>
+        <!-- OMEN DNA Gradient for Selected Card Borders -->
+        <LinearGradientBrush x:Key="OmenGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#D946EF" Offset="0.0"/> <!-- Magenta/Purple -->
+            <GradientStop Color="#F43F5E" Offset="0.5"/> <!-- Rose -->
+            <GradientStop Color="#F97316" Offset="1.0"/> <!-- Orange -->
+        </LinearGradientBrush>
+
+        <!-- OMEN Premium Card Style for RadioButtons -->
+        <Style x:Key="OmenCardToggleStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="#111113"/>
+            <Setter Property="BorderBrush" Value="#222226"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <!-- Border Element -->
+                            <Border x:Name="BorderElement" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch"/>
+                            </Border>
+
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#18181C" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#333339" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#0F0F11" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource OmenGradientBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="2.0"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#131316" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Segmented Selector Button Style for Sub-controls (Fan Mode Radio) -->
+        <Style x:Key="OmenSegmentButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="#1A1A1E"/>
+            <Setter Property="BorderBrush" Value="#2A2A30"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="BorderElement" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#25252B" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#3F3F46" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#2563EB" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#3B82F6" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="Transparent" Padding="24,20,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Performans Kontrolü" Visibility="Collapsed" FontSize="22" FontWeight="SemiBold" Margin="20,16,0,16" Foreground="{ThemeResource PrimaryTextBrush}"/>
+        <!-- Top Header & Profile Status -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="PERFORMANS KONTROLÜ" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
+                <TextBlock Text="Cihazınızın güç limitlerini ve soğutma profilini dinamik olarak yönetin." FontSize="12" Foreground="#8F8F98" Margin="0,4,0,0"/>
+            </StackPanel>
+            <Button x:Name="BtnShowFanLogs" Content="Fan Günlükleri" Grid.Column="1" VerticalAlignment="Center" Click="BtnShowFanLogs_Click" Style="{StaticResource DefaultButtonStyle}" Background="#151518" BorderBrush="#2F2F35" Foreground="#D1D5DB"/>
+        </Grid>
 
-        <ScrollViewer Grid.Row="1" Margin="16,12,16,20" VerticalScrollBarVisibility="Auto">
+        <!-- Scrollable Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="24">
-                
-                <!-- 1. Performans Profili & CPU Durumu -->
-                <StackPanel Spacing="8">
-                    <Grid Margin="0,0,0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE7A6;" FontSize="14" Foreground="#2563EB"/>
-                            <TextBlock Text="Performans Profili" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6" VerticalAlignment="Center">
-                            <TextBlock x:Name="CpuTempText" Text="45°C" FontSize="11" FontWeight="Bold" Foreground="#DC2626"/>
-                            <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                            <TextBlock x:Name="CpuFanText" Text="2400 RPM" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                            <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                            <TextBlock x:Name="CpuPowerText" Text="15.2 W" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
-                            <TextBlock x:Name="CpuUsageText" Text="%12" Visibility="Collapsed"/>
-                        </StackPanel>
-                    </Grid>
 
-                    <Grid Height="64">
+                <!-- Section 1: Performance Profiles (Comfort, Default, Performance) -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Optimize your performance by selecting the mode that works best for you." FontSize="13" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,8,0,8"/>
+                    
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <ToggleButton x:Name="BtnPerfQuiet" Grid.Column="0" Style="{StaticResource GridBoxStyle}" Click="PerfMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE7ED;" FontSize="18" Foreground="#10B981"/>
-                                <TextBlock Text="Düşük Gürültü" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnPerfDefault" Grid.Column="1" Style="{StaticResource GridBoxStyle}" IsChecked="True" Click="PerfMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE799;" FontSize="18" Foreground="#2563EB"/>
-                                <TextBlock Text="Dengeli" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnPerfPerf" Grid.Column="2" Style="{StaticResource GridBoxStyle}" Click="PerfMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE945;" FontSize="18" Foreground="#DC2626"/>
-                                <TextBlock Text="Maksimum" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
+
+                        <!-- Comfort (Quiet) Mode -->
+                        <RadioButton x:Name="BtnPerfQuiet" Grid.Column="0" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" Click="PerfMode_Click" Height="170">
+                            <Grid RowDefinitions="Auto,Auto,*" Margin="4">
+                                <Path Grid.Row="0" Data="M12,2A3,3,0,0,0,9,5v5.38A4.5,4.5,0,0,0,12,19a4.5,4.5,0,0,0,3-8.62V5A3,3,0,0,0,12,2Zm1,8.38v5.27a1.5,1.5,0,1,1-2,0V10.38a1,1,0,0,1,2,0Z" Fill="#00D2FF" Height="30" Width="30" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Grid.Row="1" Text="Comfort" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Row="2" Text="Suitable for casual tasks. Lowers CPU and GPU temperatures." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                            </Grid>
+                        </RadioButton>
+
+                        <!-- Default (Balanced) Mode -->
+                        <RadioButton x:Name="BtnPerfDefault" Grid.Column="2" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" IsChecked="True" Click="PerfMode_Click" Height="170">
+                            <Grid RowDefinitions="Auto,Auto,*" Margin="4">
+                                <Path Grid.Row="0" Data="M 12,2 L 22,12 L 12,22 L 2,12 Z" Fill="#E00078" Height="28" Width="28" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,2,0,12"/>
+                                <TextBlock Grid.Row="1" Text="Default" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Row="2" Text="Suitable for all types of tasks. Balances noise and hardware limits." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                            </Grid>
+                        </RadioButton>
+
+                        <!-- Performance (Max) Mode -->
+                        <RadioButton x:Name="BtnPerfPerf" Grid.Column="4" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" Click="PerfMode_Click" Height="170">
+                            <Grid RowDefinitions="Auto,Auto,*" Margin="4">
+                                <Path Grid.Row="0" Data="M4,18H8V10H4V18ZM10,18H14V4H10V18ZM16,18H20V12H16V18Z" Fill="#FF4B00" Height="28" Width="28" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,2,0,12"/>
+                                <TextBlock Grid.Row="1" Text="Performance" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Row="2" Text="Suitable for gaming. May increase heat and noise levels." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                            </Grid>
+                        </RadioButton>
                     </Grid>
                 </StackPanel>
 
-                <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
-
-                <!-- 2. Fan Yönetim Modu -->
-                <StackPanel Spacing="8">
-                    <Grid Margin="0,0,0,4">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE9CA;" FontSize="14" Foreground="#2563EB"/>
-                            <TextBlock Text="Fan Yönetim Modu" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                <!-- Section 2: Fan Control -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE9CA;" FontSize="16" Foreground="#3B82F6"/>
+                            <TextBlock Text="Fan Kontrolü" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
                         </StackPanel>
-                    </Grid>
-                    <Grid Height="64">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <ToggleButton x:Name="BtnFanAuto" Grid.Column="0" Style="{StaticResource GridBoxStyle}" IsChecked="True" Click="FanMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE9A1;" FontSize="18" Foreground="#2563EB"/>
-                                <TextBlock Text="Auto BIOS" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnFanOmenFlow" Grid.Column="1" Style="{StaticResource GridBoxStyle}" Click="FanMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE81E;" FontSize="18" Foreground="#10B981"/>
-                                <TextBlock Text="OmenFlow" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnFanMax" Grid.Column="2" Style="{StaticResource GridBoxStyle}" Click="FanMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE9CA;" FontSize="18" Foreground="#D97706"/>
-                                <TextBlock Text="Max Fan" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnFanManual" Grid.Column="3" Style="{StaticResource GridBoxStyle}" Click="FanMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE790;" FontSize="18" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                <TextBlock Text="Custom" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
-                            </StackPanel>
-                        </ToggleButton>
-                    </Grid>
-                </StackPanel>
 
-                <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
+                        <Grid ColumnDefinitions="*,*,*,*">
+                            <RadioButton x:Name="BtnFanAuto" Grid.Column="0" Content="Auto" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" IsChecked="True" Click="FanMode_Click" Margin="0,0,4,0"/>
+                            <RadioButton x:Name="BtnFanOmenFlow" Grid.Column="1" Content="Flow" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
+                            <RadioButton x:Name="BtnFanMax" Grid.Column="2" Content="Max" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
+                            <RadioButton x:Name="BtnFanManual" Grid.Column="3" Content="Custom" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="4,0,0,0"/>
+                        </Grid>
+                        <TextBlock Text="OmenFlow akıllı eğrisi veya BIOS otomatik modunu seçin." FontSize="11" Foreground="#7C7C82"/>
+                    </StackPanel>
+                </Border>
 
-                <!-- 3. GPU MUX Anahtarı & GPU Durumu -->
-                <StackPanel Spacing="8">
-                    <Grid Margin="0,0,0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE9D9;" FontSize="14" Foreground="#10B981"/>
-                            <TextBlock Text="GPU MUX Anahtarı" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                <!-- Section 3: Premium Vitals Dashboard (OMEN DNA Style) -->
+                <Border Background="#0C0C0E" BorderBrush="#1B1B1E" BorderThickness="1.5" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
+                            <FontIcon Glyph="&#xE9D9;" FontSize="15" Foreground="#00FFCC"/>
+                            <TextBlock Text="ANLIK SİSTEM METRİKLERİ" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="#9CA3AF"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6" VerticalAlignment="Center">
-                            <TextBlock x:Name="GpuTempText" Text="38°C" FontSize="11" FontWeight="Bold" Foreground="#DC2626"/>
-                            <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                            <TextBlock x:Name="GpuFanText" Text="0 RPM" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                            <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                            <TextBlock x:Name="GpuPowerText" Text="8.4 W" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
-                            <TextBlock x:Name="GpuUsageText" Text="%4" Visibility="Collapsed"/>
-                        </StackPanel>
-                    </Grid>
 
-                    <Grid Height="64">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <ToggleButton x:Name="BtnMuxHybrid" Grid.Column="0" Style="{StaticResource GridBoxStyle}" IsChecked="True" Click="MuxMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE9D9;" FontSize="18" Foreground="#10B981"/>
-                                <TextBlock Text="Hybrid" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Column 1: CPU Temp & RPM & Power -->
+                            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="CpuTempText" Text="45°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="CPU Temperature" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="CpuFanText" Text="2400 RPM" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                    <TextBlock Text="•" FontSize="11" Foreground="#4B5563"/>
+                                    <TextBlock x:Name="CpuPowerText" Text="15.2 W" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                </StackPanel>
                             </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="BtnMuxDiscrete" Grid.Column="1" Style="{StaticResource GridBoxStyle}" Click="MuxMode_Click">
-                            <StackPanel VerticalAlignment="Center" Spacing="4">
-                                <FontIcon Glyph="&#xE7F4;" FontSize="18" Foreground="#DC2626"/>
-                                <TextBlock Text="Discrete" HorizontalAlignment="Center" FontSize="11" FontWeight="Medium"/>
+
+                            <Border Grid.Column="1" Background="#222226" Width="1" Margin="0,10,0,10"/>
+
+                            <!-- Column 2: GPU Temp & RPM & Power -->
+                            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="GpuTempText" Text="38°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="GPU Temperature" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="GpuFanText" Text="0 RPM" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                    <TextBlock Text="•" FontSize="11" Foreground="#4B5563"/>
+                                    <TextBlock x:Name="GpuPowerText" Text="8.4 W" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                </StackPanel>
                             </StackPanel>
-                        </ToggleButton>
-                    </Grid>
-                </StackPanel>
+
+                            <Border Grid.Column="3" Background="#222226" Width="1" Margin="0,10,0,10"/>
+
+                            <!-- Column 3: CPU & GPU Utilization -->
+                            <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
+                                <TextBlock x:Name="CpuUsageText" Text="%12" FontSize="36" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                <TextBlock Text="CPU Utilization" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock Text="GPU Yükü:" FontSize="11" Foreground="#7C7C82"/>
+                                    <TextBlock x:Name="GpuUsageText" Text="%4" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
             </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>
-

@@ -7,120 +7,139 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Padding="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <StackPanel Spacing="4" Margin="0" Visibility="Collapsed">
-                <TextBlock Text="Klavye Aydınlatması" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                <TextBlock x:Name="LightingDescText" Text="Cihazınızın klavye arka plan aydınlatmasını yapılandırın." FontSize="14" Foreground="{ThemeResource TertiaryTextBrush}"/>
+    <Grid Background="#070709" Padding="24,20,24,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="LIGHTING STUDIO" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
+                <TextBlock Text="Cihazınızın klavye arka plan aydınlatmasını ve dinamik efektlerini yapılandırın." FontSize="12" Foreground="#8F8F98" Margin="0,4,0,0"/>
             </StackPanel>
+        </Grid>
 
-            <Border Grid.Row="1" Padding="4,12,4,20">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Keyboard Display Area with Viewbox -->
-                    <Viewbox Grid.Row="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,48" MaxWidth="800" MaxHeight="300">
-                        <Grid>
-                            <!-- Glow effect -->
-                            <Grid x:Name="BackgroundGlowGrid" Margin="-20">
-                                <!-- Single Zone -->
-                                <Border x:Name="SingleZoneGlow" Visibility="Collapsed" CornerRadius="30">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                            <GradientStop x:Name="SzStop1" Color="#2010B981" Offset="0.0"/>
-                                            <GradientStop x:Name="SzStop2" Color="#7010B981" Offset="0.5"/>
-                                            <GradientStop x:Name="SzStop3" Color="#0010B981" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                </Border>
+        <!-- Scrollable Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="24">
+                
+                <!-- Keyboard Display Area Card -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Keyboard Display Area with Viewbox -->
+                        <Viewbox Grid.Row="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,24" MaxWidth="800" MaxHeight="250">
+                            <Grid>
+                                <!-- Glow effect -->
+                                <Grid x:Name="BackgroundGlowGrid" Margin="-20">
+                                    <!-- Single Zone -->
+                                    <Border x:Name="SingleZoneGlow" Visibility="Collapsed" CornerRadius="30">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                <GradientStop x:Name="SzStop1" Color="#2010B981" Offset="0.0"/>
+                                                <GradientStop x:Name="SzStop2" Color="#7010B981" Offset="0.5"/>
+                                                <GradientStop x:Name="SzStop3" Color="#0010B981" Offset="1.0"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
 
-                                <!-- Multi Zone -->
-                                <Grid x:Name="MultiZoneGlow" Visibility="Collapsed">
+                                    <!-- Multi Zone -->
+                                    <Grid x:Name="MultiZoneGlow" Visibility="Collapsed">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Grid.Column="0" CornerRadius="30,0,0,30">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop x:Name="Mz0Stop1" Color="#20EF4444" Offset="0.0"/>
+                                                    <GradientStop x:Name="Mz0Stop2" Color="#70EF4444" Offset="0.5"/>
+                                                    <GradientStop x:Name="Mz0Stop3" Color="#00EF4444" Offset="1.0"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Border Grid.Column="1">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop x:Name="Mz1Stop1" Color="#20EAB308" Offset="0.0"/>
+                                                    <GradientStop x:Name="Mz1Stop2" Color="#70EAB308" Offset="0.5"/>
+                                                    <GradientStop x:Name="Mz1Stop3" Color="#00EAB308" Offset="1.0"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Border Grid.Column="2">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop x:Name="Mz2Stop1" Color="#2010B981" Offset="0.0"/>
+                                                    <GradientStop x:Name="Mz2Stop2" Color="#7010B981" Offset="0.5"/>
+                                                    <GradientStop x:Name="Mz2Stop3" Color="#0010B981" Offset="1.0"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Border Grid.Column="3" CornerRadius="0,30,30,0">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                    <GradientStop x:Name="Mz3Stop1" Color="#203B82F6" Offset="0.0"/>
+                                                    <GradientStop x:Name="Mz3Stop2" Color="#703B82F6" Offset="0.5"/>
+                                                    <GradientStop x:Name="Mz3Stop3" Color="#003B82F6" Offset="1.0"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+
+                                <!-- Actual Keyboard Image -->
+                                <Image Source="ms-appx:///icons/keyboard.png" Stretch="Fill"/>
+
+                                <!-- Clickable Overlays -->
+                                <Grid x:Name="ZoneClickOverlay" Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    
-                                    <Border Grid.Column="0" CornerRadius="30,0,0,30">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                <GradientStop x:Name="Mz0Stop1" Color="#20EF4444" Offset="0.0"/>
-                                                <GradientStop x:Name="Mz0Stop2" Color="#70EF4444" Offset="0.5"/>
-                                                <GradientStop x:Name="Mz0Stop3" Color="#00EF4444" Offset="1.0"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
-                                    <Border Grid.Column="1">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                <GradientStop x:Name="Mz1Stop1" Color="#20EAB308" Offset="0.0"/>
-                                                <GradientStop x:Name="Mz1Stop2" Color="#70EAB308" Offset="0.5"/>
-                                                <GradientStop x:Name="Mz1Stop3" Color="#00EAB308" Offset="1.0"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
-                                    <Border Grid.Column="2">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                <GradientStop x:Name="Mz2Stop1" Color="#2010B981" Offset="0.0"/>
-                                                <GradientStop x:Name="Mz2Stop2" Color="#7010B981" Offset="0.5"/>
-                                                <GradientStop x:Name="Mz2Stop3" Color="#0010B981" Offset="1.0"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
-                                    <Border Grid.Column="3" CornerRadius="0,30,30,0">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                <GradientStop x:Name="Mz3Stop1" Color="#203B82F6" Offset="0.0"/>
-                                                <GradientStop x:Name="Mz3Stop2" Color="#703B82F6" Offset="0.5"/>
-                                                <GradientStop x:Name="Mz3Stop3" Color="#003B82F6" Offset="1.0"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
+                                    <!-- These borders act as buttons and selection indicators -->
+                                    <Border x:Name="Zone0Overlay" Grid.Column="0" Background="#01000000" BorderBrush="{ThemeResource PrimaryTextBrush}" BorderThickness="2" CornerRadius="12,0,0,12" Tapped="Zone_Tapped" Tag="0" Margin="4,4,2,4"/>
+                                    <Border x:Name="Zone1Overlay" Grid.Column="1" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="1" Margin="2,4,2,4"/>
+                                    <Border x:Name="Zone2Overlay" Grid.Column="2" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="2" Margin="2,4,2,4"/>
+                                    <Border x:Name="Zone3Overlay" Grid.Column="3" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" CornerRadius="0,12,12,0" Tapped="Zone_Tapped" Tag="3" Margin="2,4,4,4"/>
                                 </Grid>
                             </Grid>
+                        </Viewbox>
+                        
+                        <TextBlock Grid.Row="1" x:Name="SelectedZoneText" Text="Seçili Bölge: 1 (Sol)" FontWeight="SemiBold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Border>
 
-                            <!-- Actual Keyboard Image -->
-                            <Image Source="ms-appx:///icons/keyboard.png" Stretch="Fill"/>
+                <!-- Config & Color Controls Grid -->
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                            <!-- Clickable Overlays -->
-                            <Grid x:Name="ZoneClickOverlay" Visibility="Collapsed">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <!-- These borders act as buttons and selection indicators -->
-                                <Border x:Name="Zone0Overlay" Grid.Column="0" Background="#01000000" BorderBrush="{ThemeResource PrimaryTextBrush}" BorderThickness="2" CornerRadius="12,0,0,12" Tapped="Zone_Tapped" Tag="0" Margin="4,4,2,4"/>
-                                <Border x:Name="Zone1Overlay" Grid.Column="1" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="1" Margin="2,4,2,4"/>
-                                <Border x:Name="Zone2Overlay" Grid.Column="2" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="2" Margin="2,4,2,4"/>
-                                <Border x:Name="Zone3Overlay" Grid.Column="3" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" CornerRadius="0,12,12,0" Tapped="Zone_Tapped" Tag="3" Margin="2,4,4,4"/>
-                            </Grid>
-                        </Grid>
-                    </Viewbox>
+                    <!-- Left Column Controls: Effect, Brightness, Speed -->
+                    <Border Grid.Column="0" Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                        <StackPanel Spacing="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE765;" FontSize="15" Foreground="#8B5CF6"/>
+                                <TextBlock Text="Efekt &amp; Hız Ayarları" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                            </StackPanel>
 
-                    <!-- Control Area -->
-                    <StackPanel Grid.Row="1" Spacing="24">
-                        <!-- Sliders and Combo -->
-                        <StackPanel Spacing="20">
-                            <!-- Selected Zone Info (OMEN) -->
-                            <TextBlock x:Name="SelectedZoneText" Text="Seçili Bölge: 1 (Sol)" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Visibility="Collapsed"/>
-
-                            <!-- Effect -->
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="Aydınlatma Efekti" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
-                                <ComboBox x:Name="EffectComboBox" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="EffectComboBox_SelectionChanged">
+                            <!-- Effect ComboBox -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Aydınlatma Efekti" FontSize="11" Foreground="#9CA3AF"/>
+                                <ComboBox x:Name="EffectComboBox" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="EffectComboBox_SelectionChanged" Background="#151518" BorderBrush="#2F2F35" Foreground="#FFFFFF">
                                     <ComboBoxItem Content="Statik (Sabit)"/>
                                     <ComboBoxItem Content="Nefes Alma (Breathing)"/>
                                     <ComboBoxItem Content="Renk Döngüsü (Color Cycle)"/>
@@ -128,44 +147,53 @@
                                 </ComboBox>
                             </StackPanel>
 
-                            <!-- Sliders Side-by-Side -->
-                            <Grid ColumnSpacing="16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <!-- Brightness Slider -->
+                            <StackPanel Spacing="6">
+                                <Grid>
+                                    <TextBlock Text="Klavye Parlaklığı" FontSize="11" Foreground="#9CA3AF"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding ElementName=BrightnessSlider, Path=Value}" FontSize="11" Foreground="#8B5CF6"/>
+                                        <TextBlock Text="%" FontSize="11" Foreground="#8B5CF6"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Slider x:Name="BrightnessSlider" Minimum="0" Maximum="100" Value="100" StepFrequency="10" ValueChanged="BrightnessSlider_ValueChanged"/>
+                            </StackPanel>
 
-                                <!-- Brightness -->
-                                <StackPanel Grid.Column="0" Spacing="8">
-                                    <TextBlock Text="Klavye Parlaklığı" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
-                                    <Slider x:Name="BrightnessSlider" Minimum="0" Maximum="100" Value="100" StepFrequency="10" HorizontalAlignment="Stretch" ValueChanged="BrightnessSlider_ValueChanged"/>
-                                </StackPanel>
-
-                                <!-- Speed -->
-                                <StackPanel Grid.Column="1" Spacing="8">
-                                    <TextBlock Text="Efekt Hızı" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}"/>
-                                    <Slider x:Name="SpeedSlider" Minimum="1" Maximum="100" Value="50" StepFrequency="5" HorizontalAlignment="Stretch" ValueChanged="SpeedSlider_ValueChanged"/>
-                                </StackPanel>
-                            </Grid>
+                            <!-- Speed Slider -->
+                            <StackPanel Spacing="6">
+                                <Grid>
+                                    <TextBlock Text="Efekt Hızı" FontSize="11" Foreground="#9CA3AF"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding ElementName=SpeedSlider, Path=Value}" FontSize="11" Foreground="#8B5CF6"/>
+                                        <TextBlock Text="%" FontSize="11" Foreground="#8B5CF6"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Slider x:Name="SpeedSlider" Minimum="1" Maximum="100" Value="50" StepFrequency="5" ValueChanged="SpeedSlider_ValueChanged"/>
+                            </StackPanel>
                         </StackPanel>
+                    </Border>
 
-                        <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
+                    <!-- Right Column Controls: Color Selection -->
+                    <Border Grid.Column="1" Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                        <StackPanel Spacing="16" VerticalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE790;" FontSize="15" Foreground="#FF00A2"/>
+                                <TextBlock Text="Renk Seçimi" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                            </StackPanel>
 
-                        <!-- Color Picker -->
-                        <StackPanel Spacing="12" HorizontalAlignment="Center">
-                            <TextBlock Text="Renk Seçimi" FontWeight="SemiBold" Foreground="{ThemeResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
-                            
-                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                                <!-- Preset Color Buttons -->
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF0000" Click="PresetColor_Click"/>
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFF00" Click="PresetColor_Click"/>
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#00FF00" Click="PresetColor_Click"/>
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#0000FF" Click="PresetColor_Click"/>
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FF00FF" Click="PresetColor_Click"/>
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Background="#FFFFFF" Click="PresetColor_Click"/>
+                            <TextBlock Text="Bölge veya klavye geneli için hazır bir renk atayın ya da özel renk seçin." FontSize="11" Foreground="#7C7C82" Margin="0,0,0,8"/>
+
+                            <!-- Presets Grid -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,4,0,16">
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FF0000" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FFFF00" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#00FF00" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#0000FF" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FF00FF" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FFFFFF" Click="PresetColor_Click"/>
                                 
-                                <!-- Custom Color Button with Flyout -->
-                                <Button Width="32" Height="32" CornerRadius="16" BorderThickness="2" BorderBrush="{ThemeResource CardBorderBrush}" Padding="0" ToolTipService.ToolTip="Özel Renk">
+                                <!-- Custom Color Picker Button -->
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Padding="0" ToolTipService.ToolTip="Özel Renk">
                                     <Button.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                             <GradientStop Color="#FF0000" Offset="0.0"/>
@@ -176,19 +204,26 @@
                                     </Button.Background>
                                     <Button.Flyout>
                                         <Flyout>
-                                            <StackPanel Spacing="12">
-                                                <TextBlock Text="Özel Renk Seç" FontWeight="SemiBold"/>
-                                                <ColorPicker x:Name="ZoneColorPicker" IsMoreButtonVisible="True" IsColorSliderVisible="True" IsColorChannelTextInputVisible="True" IsHexInputVisible="True" IsAlphaEnabled="False" ColorChanged="ZoneColorPicker_ColorChanged" Height="300"/>
+                                            <StackPanel Spacing="12" Background="#111113" Padding="12" CornerRadius="8">
+                                                <TextBlock Text="Özel Renk Seç" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                                <ColorPicker x:Name="ZoneColorPicker" IsMoreButtonVisible="True" IsColorSliderVisible="True" IsColorChannelTextInputVisible="True" IsHexInputVisible="True" IsAlphaEnabled="False" ColorChanged="ZoneColorPicker_ColorChanged" Height="300" Foreground="#FFFFFF"/>
                                             </StackPanel>
                                         </Flyout>
                                     </Button.Flyout>
                                 </Button>
                             </StackPanel>
+                            
+                            <Border BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="6" Padding="10" Background="#151518">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Path Data="M 12,2 L 22,12 L 12,22 L 2,12 Z" Fill="#FF00A2" Height="14" Width="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="OMEN RGB denetleyicisi algılandı." FontSize="11" Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
-                    </StackPanel>
-
+                    </Border>
                 </Grid>
-            </Border>
-        </Grid>
-    </ScrollViewer>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>

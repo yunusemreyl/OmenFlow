@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="OmenFlow_App.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,102 +5,172 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:OmenFlow_App.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="Transparent">
 
-    <Grid Padding="24,16,24,16" RowSpacing="24">
+    <Grid Background="#070709" Padding="24,20,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Genel Ayarlar" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="12,0,0,16" />
-        
-        <ScrollViewer Grid.Row="1">
-            <StackPanel Spacing="28" MaxWidth="1000" HorizontalAlignment="Stretch" Margin="12,0,12,0">
-                
-                <!-- Başlangıç Ayarları -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Başlangıç Ayarları" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Başlangıçta Çalıştırma" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
-                        <ComboBox x:Name="ComboStartupMode" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboStartupMode_SelectionChanged">
-                            <ComboBoxItem Content="Arayüzü Aç" Tag="OpenUI"/>
-                            <ComboBoxItem Content="Tray Olarak Başlat" Tag="Tray"/>
-                            <ComboBoxItem Content="Başlatma" Tag="Disabled"/>
-                        </ComboBox>
-                    </Grid>
-                    
-                    <TextBlock Text="Bilgisayar açıldığında uygulamanın nasıl başlayacağını seçin." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
-                </StackPanel>
-                
-                <MenuFlyoutSeparator Margin="0,4,0,4"/>
-                
-                <!-- Görünüm Ayarları -->
-                <StackPanel Spacing="16">
-                    <TextBlock Text="Görünüm" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Uygulama Teması" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
-                        <ComboBox x:Name="ComboTheme" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboTheme_SelectionChanged">
-                            <ComboBoxItem Content="Sistem Varsayılanı" Tag="System"/>
-                            <ComboBoxItem Content="Açık Tema" Tag="Light"/>
-                            <ComboBoxItem Content="Koyu Tema" Tag="Dark"/>
-                        </ComboBox>
-                    </Grid>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Dil Seçeneği" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
-                        <ComboBox x:Name="ComboLanguage" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboLanguage_SelectionChanged">
-                            <ComboBoxItem Content="Türkçe" Tag="tr"/>
-                            <ComboBoxItem Content="English" Tag="en"/>
-                        </ComboBox>
-                    </Grid>
-                </StackPanel>
+        <!-- Top Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="GENEL AYARLAR" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
+                <TextBlock Text="Uygulama başlangıç, görünüm teması ve acil durum koruma sınırlarını yapılandırın." FontSize="12" Foreground="#8F8F98" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Scrollable settings list -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="20" MaxWidth="900" HorizontalAlignment="Left">
                 
-                <MenuFlyoutSeparator Margin="0,4,0,4"/>
-                
-                <!-- Güvenlik ve Koruma Ayarları -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Güvenlik ve Aşırı Isınma Koruması" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Acil Durum Max Fan Koruması" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
-                        <ToggleSwitch x:Name="ToggleThermalSafety" Grid.Column="1" VerticalAlignment="Center" Toggled="ToggleThermalSafety_Toggled"/>
-                    </Grid>
-                    
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="İşlemci veya Ekran Kartı sıcaklıklarından herhangi biri 95°C'ye ulaştığında donanımı korumak için otomatik olarak Maksimum Fan modunu devreye sokar ve sıcaklık 50°C'ye düşene kadar kapatmaz." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
-                        <TextBlock Text="⚠️ DİKKAT: Bu güvenlik önlemini kapatmak, yüksek yük altında cihazın aşırı ısınmasına, ani termal frekans düşüşlerine (thermal throttling) ve uzun vadede donanım bileşenlerinin hasar görmesine yol açabilir. Açık kalması önemle tavsiye edilir." Foreground="#D97706" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap"/>
+                <!-- Card 1: Başlangıç & Görünüm Ayarları -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE7F4;" FontSize="15" Foreground="#3B82F6"/>
+                            <TextBlock Text="Sistem &amp; Görünüm" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                        </StackPanel>
+
+                        <!-- Başlangıçta Çalıştırma -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Başlangıçta Çalıştırma" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Bilgisayar açıldığında uygulamanın nasıl başlayacağını seçin." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboStartupMode" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboStartupMode_SelectionChanged" Background="#151518" BorderBrush="#2F2F35" Foreground="#FFFFFF">
+                                <ComboBoxItem Content="Arayüzü Aç" Tag="OpenUI"/>
+                                <ComboBoxItem Content="Tray Olarak Başlat" Tag="Tray"/>
+                                <ComboBoxItem Content="Başlatma" Tag="Disabled"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Border Height="1" Background="#1C1C20" Margin="0,4,0,4"/>
+
+                        <!-- Uygulama Teması -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Uygulama Teması" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Uygulamanın renk temasını değiştirin (Dark önerilir)." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboTheme" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboTheme_SelectionChanged" Background="#151518" BorderBrush="#2F2F35" Foreground="#FFFFFF">
+                                <ComboBoxItem Content="Sistem Varsayılanı" Tag="System"/>
+                                <ComboBoxItem Content="Açık Tema" Tag="Light"/>
+                                <ComboBoxItem Content="Koyu Tema" Tag="Dark"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Border Height="1" Background="#1C1C20" Margin="0,4,0,4"/>
+
+                        <!-- Dil Seçeneği -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Dil Seçeneği" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Uygulama arayüz dilini değiştirin." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ComboBox x:Name="ComboLanguage" Grid.Column="1" Width="160" VerticalAlignment="Center" SelectionChanged="ComboLanguage_SelectionChanged" Background="#151518" BorderBrush="#2F2F35" Foreground="#FFFFFF">
+                                <ComboBoxItem Content="Türkçe" Tag="tr"/>
+                                <ComboBoxItem Content="English" Tag="en"/>
+                            </ComboBox>
+                        </Grid>
                     </StackPanel>
-                </StackPanel>
+                </Border>
                 
-                <MenuFlyoutSeparator Margin="0,4,0,4"/>
+                <!-- Card 2: Güvenlik ve Koruma Ayarları -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE7BA;" FontSize="15" Foreground="#FF3B30"/>
+                            <TextBlock Text="Güvenlik ve Aşırı Isınma Koruması" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                        </StackPanel>
+                        
+                        <!-- Acil Durum Max Fan -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Acil Durum Max Fan Koruması" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Sıcaklık 95°C'ye ulaştığında fanları koruma amacıyla otomatik olarak maksimum devire çıkarır." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleThermalSafety" Grid.Column="1" VerticalAlignment="Center" Toggled="ToggleThermalSafety_Toggled"/>
+                        </Grid>
+
+                        <Border Height="1" Background="#1C1C20" Margin="0,4,0,4"/>
+
+                        <!-- Quiet Safety -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Sessiz Mod Isınma Koruması (Quiet Safety)" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Quiet moddayken CPU sıcaklığı 93°C'yi aştığında (8 saniye boyunca) profili otomatik olarak Dengeli moda yükseltir." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="ToggleQuietSafety" Grid.Column="1" VerticalAlignment="Center" Toggled="ToggleQuietSafety_Toggled"/>
+                        </Grid>
+
+                        <Border BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="6" Padding="10" Background="#1A1515" Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE7BA;" FontSize="14" Foreground="#D97706"/>
+                                <TextBlock Text="⚠️ DİKKAT: Güvenlik korumalarını kapatmak, termal throttle veya aşırı ısınmaya sebep olabilir." FontSize="11" Foreground="#F43F5E" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 3: Tanılama Raporu -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE9D9;" FontSize="15" Foreground="#10B981"/>
+                            <TextBlock Text="Tanılama ve Raporlama" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                        </StackPanel>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="Tanılama Raporu Paketle (ZIP)" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Fan geçmişi, EC durum verileri ve donanım bilgilerini Masaüstünüze ZIP olarak kaydeder." Foreground="#8F8F98" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <Button x:Name="BtnExportDiagnostics" Content="ZIP Raporu Üret" Grid.Column="1" VerticalAlignment="Center" Click="BtnExportDiagnostics_Click" Style="{StaticResource AccentButtonStyle}" Background="#2563EB" BorderBrush="#3B82F6" Foreground="#FFFFFF"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
                 
-                <!-- Hakkında -->
-                <StackPanel Spacing="16">
-                    <TextBlock Text="Hakkında" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
-                    
-                    <TextBlock Text="OmenFlow, HP cihazlarını yönetmek için topluluk tarafından geliştirilmiş açık kaynaklı bir uygulamadır." TextWrapping="Wrap"/>
-                    <TextBlock Text="⚠️ HP Inc. ile hiçbir resmi bağı yoktur ve HP tarafından yapılmamıştır." Foreground="#D97706" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                    
-                    <HyperlinkButton Content="GitHub Hesabım ve Kaynak Kod" NavigateUri="https://github.com/yeyil" Margin="0,4,0,0"/>
-                </StackPanel>
+                <!-- Card 4: Hakkında -->
+                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Path Data="M 12,2 L 22,12 L 12,22 L 2,12 Z" Fill="#E00078" Height="14" Width="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                            <TextBlock Text="Hakkında" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="OmenFlow, HP cihazlarını yönetmek için geliştirilmiş açık kaynaklı bağımsız bir uygulamadır." Foreground="#D1D5DB" FontSize="12" TextWrapping="Wrap"/>
+                        <TextBlock Text="⚠️ HP Inc. ile hiçbir resmi bağı yoktur ve HP tarafından yapılmamıştır." Foreground="#D97706" FontWeight="SemiBold" FontSize="11" TextWrapping="Wrap"/>
+                        
+                        <HyperlinkButton Content="GitHub Hesabı ve Kaynak Kod" NavigateUri="https://github.com/yeyil" Padding="0" Margin="0,4,0,0" Foreground="#3B82F6"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

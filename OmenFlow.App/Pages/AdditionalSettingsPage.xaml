@@ -48,8 +48,53 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+                <!-- Güç Modu Otomasyonu -->
+                <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Güç Modu Otomasyonu" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Otomatik Profil Değişimi" FontWeight="SemiBold"/>
+                                <TextBlock Text="Şarj cihazı takıldığında veya çıkarıldığında performans profilini otomatik olarak değiştirir." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="TogglePowerAutomation" Grid.Column="1" Toggled="TogglePowerAutomation_Toggled"/>
+                        </Grid>
+
+                        <StackPanel x:Name="PanelAutomationSettings" Spacing="12" Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Şarja Takılıyken Uygulanacak Profil" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="ComboAcProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged">
+                                    <ComboBoxItem Content="Sessiz Mod" Tag="Quiet"/>
+                                    <ComboBoxItem Content="Dengeli Mod" Tag="Default"/>
+                                    <ComboBoxItem Content="Performans Modu" Tag="Performance"/>
+                                </ComboBox>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Bataryadayken Uygulanacak Profil" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="ComboBatProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged">
+                                    <ComboBoxItem Content="Sessiz Mod" Tag="Quiet"/>
+                                    <ComboBoxItem Content="Dengeli Mod" Tag="Default"/>
+                                    <ComboBoxItem Content="Performans Modu" Tag="Performance"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
                 
-                <!-- Donanım Kilitleri -->
                 <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
                     <StackPanel Spacing="16">
                         <TextBlock Text="Donanım Kilidi" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>

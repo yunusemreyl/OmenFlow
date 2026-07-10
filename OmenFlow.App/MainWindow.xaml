@@ -33,9 +33,9 @@
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
-            PaneDisplayMode="Top"
+            PaneDisplayMode="Left"
             IsBackButtonVisible="Collapsed"
-            IsPaneToggleButtonVisible="False"
+            IsPaneToggleButtonVisible="True"
             SelectionChanged="NavView_SelectionChanged">
             <NavigationView.Resources>
                 <x:Double x:Key="NavigationViewTopPaneHeight">36</x:Double>
@@ -51,19 +51,30 @@
                         <FontIcon Glyph="&#xE9D9;" FontSize="14" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Graphics Switcher" Tag="graphics_switcher">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7F4;" FontSize="14" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Klavye" Tag="lighting">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE765;" FontSize="14" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
-            <Grid>
+            <Grid Margin="12,4,12,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <InfoBar x:Name="BackendConnectionInfoBar" Grid.Row="0" IsOpen="False" Severity="Error" Title="Bağlantı Hatası" Message="Arka plan servisi (OmenFlow.Worker) ile bağlantı kurulamadı. Yeniden bağlanılıyor..." IsClosable="False" Margin="16,8,16,0" />
-                <Frame x:Name="NavFrame" Grid.Row="1" />
+                <Border Grid.Row="1"
+                        Background="#CC070709" 
+                        BorderBrush="#1AFFFFFF" 
+                        BorderThickness="1" 
+                        CornerRadius="10">
+                    <Frame x:Name="NavFrame" />
+                </Border>
             </Grid>
         </NavigationView>
     </Grid>

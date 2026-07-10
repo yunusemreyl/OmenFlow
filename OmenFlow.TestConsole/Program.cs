@@ -19,12 +19,35 @@ class Program
             using var ecService = new EcService(boardConfig);
             using var biosService = new BiosService();
             using var fanControlService = new FanControlService(biosService, boardConfig, ecService);
+            using var fanCurveService = new FanCurveHostedService(fanControlService);
             using var sensorReader = new OmenFlow.Worker.SensorReader();
             var gpuControlService = new GpuControlService(biosService);
             var lightingService = new KeyboardLightingService(biosService);
             using var rgbEffectEngine = new OmenFlow.Hardware.Lighting.RgbEffectEngine(lightingService);
             var perfModeService = new PerformanceModeService(biosService, ecService, boardConfig, gpuControlService);
+
+            // New Services
+            var fanVerifyService = new FanVerificationService(fanControlService, boardConfig);
+            var fanCalibService = new FanCalibrationService(boardConfig);
+            var powerLimitService = new PowerLimitService(biosService, ecService, boardConfig);
             
+            using var powerAutoService = new PowerAutomationService(perfModeService);
+            _ = powerAutoService.StartAsync(CancellationToken.None);
+
+            using var quietSafety = new QuietSafetyMonitor(perfModeService);
+            quietSafety.TelemetryProvider = () => sensorReader.Read(0, 0);
+            _ = quietSafety.StartAsync(CancellationToken.None);
+
+            var diagnosticsService = new DiagnosticsExportService(
+                fanCurveService, fanCalibService, ecService, boardConfig, powerLimitService, fanVerifyService);
+            diagnosticsService.TelemetryProvider = () => sensorReader.Read(0, 0);
+            diagnosticsService.CurrentProfileProvider = () => perfModeService.GetCurrentModeAsync().GetAwaiter().GetResult();
+            diagnosticsService.CurrentFanModeProvider = () => 0;
+
+            // Bind telemetry to curve service
+            fanCurveService.TelemetryProvider = () => sensorReader.Read(0, 0);
+            _ = fanCurveService.StartAsync(CancellationToken.None);
+
             Console.WriteLine("Interactive EC Test Mode Started.");
             Console.WriteLine("Type 'q' to quit.");
             Console.WriteLine("Type 'read <hex_addr>' to read a register.");
@@ -33,13 +56,17 @@ class Program
             Console.WriteLine("Type 'fan <percent>' to set custom fan level via Backend.");
             Console.WriteLine("Type 'maxon' / 'maxoff' to toggle Max Fan via Backend.");
             Console.WriteLine("Type 'auto' to restore BIOS Auto Fan Control via Backend.");
+            Console.WriteLine("Type 'pl <pl1> <pl2> <tgp>' to set CPU Power limits and GPU TGP (e.g. pl 45 90 80).");
+            Console.WriteLine("Type 'autoac <0|1> [ac_profile] [bat_profile]' to toggle Power Automation (e.g. autoac 1 Performance Quiet).");
+            Console.WriteLine("Type 'safety <0|1>' to toggle Quiet Safety Monitor.");
+            Console.WriteLine("Type 'diag' to export complete Diagnostics ZIP to Desktop.");
+            Console.WriteLine("Type 'history' to print last 80 fan commands report.");
             Console.WriteLine("Type 'mux <0|1>' to set GPU Mode (0=Hybrid, 1=Discrete).");
             Console.WriteLine("Type 'power <0|1|2>' to set GPU Power (0=Base, 1=Extra, 2=Max).");
             Console.WriteLine("Type 'rgb <on|off> [hex1] [hex2] [hex3] [hex4]' to set RGB (e.g. rgb on FF0000 00FF00 0000FF FFFFFF).");
             Console.WriteLine("Type 'effect <breathing|colorcycle|wave|stop>' to test RGB animations.");
             Console.WriteLine("Type 'perf <quiet|default|performance>' to set Thermal Profile via PerformanceModeService.");
-            Console.WriteLine("Type 'profile <enum_value>' to set Thermal Profile via FanControlService.");
-            Console.WriteLine("Type 'status' to view GPU and Lighting status.");
+            Console.WriteLine("Type 'status' to view GPU, Lighting and Power limits status.");
             Console.WriteLine("Type 'wmi <hex_cmd> [hex_data1] [hex_data2] ...' to send raw WMI BIOS commands.");
             Console.WriteLine("Type 'dump' to read all EC registers from 0x00 to 0xFF.");
             Console.WriteLine();
@@ -62,15 +89,57 @@ class Program
                         var power = await gpuControlService.GetGpuPowerAsync();
                         var kbdType = await lightingService.DetectKeyboardTypeAsync();
                         var light = await lightingService.GetLightingAsync();
-                        var profile = await fanControlService.GetThermalProfileAsync();
+                        var profile = await perfModeService.GetCurrentModeAsync();
                         
                         Console.WriteLine($"Active Profile: {profile}");
                         Console.WriteLine($"GPU Mode: {mode}");
                         Console.WriteLine($"GPU Power Level: {power}");
                         Console.WriteLine($"Keyboard Type: {kbdType}");
                         Console.WriteLine($"Backlight On: {light.backlightOn}");
+                        Console.WriteLine($"Power Automation: Enabled={powerAutoService.IsEnabled}, AC={powerAutoService.OnAcProfile}, Bat={powerAutoService.OnBatProfile}");
+                        Console.WriteLine($"Quiet Safety Monitor: Enabled={quietSafety.IsEnabled}");
+                        Console.WriteLine($"Power Limit State: {powerLimitService.GetDiagnosticsSummary()}");
                         if (!string.IsNullOrEmpty(light.zoneColors))
                             Console.WriteLine($"Zone Colors (base64): {light.zoneColors}");
+                    }
+                    else if (parts[0] == "pl" && parts.Length == 4)
+                    {
+                        int pl1 = int.Parse(parts[1]);
+                        int pl2 = int.Parse(parts[2]);
+                        int tgp = int.Parse(parts[3]);
+                        bool cpuOk = await powerLimitService.SetCpuPowerLimitsAsync(pl1, pl2);
+                        bool gpuOk = await powerLimitService.SetGpuTgpAsync(tgp);
+                        Console.WriteLine($"Power limits applied → CPU PL1/PL2: {cpuOk}, GPU TGP: {gpuOk}");
+                    }
+                    else if (parts[0] == "autoac" && parts.Length >= 2)
+                    {
+                        bool enable = parts[1] == "1";
+                        powerAutoService.IsEnabled = enable;
+                        if (parts.Length >= 4)
+                        {
+                            if (Enum.TryParse<ThermalProfile>(parts[2], true, out var acP)) powerAutoService.OnAcProfile = acP;
+                            if (Enum.TryParse<ThermalProfile>(parts[3], true, out var batP)) powerAutoService.OnBatProfile = batP;
+                        }
+                        powerAutoService.SaveConfig();
+                        if (enable) await powerAutoService.ForceApplyCurrentSourceAsync();
+                        Console.WriteLine($"Power Automation set to: {enable} (AC={powerAutoService.OnAcProfile}, Bat={powerAutoService.OnBatProfile})");
+                    }
+                    else if (parts[0] == "safety" && parts.Length == 2)
+                    {
+                        bool enable = parts[1] == "1";
+                        quietSafety.IsEnabled = enable;
+                        Console.WriteLine($"Quiet Safety Monitor set to: {enable}");
+                    }
+                    else if (parts[0] == "diag")
+                    {
+                        Console.WriteLine("Generating Diagnostics ZIP...");
+                        string zipPath = await diagnosticsService.ExportAsync();
+                        Console.WriteLine($"Diagnostics ZIP saved to: {zipPath}");
+                    }
+                    else if (parts[0] == "history")
+                    {
+                        Console.WriteLine("Fan Command History Report:");
+                        Console.WriteLine(fanCurveService.GetCommandHistoryReport());
                     }
                     else if (parts[0] == "mux" && parts.Length == 2)
                     {
@@ -98,7 +167,6 @@ class Program
                     }
                     else if (parts[0] == "profile" && parts.Length == 2)
                     {
-                        // Update to handle parsing since enum values changed
                         if (Enum.TryParse<ThermalProfile>(parts[1], true, out var profile))
                         {
                             bool success = await perfModeService.SetPerformanceModeAsync(profile);
@@ -114,7 +182,6 @@ class Program
                         bool on = parts[1] == "on";
                         string base64Colors = "";
 
-                        // Parse optional colors: rgb on FF0000 00FF00 0000FF FFFFFF
                         if (on && parts.Length >= 3)
                         {
                             byte[] zones = new byte[12];
@@ -132,7 +199,6 @@ class Program
                                 catch { }
                             }
                             
-                            // Fill remaining zones with white if not specified
                             for (int i = zoneIdx; i < 4; i++)
                             {
                                 zones[i * 3] = 255;
@@ -264,3 +330,4 @@ class Program
         }
     }
 }
+

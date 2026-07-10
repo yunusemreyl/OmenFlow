@@ -100,11 +100,6 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
     private const int WakeKickMaxPercent = 60;
     private const double WakeKickMinTempC = 55.0;
 
-    // ── Diagnostics ──────────────────────────────────────────────────────
-    private const int MaxCommandHistory = 80;
-    private readonly Queue<FanCommandEntry> _commandHistory = new();
-    private readonly object _historyLock = new();
-
     // ── IsCurveOrHoldActive ──────────────────────────────────────────────
     public bool IsCurveOrHoldActive
     {
@@ -180,6 +175,19 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
         if (isActive) _immediateApplyRequested = true;
     }
 
+    private bool _temporaryOverrideActive = false;
+
+    public void SetTemporaryOverride(bool active)
+    {
+        _temporaryOverrideActive = active;
+        if (!active) _immediateApplyRequested = true;
+    }
+
+    public void TriggerImmediateApply()
+    {
+        _immediateApplyRequested = true;
+    }
+
     public void SetSuspendActive(bool active)
     {
         _systemSuspendActive = active;
@@ -211,6 +219,12 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
                 if (_systemSuspendActive)
                 {
                     Console.WriteLine("[FanCurve] Skipping poll — system suspended.");
+                    continue;
+                }
+
+                if (_temporaryOverrideActive)
+                {
+                    // Skip regular curve writes during temporary override kicks
                     continue;
                 }
 
@@ -586,53 +600,12 @@ public class FanCurveHostedService : BackgroundService, IFanCurveService
 
     private void RecordCommand(string command, string target, bool success, string details = "")
     {
-        FanCurve? unified; bool indep;
-        lock (_curveLock) { unified = _activeCurve; indep = _independentCurvesEnabled; }
-
-        var entry = new FanCommandEntry(
-            TimestampUtc: DateTime.UtcNow,
-            Command: command,
-            Target: target,
-            Success: success,
-            Backend: "WMI/EC",
-            FanMode: _isMaxModeActive ? 2 : (unified != null || indep) ? 1 : 0,
-            CurveActive: unified != null || indep,
-            ThermalProtectionActive: _safetyMaxFanActive,
-            CpuTempC: (int)_smoothedCpuTemp,
-            GpuTempC: (int)_smoothedGpuTemp,
-            CpuFanRpm: 0,
-            GpuFanRpm: 0,
-            Details: details
-        );
-
-        lock (_historyLock)
-        {
-            if (_commandHistory.Count >= MaxCommandHistory) _commandHistory.Dequeue();
-            _commandHistory.Enqueue(entry);
-        }
-    }
-
-    /// <summary>Returns a snapshot of the fan command history for diagnostics export.</summary>
-    public IReadOnlyList<FanCommandEntry> GetCommandHistorySnapshot()
-    {
-        lock (_historyLock) { return _commandHistory.ToList(); }
+        _fanControlService.RecordCommand(command, target, success, $"[Curve Engine] CPU={_smoothedCpuTemp:F1}°C GPU={_smoothedGpuTemp:F1}°C | {details}");
     }
 
     /// <summary>Returns a formatted text report of fan command history.</summary>
     public string GetCommandHistoryReport()
     {
-        var entries = GetCommandHistorySnapshot();
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine("=== OmenFlow Fan Command History ===");
-        sb.AppendLine($"Entries: {entries.Count} (max {MaxCommandHistory})");
-        sb.AppendLine($"Thermal safety: {_safetyProtectionEnabled}, Emergency active: {_safetyMaxFanActive}");
-        sb.AppendLine($"Curve active: {IsCurveOrHoldActive}, Independent: {_independentCurvesEnabled}");
-        sb.AppendLine(new string('-', 80));
-        foreach (var e in entries)
-        {
-            sb.AppendLine($"{e.TimestampUtc:O} | {(e.Success ? "OK" : "FAIL"),-4} | {e.Command,-20} | {e.Target}");
-            sb.AppendLine($"  CPU={e.CpuTempC}°C GPU={e.GpuTempC}°C | thermal={e.ThermalProtectionActive} | {e.Details}");
-        }
-        return sb.ToString();
+        return _fanControlService.GetCommandHistoryReport();
     }
 }

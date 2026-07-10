@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OmenFlow.Core.Interfaces;
@@ -12,6 +14,10 @@ public class FanControlService : IFanControlService, IDisposable
     private readonly IBiosService _biosService;
     private readonly IEcService _ecService;
     private readonly BoardConfiguration _boardConfig;
+    
+    private readonly Queue<FanCommandEntry> _commandHistory = new();
+    private readonly object _historyLock = new();
+    private const int MaxCommandHistory = 80;
     
     private ThermalProfile _cachedProfile = ThermalProfile.Default;
     private const string CacheFilePath = @"C:\ProgramData\OmenFlow\profile_cache.txt";
@@ -224,17 +230,22 @@ public class FanControlService : IFanControlService, IDisposable
                 // When disabling Max Fan, we must run the full RestoreAutoControlAsync sequence so BIOS takes back control!
                 await RestoreAutoControlAsync(cancellationToken);
             }
+            RecordCommand("SetMaxFan", enabled.ToString(), true, "WMI Max Fan command succeeded.");
             return true;
         }
         
         // 2. Try WMI SetFanLevel
         if (enabled)
         {
-            return await SetFanLevelAsync(100, cancellationToken);
+            bool fallbackSuccess = await SetFanLevelAsync(100, cancellationToken);
+            RecordCommand("SetMaxFan", enabled.ToString(), fallbackSuccess, fallbackSuccess ? "Fallback to SetFanLevel(100) succeeded." : "Fallback to SetFanLevel(100) failed.");
+            return fallbackSuccess;
         }
         else
         {
-            return await RestoreAutoControlAsync(cancellationToken);
+            bool fallbackSuccess = await RestoreAutoControlAsync(cancellationToken);
+            RecordCommand("SetMaxFan", enabled.ToString(), fallbackSuccess, fallbackSuccess ? "Fallback to RestoreAutoControl succeeded." : "Fallback to RestoreAutoControl failed.");
+            return fallbackSuccess;
         }
     }
 
@@ -276,6 +287,7 @@ public class FanControlService : IFanControlService, IDisposable
         {
             _isManualControlActive = true;
             StartCountdownTimer();
+            RecordCommand("SetFanLevel", $"{percent}%", true, $"WMI 0x2E set fan level (mapped={bMapped}) succeeded.");
             return true;
         }
 
@@ -285,9 +297,13 @@ public class FanControlService : IFanControlService, IDisposable
             byte ecMapped = MapPercentToFanLevel(percent, _boardConfig.MaxFanLevel);
             await _ecService.WriteByteAsync(0x34, ecMapped, cancellationToken);
             await _ecService.WriteByteAsync(0x35, ecMapped, cancellationToken);
+            RecordCommand("SetFanLevel", $"{percent}%", true, $"EC 0x34/0x35 write (mapped={ecMapped}) succeeded.");
             return true;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RecordCommand("SetFanLevel", $"{percent}%", false, $"EC write failed: {ex.Message}");
+        }
 
         return false;
     }
@@ -334,6 +350,7 @@ public class FanControlService : IFanControlService, IDisposable
             _isManualControlActive = true;
             StartCountdownTimer();
             Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync: CPU={cpuPercent}% (L={bCpu}), GPU={gpuPercent}% (L={bGpu}) ✓");
+            RecordCommand("SetFanLevelIndep", $"CPU={cpuPercent}%, GPU={gpuPercent}%", true, $"WMI 0x2E set independent level (C={bCpu}, G={bGpu}) succeeded.");
             return true;
         }
 
@@ -345,9 +362,13 @@ public class FanControlService : IFanControlService, IDisposable
             _lastManualPercent = Math.Max(cpuPercent, gpuPercent);
             _isManualControlActive = true;
             Console.WriteLine($"[FanControlService] SetFanLevelIndependentAsync EC fallback: CPU=0x{bCpu:X2}, GPU=0x{bGpu:X2} ✓");
+            RecordCommand("SetFanLevelIndep", $"CPU={cpuPercent}%, GPU={gpuPercent}%", true, $"EC 0x34/0x35 set independent level (C={bCpu}, G={bGpu}) succeeded.");
             return true;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RecordCommand("SetFanLevelIndep", $"CPU={cpuPercent}%, GPU={gpuPercent}%", false, $"EC independent write failed: {ex.Message}");
+        }
 
         return false;
     }
@@ -358,9 +379,21 @@ public class FanControlService : IFanControlService, IDisposable
         _isManualControlActive = false;
         _isMaxFanPresetActive = false;
 
-        bool success = false;
+        ThermalProfile activeProfile = ThermalProfile.Default;
+        try
+        {
+            byte modeByte = await _ecService.ReadByteAsync(0x95, cancellationToken);
+            activeProfile = modeByte switch
+            {
+                0x01 => ThermalProfile.Performance,
+                0x02 => ThermalProfile.Quiet,
+                _ => ThermalProfile.Default
+            };
+        }
+        catch { }
 
-        Console.WriteLine("[FanControlService] Starting comprehensive EC Reset to Defaults (OmenCore sequence)...");
+        bool success = false;
+        Console.WriteLine($"[FanControlService] Starting EC Reset to Defaults (respecting profile {activeProfile})...");
 
         try
         {
@@ -368,62 +401,68 @@ public class FanControlService : IFanControlService, IDisposable
             await _biosService.SendCommandAsync(0x20008, 0x27, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
             await Task.Delay(50, cancellationToken);
 
-            // Step 2: Set Thermal Policy to Default (0x1A, 0x30)
-            var (ret1A, _) = await _biosService.SendCommandAsync(
-                0x20008, 0x1A,
-                new byte[] { 0xFF, (byte)ThermalProfile.Default, 0x00, 0x00 },
-                0, cancellationToken);
-
-            if (ret1A == 0)
-            {
-                success = true;
-                UpdateThermalProfileCache(ThermalProfile.Default);
-                Console.WriteLine("  Step 2: SetFanMode(Default) succeeded");
-            }
-            await Task.Delay(50, cancellationToken);
-
-            // Step 3: Extend countdown to prevent immediate timeout (CMD_FAN_GET_COUNT 0x10)
-            await _biosService.SendCommandAsync(0x20008, 0x10, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 4, cancellationToken);
-            await Task.Delay(50, cancellationToken);
-
-            // Step 4: Reset EC Fan Profile Register (0x95) to Default (0x00) to clear any manual/override state in EC
-            try
-            {
-                await _ecService.WriteByteAsync(0x95, 0x00, cancellationToken);
-                Console.WriteLine("  Step 4: EC 0x95 ← 0x00 (Balanced/Default) succeeded");
-            }
-            catch { }
-            await Task.Delay(50, cancellationToken);
-
-            // Step 5: Final reinforcement of Thermal Policy Default (0x1A, 0x30)
+            // Step 2: Set Thermal Policy to Default (30) as a safe intermediate state (OmenCore ritual)
             await _biosService.SendCommandAsync(
                 0x20008, 0x1A,
                 new byte[] { 0xFF, (byte)ThermalProfile.Default, 0x00, 0x00 },
                 0, cancellationToken);
             await Task.Delay(50, cancellationToken);
 
-            // Step 6: V1/V2 difference: V1 requires transition hint (20,20) and floor clear (0,0). 
-            // V2 systems (MaxFanLevel >= 100) use percentage scale where SetFanLevel(0,0) means 
-            // "0% duty cycle", which freezes the fans at 0 RPM. On V2, we skip SetFanLevel entirely!
+            // Step 3: Apply physical fan kick (Level 20) to prevent firmware freeze (OmenCore ritual) - V1 systems ONLY
             if (_boardConfig.MaxFanLevel < 100)
             {
-                Console.WriteLine("  Step 6: Sending V1 fan transition hint (20, 20) and floor clear (0, 0)...");
-                await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { 20, 20, 0x00, 0x00 }, 0, cancellationToken);
+                await _biosService.SendCommandAsync(
+                    0x20008, 0x2E,
+                    new byte[] { 20, 20, 0x00, 0x00 },
+                    0, cancellationToken);
                 await Task.Delay(50, cancellationToken);
-                await _biosService.SendCommandAsync(0x20008, 0x2E, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 0, cancellationToken);
             }
             else
             {
-                Console.WriteLine("  Step 6: Skipping SetFanLevel(0,0) on V2 system to prevent 0 RPM fan freeze. BIOS has full auto control.");
+                Console.WriteLine("  Step 3: Skipped SetFanLevel kick on V2 system to prevent overriding BIOS auto control");
             }
 
-            Console.WriteLine("[FanControlService] ✓ EC Reset to Defaults completed successfully. BIOS should now have full control of fans.");
+            // Step 4: Set Thermal Policy to the actual target profile
+            var (ret1A, _) = await _biosService.SendCommandAsync(
+                0x20008, 0x1A,
+                new byte[] { 0xFF, (byte)activeProfile, 0x00, 0x00 },
+                0, cancellationToken);
+
+            if (ret1A == 0)
+            {
+                success = true;
+                UpdateThermalProfileCache(activeProfile);
+                Console.WriteLine($"  Step 4: SetFanMode({activeProfile}) succeeded");
+            }
+            await Task.Delay(50, cancellationToken);
+
+            // Step 5: Extend countdown to prevent immediate timeout (CMD_FAN_GET_COUNT 0x10)
+            await _biosService.SendCommandAsync(0x20008, 0x10, new byte[] { 0x00, 0x00, 0x00, 0x00 }, 4, cancellationToken);
+            await Task.Delay(50, cancellationToken);
+
+            // Step 6: Reset EC Fan Profile Register to match active profile
+            byte ecFanMode = activeProfile switch
+            {
+                ThermalProfile.Performance => 0x01,
+                ThermalProfile.Quiet => 0x02,
+                _ => 0x00
+            };
+            try
+            {
+                await _ecService.WriteByteAsync(0x95, ecFanMode, cancellationToken);
+                Console.WriteLine($"  Step 6: EC 0x95 ← 0x{ecFanMode:X2} ({activeProfile}) succeeded");
+            }
+            catch { }
+            
+            Console.WriteLine("[FanControlService] ✓ EC Reset to Defaults (OmenCore Safe Sequence) completed successfully. BIOS should now have full control of fans.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[WMI Auto Restore] failed: {ex.Message}");
+            RecordCommand("RestoreAutoControl", activeProfile.ToString(), false, $"Exception: {ex.Message}");
         }
 
+        RecordCommand("RestoreAutoControl", activeProfile.ToString(), success, success ? "BIOS auto control restored successfully." : "Failed to apply WMI profile.");
         return success;
     }
 
@@ -477,5 +516,49 @@ public class FanControlService : IFanControlService, IDisposable
     public void Dispose()
     {
         StopCountdownTimer();
+    }
+
+    public void RecordCommand(string command, string target, bool success, string details = "")
+    {
+        var entry = new FanCommandEntry(
+            TimestampUtc: DateTime.UtcNow,
+            Command: command,
+            Target: target,
+            Success: success,
+            Backend: "WMI/EC",
+            FanMode: _isMaxFanPresetActive ? 2 : _isManualControlActive ? 3 : 0,
+            CurveActive: details.Contains("Curve") || details.Contains("curve"),
+            ThermalProtectionActive: details.Contains("emergency") || details.Contains("Emergency"),
+            CpuTempC: 0,
+            GpuTempC: 0,
+            CpuFanRpm: 0,
+            GpuFanRpm: 0,
+            Details: details
+        );
+
+        lock (_historyLock)
+        {
+            if (_commandHistory.Count >= MaxCommandHistory) _commandHistory.Dequeue();
+            _commandHistory.Enqueue(entry);
+        }
+    }
+
+    public string GetCommandHistoryReport()
+    {
+        List<FanCommandEntry> entries;
+        lock (_historyLock)
+        {
+            entries = _commandHistory.ToList();
+        }
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("=== OmenFlow Fan Command History ===");
+        sb.AppendLine($"Entries: {entries.Count} (max {MaxCommandHistory})");
+        sb.AppendLine(new string('-', 80));
+        foreach (var e in entries)
+        {
+            sb.AppendLine($"{e.TimestampUtc:O} | {(e.Success ? "OK" : "FAIL"),-4} | {e.Command,-20} | {e.Target}");
+            sb.AppendLine($"  {e.Details}");
+        }
+        return sb.ToString();
     }
 }

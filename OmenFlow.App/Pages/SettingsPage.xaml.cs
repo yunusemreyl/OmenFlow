@@ -74,6 +74,13 @@ public sealed partial class SettingsPage : Page
         }
         ToggleThermalSafety.IsOn = thermalSafety;
 
+        bool quietSafety = true; // Default
+        if (localSettings.TryGetValue("QuietSafetyEnabled", out object? qsVal) && qsVal != null)
+        {
+            quietSafety = (bool)qsVal;
+        }
+        ToggleQuietSafety.IsOn = quietSafety;
+
         _isInitializing = false;
     }
 
@@ -132,6 +139,67 @@ public sealed partial class SettingsPage : Page
         if (App.IpcClient != null)
         {
             await App.IpcClient.SendCommandAsync("SetThermalSafety", isOn);
+        }
+    }
+
+    private async void ToggleQuietSafety_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_isInitializing) return;
+        bool isOn = ToggleQuietSafety.IsOn;
+        Helpers.LocalSettings.Values["QuietSafetyEnabled"] = isOn;
+        if (App.IpcClient != null)
+        {
+            await App.IpcClient.SendCommandAsync("SetQuietSafety", isOn);
+        }
+    }
+
+    private async void BtnExportDiagnostics_Click(object sender, RoutedEventArgs e)
+    {
+        BtnExportDiagnostics.IsEnabled = false;
+        BtnExportDiagnostics.Content = "Hazırlanıyor...";
+
+        try
+        {
+            if (App.IpcClient != null)
+            {
+                string? response = await App.IpcClient.SendCommandWithResultAsync("ExportDiagnostics");
+                if (response != null && response.Contains("ZipPath"))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(response);
+                    if (doc.RootElement.TryGetProperty("ZipPath", out var pathProp))
+                    {
+                        string zipPath = pathProp.GetString() ?? "";
+                        var dialog = new ContentDialog
+                        {
+                            Title = "Tanılama Raporu Başarılı",
+                            Content = $"Rapor başarıyla üretildi ve Masaüstüne kaydedildi:\n\n{zipPath}",
+                            CloseButtonText = "Tamam",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await dialog.ShowAsync();
+                    }
+                }
+                else
+                {
+                    throw new Exception("Boş veya hatalı yanıt alındı.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Hata",
+                Content = $"Rapor üretilirken bir hata oluştu:\n{ex.Message}",
+                CloseButtonText = "Tamam",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        finally
+        {
+            BtnExportDiagnostics.IsEnabled = true;
+            BtnExportDiagnostics.Content = "ZIP Raporu Üret";
         }
     }
 }

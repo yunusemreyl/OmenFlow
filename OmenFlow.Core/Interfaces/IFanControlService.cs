@@ -50,5 +50,15 @@ public interface IFanControlService
     /// True when a fan mode transition window is active (RPM reads may be unreliable).
     /// </summary>
     bool IsFanTransitioning { get; }
+
+    /// <summary>
+    /// Records a fan command attempt to the history log.
+    /// </summary>
+    void RecordCommand(string command, string target, bool success, string details = "");
+
+    /// <summary>
+    /// Returns a formatted text report of the logged fan commands.
+    /// </summary>
+    string GetCommandHistoryReport();
 }
 

@@ -43,8 +43,8 @@ public sealed partial class HomePage : Page
 
             if (PowerModeComboBox != null)
             {
-                if (e.ActiveProfile == 0x50) PowerModeComboBox.SelectedIndex = 2; // Quiet
-                else if (e.ActiveProfile == 0x31) PowerModeComboBox.SelectedIndex = 0; // Performance
+                if ((int)e.ActiveProfile == 50) PowerModeComboBox.SelectedIndex = 2; // Quiet
+                else if ((int)e.ActiveProfile == 31) PowerModeComboBox.SelectedIndex = 0; // Performance
                 else PowerModeComboBox.SelectedIndex = 1; // Balanced
             }
             _isSyncing = false;
@@ -101,9 +101,9 @@ public sealed partial class HomePage : Page
 
         if (PowerModeComboBox?.SelectedItem is ComboBoxItem item)
         {
-            int profile = 0x30; // Balanced/Default
-            if (item.Content.ToString() == "Quiet") profile = 0x50;
-            if (item.Content.ToString() == "Performance") profile = 0x31;
+            int profile = 30; // Balanced/Default
+            if (item.Content.ToString() == "Quiet") profile = 50;
+            if (item.Content.ToString() == "Performance") profile = 31;
 
             if (App.IpcClient != null)
             {
@@ -145,11 +145,5 @@ public sealed partial class HomePage : Page
     {
         var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
         mainWindow?.NavigateToLighting();
-    }
-
-    private void AdditionalSettingsCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-    {
-        var mainWindow = (Application.Current as App)?.GetMainWindow() as MainWindow;
-        mainWindow?.NavigateToAdvancedSettings();
     }
 }

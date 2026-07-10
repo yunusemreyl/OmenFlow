@@ -1,20 +1,34 @@
 using System;
 using System.Linq;
 using LibreHardwareMonitor.Hardware;
-using System.Text.Json;
-
 using OmenFlow.Core.Models;
 
 namespace OmenFlow.Worker;
 
+/// <summary>
+/// LibreHardwareMonitor (LHM) üzerinden sistem metriklerini okur.
+///
+/// OmenFlow Hibrid Mimarisindeki Rolü (WmiBiosMonitor ile birlikte):
+///   - CPU Load % (Total)
+///   - GPU Load % (Core)
+///   - CPU Package Power (W)
+///   - GPU Power (W)
+///   - RAM Kullanımı (Used GB / Total GB)
+///
+/// NOTLAR:
+///   - Sıcaklık ve Fan RPM birincil olarak HP WMI BIOS'tan okunur (WmiBiosMonitor).
+///     LHM bu değerleri yalnızca WMI kullanılamadığında veya sensör kilitlendiğinde sağlar.
+///   - IsMotherboardEnabled ve IsControllerEnabled kasıtlı olarak false bırakılmıştır:
+///     Fan RPM'i WMI/EC doğrudan okunduğu için LHM'nin bu sensörleri taraması gereksizdir,
+///     sadece başlangıç süresini ve CPU kullanımını artırırdı.
+/// </summary>
 public class SensorReader : IDisposable
 {
     private const int FanTransitionHoldReads = 3;
-    private const float FanUnavailableTemperatureC = 50f;
 
     private readonly Computer _computer;
     private readonly UpdateVisitor _updateVisitor;
-    private bool _hardwareLogged = false; // Log hardware list only once
+    private bool _hardwareLogged = false;
     private int _cpuFanZeroStreak = 0;
     private int _gpuFanZeroStreak = 0;
     private int _cpuFanLastNonZeroRpm = 0;
@@ -26,140 +40,141 @@ public class SensorReader : IDisposable
     {
         _computer = new Computer
         {
-            IsCpuEnabled = true,
-            IsGpuEnabled = true,
+            IsCpuEnabled    = true,
+            IsGpuEnabled    = true,
             IsMemoryEnabled = true,
-            IsMotherboardEnabled = true,
-            IsControllerEnabled = true,
-            IsNetworkEnabled = false,
-            IsStorageEnabled = false
+
+            // Açık: LHM üzerinden Fan RPM'leri okumak için gerekli.
+            IsMotherboardEnabled  = true,
+            IsControllerEnabled   = true,
+            IsNetworkEnabled      = false,
+            IsStorageEnabled      = false
         };
+
         try
         {
             _computer.Open();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SensorReader] Failed to open computer: {ex}");
+            Console.WriteLine($"[SensorReader] LHM açılamadı: {ex.Message}");
         }
+
         _updateVisitor = new UpdateVisitor();
     }
 
-    public WorkerTelemetry Read(int cpuFanRpm, int gpuFanRpm)
+    /// <summary>
+    /// Tüm LHM donanımını günceller ve metrikleri döndürür.
+    /// Dahili fan RPM'leri 0 çünkü WMI/EC doğrudan enjekte edilir — yine de
+    /// dolu WorkerTelemetry formatında döndürülür (geriye dönük uyumluluk).
+    /// </summary>
+    public WorkerTelemetry Read(int cpuFanRpm = 0, int gpuFanRpm = 0)
     {
         try
         {
             _computer.Accept(_updateVisitor);
 
-            float cpuTemp = 0f;
-            float cpuLoad = 0f;
-            float cpuPower = 0f;
-            float gpuTemp = 0f;
-            float gpuLoad = 0f;
-            float gpuPower = 0f;
-            float ramUsed = 0f;
-            float ramTotal = 0f;
+            float cpuTemp = 0f, cpuLoad = 0f, cpuPower = 0f;
+            float gpuTemp = 0f, gpuLoad = 0f, gpuPower = 0f;
+            float ramUsed = 0f, ramTotal = 0f;
 
-            var allHardware = GetAllHardware(_computer);
+            int lhmCpuFanRpm = 0;
+            int lhmGpuFanRpm = 0;
 
-            foreach (var hardware in allHardware)
+            foreach (var hw in GetAllHardware(_computer))
             {
                 if (!_hardwareLogged)
-                    Console.WriteLine($"[LHM] Found Hardware: {hardware.Name} ({hardware.HardwareType})");
-                if (hardware.HardwareType == HardwareType.Cpu)
+                    Console.WriteLine($"[LHM] Donanım: {hw.Name} ({hw.HardwareType})");
+
+                // Fan RPM sensörlerini tara
+                foreach (var s in hw.Sensors)
                 {
-                    var tempSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && (s.Name.Contains("Package") || s.Name.Contains("Core Max")));
-                    if (tempSensor?.Value != null) cpuTemp = tempSensor.Value.Value;
-
-                    var loadSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Total"));
-                    if (loadSensor?.Value != null) cpuLoad = loadSensor.Value.Value;
-
-                    var powerSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Name == "CPU Package")
-                                   ?? hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Name == "Package Power")
-                                   ?? hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Name == "Package")
-                                   ?? hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power);
-                    if (powerSensor?.Value != null) cpuPower = powerSensor.Value.Value;
-                }
-                else if (hardware.HardwareType == HardwareType.GpuNvidia || hardware.HardwareType == HardwareType.GpuAmd || hardware.HardwareType == HardwareType.GpuIntel)
-                {
-                    var tempSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && s.Name.Contains("Core"));
-                    if (tempSensor?.Value != null) gpuTemp = tempSensor.Value.Value;
-
-                    var loadSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Core"));
-                    if (loadSensor?.Value != null) gpuLoad = loadSensor.Value.Value;
-
-                    var powerSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Name == "GPU Power")
-                                   ?? hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Name == "Board Power")
-                                   ?? hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power);
-                    if (powerSensor?.Value != null) gpuPower = powerSensor.Value.Value;
-                }
-                else if (hardware.HardwareType == HardwareType.Memory)
-                {
-                    // Filter out "Virtual Memory" to only get physical memory
-                    if (hardware.Name != "Virtual Memory")
+                    if (s.SensorType == SensorType.Fan)
                     {
-                        var usedSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Data && s.Name.Contains("Memory Used"));
-                        if (usedSensor?.Value != null) ramUsed = usedSensor.Value.Value;
-
-                        var availSensor = hardware.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Data && s.Name.Contains("Memory Available"));
-                        if (availSensor?.Value != null && usedSensor?.Value != null)
-                            ramTotal = ramUsed + availSensor.Value.Value;
+                        string name = s.Name.ToLowerInvariant();
+                        if (name.Contains("cpu") || name.Contains("fan #1") || name.Contains("1"))
+                        {
+                            lhmCpuFanRpm = (int)(s.Value ?? 0f);
+                        }
+                        else if (name.Contains("gpu") || name.Contains("fan #2") || name.Contains("2"))
+                        {
+                            lhmGpuFanRpm = (int)(s.Value ?? 0f);
+                        }
                     }
                 }
-                else if (hardware.HardwareType == HardwareType.Motherboard || hardware.HardwareType == HardwareType.SuperIO)
+
+                switch (hw.HardwareType)
                 {
-                    var fans = hardware.Sensors.Where(s => s.SensorType == SensorType.Fan).ToList();
-                    foreach (var f in fans) Console.WriteLine($"[LHM Debug]   Found Fan: {f.Name} = {f.Value}");
+                    case HardwareType.Cpu:
+                        cpuTemp  = ReadSensor(hw, SensorType.Temperature, s => s.Name.Contains("Package") || s.Name.Contains("Core Max")) ?? 0f;
+                        cpuLoad  = ReadSensor(hw, SensorType.Load,        s => s.Name.Contains("Total")) ?? 0f;
+                        cpuPower = ReadSensor(hw, SensorType.Power,
+                            s => s.Name is "CPU Package" or "Package Power" or "Package")
+                            ?? ReadSensor(hw, SensorType.Power, _ => true) ?? 0f;
+                        break;
 
-                    var cpuFanSensor = fans.FirstOrDefault(s => s.Name.Contains("CPU", StringComparison.OrdinalIgnoreCase)) ?? fans.FirstOrDefault(s => s.Name.Contains("Fan #1"));
-                    if (cpuFanSensor?.Value != null && cpuFanSensor.Value.Value > 0) cpuFanRpm = (int)cpuFanSensor.Value.Value;
+                    case HardwareType.GpuNvidia:
+                    case HardwareType.GpuAmd:
+                    case HardwareType.GpuIntel:
+                        gpuTemp  = ReadSensor(hw, SensorType.Temperature, s => s.Name.Contains("Core")) ?? 0f;
+                        gpuLoad  = ReadSensor(hw, SensorType.Load,        s => s.Name.Contains("Core")) ?? 0f;
+                        gpuPower = ReadSensor(hw, SensorType.Power,
+                            s => s.Name is "GPU Power" or "Board Power")
+                            ?? ReadSensor(hw, SensorType.Power, _ => true) ?? 0f;
+                        break;
 
-                    var gpuFanSensor = fans.FirstOrDefault(s => s.Name.Contains("GPU", StringComparison.OrdinalIgnoreCase) || s.Name.Contains("System", StringComparison.OrdinalIgnoreCase)) ?? fans.FirstOrDefault(s => s.Name.Contains("Fan #2"));
-                    if (gpuFanSensor?.Value != null && gpuFanSensor.Value.Value > 0) gpuFanRpm = (int)gpuFanSensor.Value.Value;
-                }
-                else if (hardware.HardwareType == HardwareType.EmbeddedController)
-                {
-                    var fans = hardware.Sensors.Where(s => s.SensorType == SensorType.Fan).ToList();
-                    foreach (var f in fans) Console.WriteLine($"[LHM Debug]   Found Fan: {f.Name} = {f.Value}");
-
-                    var cpuFanSensor = fans.FirstOrDefault(s => s.Name.Contains("CPU", StringComparison.OrdinalIgnoreCase)) ?? fans.FirstOrDefault();
-                    if (cpuFanSensor?.Value != null && cpuFanSensor.Value.Value > 0) cpuFanRpm = (int)cpuFanSensor.Value.Value;
-
-                    var gpuFanSensor = fans.FirstOrDefault(s => s.Name.Contains("GPU", StringComparison.OrdinalIgnoreCase)) ?? fans.Skip(1).FirstOrDefault();
-                    if (gpuFanSensor?.Value != null && gpuFanSensor.Value.Value > 0) gpuFanRpm = (int)gpuFanSensor.Value.Value;
+                    case HardwareType.Memory:
+                        if (hw.Name != "Virtual Memory")
+                        {
+                            float used  = ReadSensor(hw, SensorType.Data, s => s.Name.Contains("Memory Used")) ?? 0f;
+                            float avail = ReadSensor(hw, SensorType.Data, s => s.Name.Contains("Memory Available")) ?? 0f;
+                            if (used > 0) { ramUsed = used; ramTotal = used + avail; }
+                        }
+                        break;
                 }
             }
+
+            _hardwareLogged = true;
+
+            if (cpuFanRpm == 0) cpuFanRpm = lhmCpuFanRpm;
+            if (gpuFanRpm == 0) gpuFanRpm = lhmGpuFanRpm;
 
             cpuFanRpm = ResolveFanRpm(cpuFanRpm, cpuTemp, ref _cpuFanZeroStreak, ref _cpuFanLastNonZeroRpm, ref _cpuFanState);
             gpuFanRpm = ResolveFanRpm(gpuFanRpm, gpuTemp, ref _gpuFanZeroStreak, ref _gpuFanLastNonZeroRpm, ref _gpuFanState);
 
-            var data = new WorkerTelemetry(cpuTemp, gpuTemp, cpuLoad, gpuLoad, cpuPower, gpuPower, ramUsed, ramTotal, cpuFanRpm, gpuFanRpm, _cpuFanState, _gpuFanState);
-            _hardwareLogged = true; // Suppress repeated hardware enumeration logs
-            Console.WriteLine($"READ SENSORS: {data}");
-            return data;
+            return new WorkerTelemetry(cpuTemp, gpuTemp, cpuLoad, gpuLoad, cpuPower, gpuPower,
+                                       ramUsed, ramTotal, cpuFanRpm, gpuFanRpm, _cpuFanState, _gpuFanState);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"SENSOR READ ERROR: {ex}");
-            return new WorkerTelemetry(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0, 0, FanRpmState.Unknown, FanRpmState.Unknown);
+            Console.WriteLine($"[SensorReader] Okuma hatası: {ex.Message}");
+            return CreateEmpty();
         }
     }
 
-    private static int ResolveFanRpm(int currentRpm, float temperatureC, ref int zeroStreak, ref int lastNonZeroRpm, ref FanRpmState state)
+    /// <summary>
+    /// WmiBiosMonitor arka plan döngüsü için optimize edilmiş okuma.
+    /// Tam Read() ile aynıdır; fan RPM enjeksiyonu olmaksızın çağrılır.
+    /// </summary>
+    public WorkerTelemetry ReadLightweight() => Read(0, 0);
+
+    // ── Yardımcılar ──────────────────────────────────────────────────────
+
+    private static float? ReadSensor(IHardware hw, SensorType type, Func<ISensor, bool> predicate)
+    {
+        var sensor = hw.Sensors.FirstOrDefault(s => s.SensorType == type && predicate(s));
+        return sensor?.Value;
+    }
+
+    private static int ResolveFanRpm(int currentRpm, float tempC,
+        ref int zeroStreak, ref int lastNonZeroRpm, ref FanRpmState state)
     {
         if (currentRpm > 0)
         {
-            zeroStreak = 0;
-            lastNonZeroRpm = currentRpm;
-            state = FanRpmState.Stable;
+            zeroStreak      = 0;
+            lastNonZeroRpm  = currentRpm;
+            state           = FanRpmState.Stable;
             return currentRpm;
-        }
-
-        if (temperatureC < FanUnavailableTemperatureC)
-        {
-            zeroStreak = 0;
-            state = FanRpmState.IdleStopped;
-            return 0;
         }
 
         if (lastNonZeroRpm > 0 && zeroStreak < FanTransitionHoldReads)
@@ -169,23 +184,12 @@ public class SensorReader : IDisposable
             return lastNonZeroRpm;
         }
 
-        if (lastNonZeroRpm > 0)
-        {
-            zeroStreak++;
-            state = FanRpmState.Unavailable;
-            return 0;
-        }
-
-        state = FanRpmState.Unavailable;
+        zeroStreak++;
+        state = FanRpmState.IdleStopped;
         return 0;
     }
 
-    public void Dispose()
-    {
-        _computer.Close();
-    }
-
-    private System.Collections.Generic.IEnumerable<IHardware> GetAllHardware(IComputer computer)
+    private IEnumerable<IHardware> GetAllHardware(IComputer computer)
     {
         var list = new System.Collections.Generic.List<IHardware>();
         foreach (var hw in computer.Hardware)
@@ -196,7 +200,7 @@ public class SensorReader : IDisposable
         return list;
     }
 
-    private System.Collections.Generic.IEnumerable<IHardware> GetSubHardware(IHardware hw)
+    private IEnumerable<IHardware> GetSubHardware(IHardware hw)
     {
         var list = new System.Collections.Generic.List<IHardware>();
         foreach (var sub in hw.SubHardware)
@@ -206,19 +210,23 @@ public class SensorReader : IDisposable
         }
         return list;
     }
+
+    private static WorkerTelemetry CreateEmpty() =>
+        new(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0, 0, FanRpmState.Unknown, FanRpmState.Unknown);
+
+    public void Dispose()
+    {
+        _computer.Close();
+    }
 }
 
 public class UpdateVisitor : IVisitor
 {
-    public void VisitComputer(IComputer computer)
-    {
-        computer.Traverse(this);
-    }
+    public void VisitComputer(IComputer computer) => computer.Traverse(this);
     public void VisitHardware(IHardware hardware)
     {
         hardware.Update();
-        foreach (IHardware subHardware in hardware.SubHardware)
-            subHardware.Accept(this);
+        foreach (var sub in hardware.SubHardware) sub.Accept(this);
     }
     public void VisitSensor(ISensor sensor) { }
     public void VisitParameter(IParameter parameter) { }

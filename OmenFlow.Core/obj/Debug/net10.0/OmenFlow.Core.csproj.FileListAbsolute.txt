@@ -1,0 +1,12 @@
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\bin\Debug\net10.0\OmenFlow.Core.deps.json
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\bin\Debug\net10.0\OmenFlow.Core.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\bin\Debug\net10.0\OmenFlow.Core.pdb
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.AssemblyInfoInputs.cache
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.AssemblyInfo.cs
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.csproj.CoreCompileInputs.cache
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.sourcelink.json
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\refint\OmenFlow.Core.dll
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\OmenFlow.Core.pdb
+C:\Users\yeyil\Documents\GitHub\OmenFlow\OmenFlow.Core\obj\Debug\net10.0\ref\OmenFlow.Core.dll

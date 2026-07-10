@@ -18,4 +18,9 @@ public interface IBiosService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A tuple containing the return code and the output byte array.</returns>
     Task<(int ReturnCode, byte[] OutData)> SendCommandAsync(uint commandType, byte command, byte[] inData, int outSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets both CPU and GPU temperatures via WMI (Command 0x23).
+    /// </summary>
+    Task<(int cpuTemp, int gpuTemp)?> GetBothTemperaturesAsync(CancellationToken cancellationToken = default);
 }

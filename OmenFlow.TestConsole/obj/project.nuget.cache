@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "vbquiSCC6Sg=",
+  "dgSpecHash": "tDBEniPyazg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
+  "projectFilePath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.TestConsole\\OmenFlow.TestConsole.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\yeyil\\.nuget\\packages\\blacksharp.core\\1.0.7\\blacksharp.core.1.0.7.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\diskinfotoolkit\\1.1.2\\diskinfotoolkit.1.1.2.nupkg.sha512",
@@ -19,6 +19,7 @@
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure\\3.0.0\\microsoft.management.infrastructure.3.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.unix\\3.0.0\\microsoft.management.infrastructure.runtime.unix.3.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.management.infrastructure.runtime.win\\3.0.0\\microsoft.management.infrastructure.runtime.win.3.0.0.nupkg.sha512",
+    "C:\\Users\\yeyil\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\mono.posix.netstandard\\1.0.0\\mono.posix.netstandard.1.0.0.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\ramspdtoolkit-ndd\\1.4.2\\ramspdtoolkit-ndd.1.4.2.nupkg.sha512",
     "C:\\Users\\yeyil\\.nuget\\packages\\runtime.android-arm.runtime.native.system.io.ports\\10.0.3\\runtime.android-arm.runtime.native.system.io.ports.10.0.3.nupkg.sha512",

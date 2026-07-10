@@ -4,6 +4,12 @@ using OmenFlow.Core.Models;
 
 namespace OmenFlow.Hardware;
 
+/// <summary>
+/// [LEGACY] Bu servis OmenFlow.App'in IPC Named Pipe mimarisinden kalan bir kalıntıdır.
+/// Worker artık HTTP minimal API + WmiBiosMonitor üzerinden telemetri sağlamaktadır.
+/// Bu sınıf şimdilik silinmeyecek (bağımlılık varsa derleme hatası oluşur), ancak
+/// yeni işlevsellik eklenmeyecek ve ilerleyen versiyonda kaldırılacaktır.
+/// </summary>
 public class HardwareMonitorService : IHardwareMonitorService, IDisposable
 {
     private volatile WorkerTelemetry? _latest;

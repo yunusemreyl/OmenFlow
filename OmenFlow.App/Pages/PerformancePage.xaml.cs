@@ -33,31 +33,54 @@ public sealed partial class PerformancePage : Page
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (CpuTempText != null) CpuTempText.Text = $"{e.CpuTemp:F0}°C";
-            if (GpuTempText != null) GpuTempText.Text = $"{e.GpuTemp:F0}°C";
+            // Sıcaklık metinleri + dinamik renk (yeşil→sarı→kırmızı)
+            if (CpuTempText != null)
+            {
+                CpuTempText.Text = $"{e.CpuTemp:F0}°C";
+                CpuTempText.Foreground = GetTempBrush(e.CpuTemp);
+            }
+            if (GpuTempText != null)
+            {
+                GpuTempText.Text = $"{e.GpuTemp:F0}°C";
+                GpuTempText.Foreground = GetTempBrush(e.GpuTemp);
+            }
+
             if (CpuPowerText != null) CpuPowerText.Text = $"{e.CpuPower:F1} W";
             if (GpuPowerText != null) GpuPowerText.Text = $"{e.GpuPower:F1} W";
             if (CpuUsageText != null) CpuUsageText.Text = $"%{e.CpuLoad:F0}";
             if (GpuUsageText != null) GpuUsageText.Text = $"%{e.GpuLoad:F0}";
-            if (CpuFanText != null) CpuFanText.Text = TelemetryDisplayHelper.FormatFanRpm(e.CpuFanRpm, e.CpuFanState);
-            if (GpuFanText != null) GpuFanText.Text = TelemetryDisplayHelper.FormatFanRpm(e.GpuFanRpm, e.GpuFanState);
+            if (CpuFanText  != null) CpuFanText.Text = Helpers.TelemetryDisplayHelper.FormatFanRpm(e.CpuFanRpm, e.CpuFanState);
+            if (GpuFanText  != null) GpuFanText.Text = Helpers.TelemetryDisplayHelper.FormatFanRpm(e.GpuFanRpm, e.GpuFanState);
 
-            // Sync Performance Profile
-            if (BtnPerfQuiet != null) BtnPerfQuiet.IsChecked = (e.ActiveProfile == 0x50);
-            if (BtnPerfDefault != null) BtnPerfDefault.IsChecked = (e.ActiveProfile == 0x30);
-            if (BtnPerfPerf != null) BtnPerfPerf.IsChecked = (e.ActiveProfile == 0x31);
+            // Performans profili senkronizasyonu
+            if (BtnPerfQuiet   != null) BtnPerfQuiet.IsChecked   = ((int)e.ActiveProfile == 50);
+            if (BtnPerfDefault != null) BtnPerfDefault.IsChecked = ((int)e.ActiveProfile == 30);
+            if (BtnPerfPerf    != null) BtnPerfPerf.IsChecked    = ((int)e.ActiveProfile == 31);
 
-            // Sync Fan Mode
-            if (BtnFanAuto != null) BtnFanAuto.IsChecked = (e.ActiveFanMode == 0);
-            if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsChecked = (e.ActiveFanMode == 1);
-            if (BtnFanMax != null) BtnFanMax.IsChecked = (e.ActiveFanMode == 2);
-            if (BtnFanManual != null) BtnFanManual.IsChecked = (e.ActiveFanMode == 3);
+            // Fan modu senkronizasyonu
+            if (BtnFanAuto    != null) BtnFanAuto.IsChecked    = (e.ActiveFanMode == 0);
+            if (BtnFanOmenFlow!= null) BtnFanOmenFlow.IsChecked= (e.ActiveFanMode == 1);
+            if (BtnFanMax     != null) BtnFanMax.IsChecked     = (e.ActiveFanMode == 2);
+            if (BtnFanManual  != null) BtnFanManual.IsChecked  = (e.ActiveFanMode == 3);
 
-            // Sync GPU Mode
-            if (BtnMuxHybrid != null) BtnMuxHybrid.IsChecked = (e.GpuMode == 0 || e.GpuMode == 2);
-            if (BtnMuxDiscrete != null) BtnMuxDiscrete.IsChecked = (e.GpuMode == 1);
         });
     }
+
+    /// <summary>
+    /// Sıcaklığa göre renk döndürür:
+    ///   0–69°C → Yeşil (normal)
+    ///   70–84°C → Sarı/turuncu (yüksek)
+    ///   85°C+   → Kırmızı (kritik)
+    /// </summary>
+    private static Microsoft.UI.Xaml.Media.SolidColorBrush GetTempBrush(float tempC)
+    {
+        if (tempC >= 85f)
+            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38));   // Kırmızı
+        if (tempC >= 70f)
+            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 217, 119, 6));   // Turuncu
+        return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 16, 185, 129));       // Yeşil
+    }
+
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -128,28 +151,24 @@ public sealed partial class PerformancePage : Page
     // ========== Performans Profili ==========
     private async void PerfMode_Click(object sender, RoutedEventArgs e)
     {
-        var btn = sender as ToggleButton;
-        bool prevQuiet = BtnPerfQuiet.IsChecked == true;
-        bool prevDefault = BtnPerfDefault.IsChecked == true;
-        bool prevPerf = BtnPerfPerf.IsChecked == true;
+        var btn = sender as RadioButton;
+        if (btn == null) return;
 
-        BtnPerfQuiet.IsChecked = (btn == BtnPerfQuiet);
-        BtnPerfDefault.IsChecked = (btn == BtnPerfDefault);
-        BtnPerfPerf.IsChecked = (btn == BtnPerfPerf);
-
-        int profile = 0x30; // Default
+        int profile = 30; // Default
         string modeName = "Varsayılan (Default)";
-        if (btn == BtnPerfQuiet) { profile = 0x50; modeName = "Sessiz (Quiet)"; }
-        if (btn == BtnPerfPerf) { profile = 0x31; modeName = "Performans"; }
+        if (btn == BtnPerfQuiet) { profile = 50; modeName = "Sessiz (Quiet)"; }
+        if (btn == BtnPerfPerf) { profile = 31; modeName = "Performans"; }
 
         if (App.IpcClient != null)
         {
             bool sent = await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
             if (!sent)
             {
-                BtnPerfQuiet.IsChecked = prevQuiet;
-                BtnPerfDefault.IsChecked = prevDefault;
-                BtnPerfPerf.IsChecked = prevPerf;
+                // Rollback
+                if (profile == 50) BtnPerfQuiet.IsChecked = true;
+                else if (profile == 31) BtnPerfPerf.IsChecked = true;
+                else BtnPerfDefault.IsChecked = true;
+
                 await ShowCommandFailedDialogAsync("Profil uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                 return;
             }
@@ -181,55 +200,65 @@ public sealed partial class PerformancePage : Page
     // ========== Fan Modu ==========
     private async void FanMode_Click(object sender, RoutedEventArgs e)
     {
-        var btn = sender as ToggleButton;
+        var btn = sender as RadioButton;
+        if (btn == null) return;
+
         bool prevAuto = BtnFanAuto.IsChecked == true;
         bool prevOmenFlow = BtnFanOmenFlow.IsChecked == true;
         bool prevMax = BtnFanMax.IsChecked == true;
         bool prevManual = BtnFanManual.IsChecked == true;
 
-        SetFanMode(btn);
-        
         if (btn == BtnFanManual)
         {
             OpenCustomFanWindow();
         }
         else if (btn == BtnFanOmenFlow)
         {
-            await ApplyFanCurveAsync(OmenFlowPresetPoints);
+            if (App.IpcClient != null)
+            {
+                bool sent = await App.IpcClient.SendCommandAsync("SetFlow");
+                if (!sent)
+                {
+                    RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
+                    await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
+                }
+            }
         }
         else if (btn == BtnFanMax)
         {
             if (App.IpcClient != null)
             {
-                bool sent = await App.IpcClient.SendCommandAsync("SetMaxFan");
+                bool sent = await App.IpcClient.SendCommandAsync("SetMaxFan", true);
                 if (!sent)
                 {
-                    BtnFanAuto.IsChecked = prevAuto;
-                    BtnFanOmenFlow.IsChecked = prevOmenFlow;
-                    BtnFanMax.IsChecked = prevMax;
-                    BtnFanManual.IsChecked = prevManual;
+                    RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
                     await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                 }
             }
         }
-        else // Auto
+        else if (btn == BtnFanAuto)
         {
             if (App.IpcClient != null)
             {
                 bool sent = await App.IpcClient.SendCommandAsync("SetAuto");
                 if (!sent)
                 {
-                    BtnFanAuto.IsChecked = prevAuto;
-                    BtnFanOmenFlow.IsChecked = prevOmenFlow;
-                    BtnFanMax.IsChecked = prevMax;
-                    BtnFanManual.IsChecked = prevManual;
+                    RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
                     await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                 }
             }
         }
     }
 
-    private void SetFanMode(ToggleButton? btn)
+    private void RestoreFanModeRollback(bool auto, bool flow, bool max, bool manual)
+    {
+        BtnFanAuto.IsChecked = auto;
+        BtnFanOmenFlow.IsChecked = flow;
+        BtnFanMax.IsChecked = max;
+        BtnFanManual.IsChecked = manual;
+    }
+
+    private void SetFanMode(RadioButton? btn)
     {
         BtnFanAuto.IsChecked = (btn == BtnFanAuto);
         BtnFanOmenFlow.IsChecked = (btn == BtnFanOmenFlow);
@@ -237,56 +266,67 @@ public sealed partial class PerformancePage : Page
         BtnFanManual.IsChecked = (btn == BtnFanManual);
     }
 
-    // ========== GPU Kontrolleri ==========
-    private async void MuxMode_Click(object sender, RoutedEventArgs e)
+    private async void BtnShowFanLogs_Click(object sender, RoutedEventArgs e)
     {
-        var btn = sender as ToggleButton;
-        bool prevHybrid = BtnMuxHybrid.IsChecked == true;
-        bool prevDiscrete = BtnMuxDiscrete.IsChecked == true;
-        int oldMode = (btn == BtnMuxDiscrete) ? 0 : 1; // Discrete tıklandıysa eski mod Hybrid(0), Hybrid tıklandıysa eski mod Discrete(1)
-        int newMode = (btn == BtnMuxDiscrete) ? 1 : 0; // Discrete=1, Hybrid=0
+        if (App.IpcClient == null) return;
 
-        BtnMuxHybrid.IsChecked = (btn == BtnMuxHybrid);
-        BtnMuxDiscrete.IsChecked = (btn == BtnMuxDiscrete);
+        BtnShowFanLogs.IsEnabled = false;
+        BtnShowFanLogs.Content = "Yükleniyor...";
 
-        if (App.IpcClient != null)
-        {
-            bool sent = await App.IpcClient.SendCommandAsync("SetGpuMode", newMode);
-            if (!sent)
-            {
-                BtnMuxHybrid.IsChecked = prevHybrid;
-                BtnMuxDiscrete.IsChecked = prevDiscrete;
-                await ShowCommandFailedDialogAsync("MUX değiştirilemedi", "Worker servisine erişilemedi ya da komut reddedildi.");
-                return;
-            }
-
-            ShowMuxToastNotification(oldMode, newMode);
-        }
-    }
-
-    private async void ShowMuxToastNotification(int oldMode, int newMode)
-    {
         try
         {
-            var dialog = new ContentDialog
+            string? response = await App.IpcClient.SendCommandWithResultAsync("GetFanDiagnostics");
+            string reportText = "Günlük bilgisi alınamadı.";
+
+            if (response != null && response.Contains("Report"))
             {
-                Title = "Yeniden Başlatma Gerekli",
-                Content = "GPU MUX Modu değişikliğinin etkinleşmesi için bilgisayarınızı yeniden başlatmanız gerekiyor.",
-                PrimaryButtonText = "Yeniden Başlat",
-                CloseButtonText = "Daha Sonra",
-                XamlRoot = this.XamlRoot,
-                RequestedTheme = ElementTheme.Default
+                using var doc = System.Text.Json.JsonDocument.Parse(response);
+                if (doc.RootElement.TryGetProperty("Report", out var rProp))
+                {
+                    reportText = rProp.GetString() ?? "Log geçmişi boş.";
+                }
+            }
+
+            var scrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                MaxHeight = 400,
+                Content = new TextBox
+                {
+                    Text = reportText,
+                    IsReadOnly = true,
+                    AcceptsReturn = true,
+                    TextWrapping = TextWrapping.NoWrap,
+                    FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
+                    FontSize = 12
+                }
             };
 
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
+            var dialog = new ContentDialog
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("shutdown", "/r /t 0") { CreateNoWindow = true, UseShellExecute = false });
-            }
+                Title = "Fan Tanılama Geçmişi (Log)",
+                Content = scrollViewer,
+                CloseButtonText = "Kapat",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Dialog error: {ex.Message}");
+            var dialog = new ContentDialog
+            {
+                Title = "Hata",
+                Content = $"Günlükler yüklenirken hata oluştu:\n{ex.Message}",
+                CloseButtonText = "Kapat",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        finally
+        {
+            BtnShowFanLogs.IsEnabled = true;
+            BtnShowFanLogs.Content = "Günlükleri Göster";
         }
     }
 }

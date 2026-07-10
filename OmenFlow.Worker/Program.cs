@@ -225,6 +225,7 @@ class Program
             using var ecService        = new EcService(boardConfig);
             using var biosService      = new BiosService();
             using var fanControlService  = new FanControlService(biosService, boardConfig, ecService);
+            using var wmiBiosMonitor     = new WmiBiosMonitor(biosService, sensorReader);
             using var fanCurveService    = new FanCurveHostedService(fanControlService);
             var gpuControlService        = new GpuControlService(biosService);
             var lightingService          = new KeyboardLightingService(biosService);
@@ -233,15 +234,35 @@ class Program
             var powerService             = new PowerService(biosService);
             var presetService            = new PresetService();
 
-            fanCurveService.TelemetryProvider = () => sensorReader.Read(0, 0);
+            fanCurveService.TelemetryProvider = () => wmiBiosMonitor.Read();
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
             _ = fanCurveService.StartAsync(CancellationToken.None);
+
+            // ── New Services (Faz 4-6) ──────────────────────────────────────
+            var fanVerifyService  = new FanVerificationService(fanControlService, boardConfig);
+            var fanCalibService   = new FanCalibrationService(boardConfig);
+            var powerLimitService = new PowerLimitService(biosService, ecService, boardConfig);
+
+            // Power Automation (AC/Battery auto profile switch)
+            using var powerAutoService = new PowerAutomationService(perfModeService);
+            _ = powerAutoService.StartAsync(CancellationToken.None);
+
+            // Quiet Safety Monitor
+            using var quietSafety = new QuietSafetyMonitor(perfModeService);
+            quietSafety.TelemetryProvider = () => wmiBiosMonitor.Read();
+            _ = quietSafety.StartAsync(CancellationToken.None);
+
+            // Diagnostics export
+            var diagnosticsService = new DiagnosticsExportService(
+                fanCurveService, fanCalibService, ecService, boardConfig, powerLimitService, fanVerifyService);
+            diagnosticsService.TelemetryProvider = () => wmiBiosMonitor.Read();
+            diagnosticsService.CurrentProfileProvider = () => perfModeService.GetCurrentModeAsync().GetAwaiter().GetResult();
+            diagnosticsService.CurrentFanModeProvider = () => s_activeFanMode;
 
             // Suspend/resume recovery service
             var suspendRecovery = new SuspendRecoveryService(fanControlService, fanCurveService, perfModeService);
             suspendRecovery.GetCurrentFanMode = () => s_activeFanMode;
             suspendRecovery.GetCurrentCurve = () => LoadFanCurveCache();
-            // Independent curves not yet serialized; will be null on resume (falls back to unified)
             suspendRecovery.GetCurrentIndependentCurves = () => (null, null);
             _ = suspendRecovery.StartAsync(CancellationToken.None);
 
@@ -258,29 +279,33 @@ class Program
 
             app.MapGet("/api/telemetry", async () =>
             {
-                var rpmTask       = fanControlService.GetFanRpmAsync();
-                var gpuModeTask   = gpuControlService.GetGpuModeAsync();
-                var gpuPowerTask  = gpuControlService.GetGpuPowerAsync();
-                var lightingTask  = lightingService.GetLightingAsync();
-                var profileTask   = perfModeService.GetCurrentModeAsync();
+                var rpmTask      = fanControlService.GetFanRpmAsync();
+                var gpuModeTask  = gpuControlService.GetGpuModeAsync();
+                var gpuPowerTask = gpuControlService.GetGpuPowerAsync();
+                var lightingTask = lightingService.GetLightingAsync();
+                var profileTask  = perfModeService.GetCurrentModeAsync();
 
                 await Task.WhenAll(rpmTask, gpuModeTask, gpuPowerTask, lightingTask, profileTask);
 
-                var rpm       = rpmTask.Result;
-                var telemetry = sensorReader.Read(rpm.CpuFanRpm, rpm.GpuFanRpm);
+                var rpm = rpmTask.Result;
 
-                telemetry.GpuMode       = gpuModeTask.Result;
+                // WmiBiosMonitor önbelleğinden al; WMI RPM değerlerini enjekte et
+                var telemetry = wmiBiosMonitor.Read(rpm.CpuFanRpm, rpm.GpuFanRpm);
+
+                telemetry.GpuMode      = gpuModeTask.Result;
                 telemetry.GpuPowerLevel = gpuPowerTask.Result;
-                telemetry.ActiveProfile  = profileTask.Result;
-                telemetry.ActiveFanMode  = s_activeFanMode;
-                telemetry.KeyboardType   = await lightingService.DetectKeyboardTypeAsync();
+                telemetry.ActiveProfile = profileTask.Result;
+                telemetry.ActiveFanMode = s_activeFanMode;
+                telemetry.KeyboardType  = await lightingService.DetectKeyboardTypeAsync();
 
-                var lightingResult    = lightingTask.Result;
+                var lightingResult  = lightingTask.Result;
                 telemetry.BacklightOn = lightingResult.backlightOn;
                 telemetry.ZoneColors  = lightingResult.zoneColors;
+                telemetry.GpuMaxTgp   = gpuControlService.GetGpuMaxPowerLimit();
 
                 return Results.Json(telemetry);
             });
+
 
             app.MapPost("/api/command", async (CommandRequest req) =>
             {
@@ -383,7 +408,42 @@ class Program
                         {
                             int profile = root?.ValueKind == JsonValueKind.Number ? root.Value.GetInt32() : 0;
                             Console.WriteLine($"[Command] SetThermalProfile: 0x{profile:X2}");
-                            await perfModeService.SetPerformanceModeAsync((ThermalProfile)profile);
+                            bool perfSuccess = await perfModeService.SetPerformanceModeAsync((ThermalProfile)profile);
+                            fanControlService.RecordCommand("SetThermalProfile", $"0x{profile:X2}", perfSuccess, $"Switched thermal profile to {(ThermalProfile)profile}");
+
+                            // OmenCore physical fan reaction kick when switching to Performance Mode (31)
+                            if (profile == 31)
+                            {
+                                _ = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        Console.WriteLine("[PerformanceMode] ⚡ Starting profile switch fan kick to 55%...");
+                                        fanCurveService.SetTemporaryOverride(true);
+                                        await fanControlService.SetFanLevelAsync(55);
+                                        await Task.Delay(3000);
+                                        fanCurveService.SetTemporaryOverride(false);
+
+                                        if (s_activeFanMode == 0) // Auto
+                                        {
+                                            await fanControlService.RestoreAutoControlAsync();
+                                        }
+                                        else if (s_activeFanMode == 2) // Max
+                                        {
+                                            await fanControlService.SetMaxFanAsync(true);
+                                        }
+                                        else
+                                        {
+                                            fanCurveService.TriggerImmediateApply();
+                                        }
+                                        Console.WriteLine("[PerformanceMode] ✓ Profile switch fan kick complete.");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"[PerformanceMode] Profile switch fan kick failed: {ex.Message}");
+                                    }
+                                });
+                            }
                             break;
                         }
                         case "SetGpuMode":
@@ -479,6 +539,48 @@ class Program
                             Console.WriteLine("[Command] GetFanDiagnostics");
                             var report = fanCurveService.GetCommandHistoryReport();
                             return Results.Ok(new { Success = true, Report = report });
+                        }
+                        case "ExportDiagnostics":
+                        {
+                            Console.WriteLine("[Command] ExportDiagnostics");
+                            string zipPath = await diagnosticsService.ExportAsync();
+                            return Results.Ok(new { Success = true, ZipPath = zipPath });
+                        }
+                        case "SetPowerLimits":
+                        {
+                            Console.WriteLine("[Command] SetPowerLimits");
+                            int pl1 = 0, pl2 = 0, tgp = 0;
+                            if (root?.ValueKind == JsonValueKind.Object)
+                            {
+                                if (root.Value.TryGetProperty("CpuPl1W", out var p1)) pl1 = p1.GetInt32();
+                                if (root.Value.TryGetProperty("CpuPl2W", out var p2)) pl2 = p2.GetInt32();
+                                if (root.Value.TryGetProperty("GpuTgpW", out var tg)) tgp = tg.GetInt32();
+                            }
+                            bool cpuOk = pl1 > 0 || pl2 > 0
+                                ? await powerLimitService.SetCpuPowerLimitsAsync(pl1 > 0 ? pl1 : pl2, pl2 > 0 ? pl2 : pl1)
+                                : true;
+                            bool gpuOk = tgp > 0 ? await powerLimitService.SetGpuTgpAsync(tgp) : true;
+                            return Results.Ok(new { Success = cpuOk && gpuOk, CpuOk = cpuOk, GpuOk = gpuOk });
+                        }
+                        case "SetPowerAutomation":
+                        {
+                            Console.WriteLine("[Command] SetPowerAutomation");
+                            if (root?.ValueKind == JsonValueKind.Object)
+                            {
+                                if (root.Value.TryGetProperty("IsEnabled", out var en)) powerAutoService.IsEnabled = en.GetBoolean();
+                                if (root.Value.TryGetProperty("OnAcProfile", out var ac) && Enum.TryParse<ThermalProfile>(ac.GetString(), out var acP)) powerAutoService.OnAcProfile = acP;
+                                if (root.Value.TryGetProperty("OnBatProfile", out var bat) && Enum.TryParse<ThermalProfile>(bat.GetString(), out var batP)) powerAutoService.OnBatProfile = batP;
+                                powerAutoService.SaveConfig();
+                                if (powerAutoService.IsEnabled) await powerAutoService.ForceApplyCurrentSourceAsync();
+                            }
+                            return Results.Ok(new { Success = true, IsEnabled = powerAutoService.IsEnabled });
+                        }
+                        case "SetQuietSafety":
+                        {
+                            bool enabled = root?.ValueKind != JsonValueKind.False;
+                            Console.WriteLine($"[Command] SetQuietSafety: {enabled}");
+                            quietSafety.IsEnabled = enabled;
+                            return Results.Ok(new { Success = true, IsEnabled = enabled });
                         }
                         default:
                             Console.WriteLine($"[Command] Unknown command: {cmd}");

@@ -138,6 +138,38 @@ public class BiosService : IBiosService, IDisposable
         _cts.Dispose();
     }
 
+    public async Task<(int cpuTemp, int gpuTemp)?> GetBothTemperaturesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // CPU Temp: Command 0x23, Payload 0x01
+            var cpuTempTask = SendCommandAsync(0x20008, 0x23, new byte[] { 0x01, 0x00, 0x00, 0x00 }, 4, cancellationToken);
+            
+            // GPU Temp: Command 0x23, Payload 0x02
+            var gpuTempTask = SendCommandAsync(0x20008, 0x23, new byte[] { 0x02, 0x00, 0x00, 0x00 }, 4, cancellationToken);
+            
+            await Task.WhenAll(cpuTempTask, gpuTempTask);
+            
+            var cpuRes = cpuTempTask.Result;
+            var gpuRes = gpuTempTask.Result;
+            
+            int cpuTemp = 0, gpuTemp = 0;
+            if (cpuRes.ReturnCode == 0 && cpuRes.OutData.Length > 0) cpuTemp = cpuRes.OutData[0];
+            if (gpuRes.ReturnCode == 0 && gpuRes.OutData.Length > 0) gpuTemp = gpuRes.OutData[0];
+            
+            if (cpuTemp > 0 || gpuTemp > 0)
+            {
+                return (cpuTemp, gpuTemp);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[BiosService] GetBothTemperaturesAsync error: {ex.Message}");
+        }
+        
+        return null;
+    }
+
     private record BiosRequest(
         uint CommandType,
         byte Command, 

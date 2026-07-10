@@ -25,14 +25,15 @@ public sealed partial class MainWindow : Window
         IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         double dpiScale = GetDpiForWindow(hWnd) / 96.0;
 
-        int width = (int)(420 * dpiScale);
-        int height = (int)(480 * dpiScale);
+        int width = (int)(880 * dpiScale);
+        int height = (int)(620 * dpiScale);
         AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary);
         var workArea = displayArea.WorkArea;
-        int x = workArea.X + workArea.Width - width - (int)(12 * dpiScale);
-        int y = workArea.Y + workArea.Height - height - (int)(12 * dpiScale);
+        // Center the window on the screen
+        int x = workArea.X + (workArea.Width - width) / 2;
+        int y = workArea.Y + (workArea.Height - height) / 2;
         AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
 
         NavFrame.Navigate(typeof(PerformancePage));
@@ -50,8 +51,8 @@ public sealed partial class MainWindow : Window
     {
         IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         double dpiScale = GetDpiForWindow(hWnd) / 96.0;
-        int minWidth = (int)(380 * dpiScale);
-        int minHeight = (int)(440 * dpiScale);
+        int minWidth = (int)(800 * dpiScale);
+        int minHeight = (int)(550 * dpiScale);
 
         if (AppWindow.Size.Width < minWidth || AppWindow.Size.Height < minHeight)
         {
@@ -81,28 +82,21 @@ public sealed partial class MainWindow : Window
         {
             switch (item.Tag)
             {
-                case "home":
-                    NavFrame.Navigate(typeof(HomePage));
-                    break;
                 case "performance":
                     NavFrame.Navigate(typeof(PerformancePage));
+                    break;
+                case "graphics_switcher":
+                    NavFrame.Navigate(typeof(GraphicsSwitcherPage));
                     break;
                 case "lighting":
                     NavFrame.Navigate(typeof(LightingPage));
                     break;
-
-                case "advanced":
-                    NavFrame.Navigate(typeof(AdditionalSettingsPage));
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown navigation item tag: {item.Tag}");
             }
         }
     }
 
     public void NavigateToPerformance(string parameter)
     {
-        // Find the Performance item and select it
         foreach (var item in NavView.MenuItems)
         {
             if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "performance")
@@ -125,24 +119,5 @@ public sealed partial class MainWindow : Window
                 break;
             }
         }
-    }
-
-    public void NavigateToAdvancedSettings()
-    {
-        foreach (var item in NavView.MenuItems)
-        {
-            if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "advanced")
-            {
-                NavView.SelectedItem = navItem;
-                NavFrame.Navigate(typeof(AdditionalSettingsPage));
-                break;
-            }
-        }
-    }
-
-    public void NavigateToPage(Type pageType)
-    {
-        NavView.SelectedItem = null; // Unselect sidebar items if any
-        NavFrame.Navigate(pageType);
     }
 }

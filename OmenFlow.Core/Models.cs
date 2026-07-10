@@ -16,9 +16,9 @@ public record FanCurve(FanTarget Target, IReadOnlyList<FanCurvePoint> Points);
 
 public enum ThermalProfile : byte
 {
-    Quiet = 0x50,
-    Default = 0x30,
-    Performance = 0x31
+    Quiet = 50,
+    Default = 30,
+    Performance = 31
 }
 
 public enum KeyboardZone
