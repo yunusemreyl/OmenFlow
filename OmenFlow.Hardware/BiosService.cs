@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -75,8 +75,16 @@ public class BiosService : IBiosService, IDisposable
                     input.CimInstanceProperties["Sign"].Value = new byte[] { 0x53, 0x45, 0x43, 0x55 };
                     input.CimInstanceProperties["Command"].Value = request.CommandType;
                     input.CimInstanceProperties["CommandType"].Value = (uint)request.Command;
-                    input.CimInstanceProperties["hpqBData"].Value = request.InData;
-                    input.CimInstanceProperties["Size"].Value = (uint)request.InData.Length;
+                    
+                    if (request.InData == null || request.InData.Length == 0)
+                    {
+                        input.CimInstanceProperties["Size"].Value = (uint)0;
+                    }
+                    else
+                    {
+                        input.CimInstanceProperties["hpqBData"].Value = request.InData;
+                        input.CimInstanceProperties["Size"].Value = (uint)request.InData.Length;
+                    }
 
                     using var biosMethods = cimSession.EnumerateInstances(@"root\WMI", "hpqBIntM").FirstOrDefault();
                     if (biosMethods == null)
