@@ -50,48 +50,41 @@ public class GpuControlService
             OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync Registry check error: {ex.Message}");
         }
 
-        // Secondary detection: Count active GPUs (The easiest and most reliable way for Normal MUX)
+        // Secondary detection: Robust Win32_VideoController check
         try
         {
-            int gpuCount = 0;
-            using (var searcher = new System.Management.ManagementObjectSearcher("SELECT Name FROM Win32_VideoController"))
+            using var cimSession = Microsoft.Management.Infrastructure.CimSession.Create(null);
+            var gpus = cimSession.QueryInstances(@"root\cimv2", "WQL", "SELECT Name, Availability FROM Win32_VideoController");
+            
+            bool hasOfflineOrMissingIGpu = true;
+            foreach (var gpu in gpus)
             {
-                gpuCount = searcher.Get().Count;
+                string name = gpu.CimInstanceProperties["Name"]?.Value?.ToString() ?? "";
+                if (name.Contains("Intel") || (name.Contains("AMD") && name.Contains("Radeon")))
+                {
+                    ushort availability = Convert.ToUInt16(gpu.CimInstanceProperties["Availability"]?.Value ?? 3);
+                    // 8 = Off Line (Advanced Optimus Discrete Mode or physical MUX leaving device visible)
+                    if (availability != 8) 
+                    {
+                        hasOfflineOrMissingIGpu = false;
+                    }
+                }
             }
             
-            if (gpuCount == 1)
+            if (hasOfflineOrMissingIGpu)
             {
-                OmenFlow.Core.Services.Logger.LogInfo("[GpuControl] Only 1 GPU detected. Mode is Discrete.");
+                OmenFlow.Core.Services.Logger.LogInfo("[GpuControl] iGPU is missing or offline. Mode is Discrete.");
                 return GpuMode.Discrete;
             }
-            else if (gpuCount >= 2)
+            else
             {
-                OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] {gpuCount} GPUs detected. Mode is Hybrid.");
+                OmenFlow.Core.Services.Logger.LogInfo("[GpuControl] iGPU is active. Mode is Hybrid.");
                 return GpuMode.Hybrid;
             }
         }
         catch (Exception ex)
         {
             OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync VideoController check error: {ex.Message}");
-        }
-
-        // Tertiary fallback to BIOS WMI if both fail
-        var payload = Array.Empty<byte>();
-        var (ret, data) = await _biosService.SendCommandAsync(0x00002, 0x52, payload, 4, ct);
-        
-        if (ret != 0)
-        {
-            var (ret2, data2) = await _biosService.SendCommandAsync(0x00001, 0x52, payload, 4, ct);
-            ret = ret2;
-            data = data2;
-        }
-
-        if (ret == 0 && data != null && data.Length >= 1)
-        {
-            OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync WMI BIOS ret=0, data[0]=0x{data[0]:X2}");
-            if (data[0] == 0x01) return GpuMode.Discrete;
-            if (data[0] == 0x00 || data[0] == 0x02) return GpuMode.Hybrid;
-            return (GpuMode)data[0];
         }
 
         OmenFlow.Core.Services.Logger.LogInfo($"[GpuControl] GetGpuModeAsync all methods failed, returning Hybrid.");

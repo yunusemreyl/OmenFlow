@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using LibreHardwareMonitor.Hardware;
 using OmenFlow.Core.Models;
@@ -135,6 +135,9 @@ public class SensorReader : IDisposable
                                 s => s.Name.Contains("GPU Power", StringComparison.OrdinalIgnoreCase)
                                   || s.Name.Contains("Board Power", StringComparison.OrdinalIgnoreCase))
                                 ?? ReadSensor(hw, SensorType.Power, _ => true) ?? 0f;
+
+                            // HP Omen dGPUs can report bogus 590W+ when sleeping on iGPU mode
+                            if (powerVal > 330f) powerVal = 0f;
 
                             // Harici GPU aktifse veya ÅŸu ana kadar hiÃ§bir veri alÄ±nmamÄ±ÅŸsa/sÄ±fÄ±rsa kaydet
                             if (hw.HardwareType == HardwareType.GpuNvidia || !isIntegrated || (gpuPower == 0 && gpuTemp == 0))

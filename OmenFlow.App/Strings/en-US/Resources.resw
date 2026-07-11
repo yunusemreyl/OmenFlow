@@ -1,0 +1,444 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsPage_Header.Text" xml:space="preserve">
+    <value>GENERAL SETTINGS</value>
+  </data>
+  <data name="SettingsPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Configure application startup, appearance theme, and emergency thermal protection limits.</value>
+  </data>
+  <data name="SettingsPage_Card1Title.Text" xml:space="preserve">
+    <value>System &amp; Appearance</value>
+  </data>
+  <data name="SettingsPage_StartupTitle.Text" xml:space="preserve">
+    <value>Run on Startup</value>
+  </data>
+  <data name="SettingsPage_StartupDesc.Text" xml:space="preserve">
+    <value>Choose how the application should start when the computer turns on.</value>
+  </data>
+  <data name="SettingsPage_Startup_OpenUI.Content" xml:space="preserve">
+    <value>Open Interface</value>
+  </data>
+  <data name="SettingsPage_Startup_Tray.Content" xml:space="preserve">
+    <value>Start minimized to Tray</value>
+  </data>
+  <data name="SettingsPage_Startup_Disabled.Content" xml:space="preserve">
+    <value>Do not start</value>
+  </data>
+  <data name="SettingsPage_ThemeTitle.Text" xml:space="preserve">
+    <value>App Theme</value>
+  </data>
+  <data name="SettingsPage_ThemeDesc.Text" xml:space="preserve">
+    <value>Change the color theme of the application (Dark recommended).</value>
+  </data>
+  <data name="SettingsPage_Theme_System.Content" xml:space="preserve">
+    <value>System Default</value>
+  </data>
+  <data name="SettingsPage_Theme_Light.Content" xml:space="preserve">
+    <value>Light Theme</value>
+  </data>
+  <data name="SettingsPage_Theme_Dark.Content" xml:space="preserve">
+    <value>Dark Theme</value>
+  </data>
+  <data name="SettingsPage_LanguageTitle.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="SettingsPage_LanguageDesc.Text" xml:space="preserve">
+    <value>Change the application interface language.</value>
+  </data>
+  <data name="SettingsPage_Card2Title.Text" xml:space="preserve">
+    <value>Security &amp; Thermal Protection</value>
+  </data>
+  <data name="SettingsPage_MaxFanTitle.Text" xml:space="preserve">
+    <value>Emergency Max Fan Protection</value>
+  </data>
+  <data name="SettingsPage_MaxFanDesc.Text" xml:space="preserve">
+    <value>Automatically ramps fans up to max speed when temperature reaches 95°C for protection.</value>
+  </data>
+  <data name="SettingsPage_QuietSafetyTitle.Text" xml:space="preserve">
+    <value>Quiet Mode Thermal Protection</value>
+  </data>
+  <data name="SettingsPage_QuietSafetyDesc.Text" xml:space="preserve">
+    <value>Automatically upgrades profile to Balanced when CPU exceeds 93°C for 8 seconds in Quiet mode.</value>
+  </data>
+  <data name="SettingsPage_WarningText.Text" xml:space="preserve">
+    <value>⚠️ WARNING: Disabling safety protections may cause thermal throttling or overheating.</value>
+  </data>
+  <data name="SettingsPage_Card3Title.Text" xml:space="preserve">
+    <value>Diagnostics &amp; Reporting</value>
+  </data>
+  <data name="SettingsPage_ExportTitle.Text" xml:space="preserve">
+    <value>Pack Diagnostic Report (ZIP)</value>
+  </data>
+  <data name="SettingsPage_ExportDesc.Text" xml:space="preserve">
+    <value>Saves fan history, EC state data, and hardware information to your Desktop as a ZIP file.</value>
+  </data>
+  <data name="SettingsPage_BtnExport.Content" xml:space="preserve">
+    <value>Generate ZIP Report</value>
+  </data>
+  <data name="SettingsPage_Card4Title.Text" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="SettingsPage_About1.Text" xml:space="preserve">
+    <value>OmenFlow is an open-source, independent application developed to manage HP devices.</value>
+  </data>
+  <data name="SettingsPage_About2.Text" xml:space="preserve">
+    <value>⚠️ It has no official affiliation with HP Inc. and is not made by HP.</value>
+  </data>
+  <data name="SettingsPage_AboutLink.Content" xml:space="preserve">
+    <value>GitHub Account &amp; Source Code</value>
+  </data>
+  <data name="SettingsPage_RestartTitle" xml:space="preserve">
+    <value>Restart Required</value>
+  </data>
+  <data name="SettingsPage_RestartContent" xml:space="preserve">
+    <value>The application must be restarted for the language changes to take effect.</value>
+  </data>
+  <data name="PerfPage_Header.Text" xml:space="preserve">
+    <value>PERFORMANCE CONTROL</value>
+  </data>
+  <data name="PerfPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Dynamically manage your device's power limits and cooling profile.</value>
+  </data>
+  <data name="PerfPage_Section1Desc.Text" xml:space="preserve">
+    <value>Optimize your performance by selecting the mode that works best for you.</value>
+  </data>
+  <data name="PerfPage_Comfort.Text" xml:space="preserve">
+    <value>Comfort</value>
+  </data>
+  <data name="PerfPage_ComfortDesc.Text" xml:space="preserve">
+    <value>Suitable for casual tasks. Lowers CPU and GPU temperatures.</value>
+  </data>
+  <data name="PerfPage_Default.Text" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="PerfPage_DefaultDesc.Text" xml:space="preserve">
+    <value>Suitable for all types of tasks. Balances noise and hardware limits.</value>
+  </data>
+  <data name="PerfPage_Performance.Text" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="PerfPage_PerformanceDesc.Text" xml:space="preserve">
+    <value>Suitable for gaming. May increase heat and noise levels.</value>
+  </data>
+  <data name="PerfPage_FanControl.Text" xml:space="preserve">
+    <value>Fan Control</value>
+  </data>
+  <data name="PerfPage_SysMetrics.Text" xml:space="preserve">
+    <value>REAL-TIME SYSTEM METRICS</value>
+  </data>
+  <data name="PerfPage_CpuTemp.Text" xml:space="preserve">
+    <value>CPU Temperature</value>
+  </data>
+  <data name="PerfPage_GpuTemp.Text" xml:space="preserve">
+    <value>GPU Temperature</value>
+  </data>
+  <data name="PerfPage_CpuUsage.Text" xml:space="preserve">
+    <value>CPU Utilization</value>
+  </data>
+  <data name="PerfPage_GpuUsage.Text" xml:space="preserve">
+    <value>GPU Load:</value>
+  </data>
+  <data name="PerfPage_PowerMetrics.Text" xml:space="preserve">
+    <value>REAL-TIME POWER CONSUMPTION (WATT)</value>
+  </data>
+  <data name="PerfPage_CpuPower.Text" xml:space="preserve">
+    <value>CPU Power</value>
+  </data>
+  <data name="PerfPage_GpuPower.Text" xml:space="preserve">
+    <value>GPU Power</value>
+  </data>
+  <data name="PerfPage_TotalPower.Text" xml:space="preserve">
+    <value>Total Power</value>
+  </data>
+  <data name="PerfPage_Loading1.Text" xml:space="preserve">
+    <value>Communicating with WMI Service...</value>
+  </data>
+  <data name="PerfPage_Loading2.Text" xml:space="preserve">
+    <value>Scanning system sensors, please wait.</value>
+  </data>
+  <data name="PerfPage_FanAuto.Content" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="PerfPage_FanFlow.Content" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="PerfPage_FanMax.Content" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="PerfPage_FanCustom.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="PerfPage_BtnFanLogs.Content" xml:space="preserve">
+    <value>Fan Logs</value>
+  </data>
+  <data name="GraphicsPage_Header.Text" xml:space="preserve">
+    <value>GRAPHICS SWITCHER</value>
+  </data>
+  <data name="GraphicsPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Manage switching between integrated and dedicated graphics with the Dynamic MUX switch.</value>
+  </data>
+  <data name="GraphicsPage_Hybrid.Text" xml:space="preserve">
+    <value>HYBRID</value>
+  </data>
+  <data name="GraphicsPage_HybridDesc.Text" xml:space="preserve">
+    <value>Your display output is rendered via the Integrated GPU.</value>
+  </data>
+  <data name="GraphicsPage_Discrete.Text" xml:space="preserve">
+    <value>DISCRETE</value>
+  </data>
+  <data name="GraphicsPage_DiscreteDesc.Text" xml:space="preserve">
+    <value>Your display output is rendered via the Dedicated GPU.</value>
+  </data>
+  <data name="GraphicsPage_BtnReset.Content" xml:space="preserve">
+    <value>RESET TO DEFAULT</value>
+  </data>
+  <data name="HomePage_Header.Text" xml:space="preserve">
+    <value>Device Control Center</value>
+  </data>
+  <data name="HomePage_DeviceDetecting.Text" xml:space="preserve">
+    <value>Detecting Device...</value>
+  </data>
+  <data name="HomePage_MyLaptop.Text" xml:space="preserve">
+    <value>My Laptop</value>
+  </data>
+  <data name="HomePage_SystemModelWait.Text" xml:space="preserve">
+    <value>System Model: Waiting</value>
+  </data>
+  <data name="HomePage_ConnectionIPC.Text" xml:space="preserve">
+    <value>Connection: IPC Named Pipes</value>
+  </data>
+  <data name="HomePage_Messages.Text" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="HomePage_CheckGithub.Text" xml:space="preserve">
+    <value>Check on GitHub</value>
+  </data>
+  <data name="HomePage_SystemStatusHeader.Text" xml:space="preserve">
+    <value>System Status &amp; Controls</value>
+  </data>
+  <data name="HomePage_PowerCoolingStatus.Text" xml:space="preserve">
+    <value>Power &amp; Cooling Status</value>
+  </data>
+  <data name="HomePage_Advanced.Text" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="HomePage_PowerCoolingDesc.Text" xml:space="preserve">
+    <value>Manage the device's power mode and fan settings.</value>
+  </data>
+  <data name="HomePage_ActivePowerMode.Text" xml:space="preserve">
+    <value>Active Power Mode:</value>
+  </data>
+  <data name="HomePage_FanControl.Text" xml:space="preserve">
+    <value>Fan Control:</value>
+  </data>
+  <data name="HomePage_AutoManagement.Text" xml:space="preserve">
+    <value>Auto Management</value>
+  </data>
+  <data name="HomePage_CPU.Text" xml:space="preserve">
+    <value>Processor (CPU)</value>
+  </data>
+  <data name="HomePage_GPU.Text" xml:space="preserve">
+    <value>Graphics Card (GPU)</value>
+  </data>
+  <data name="HomePage_SystemMetrics.Text" xml:space="preserve">
+    <value>System Metrics</value>
+  </data>
+  <data name="HomePage_Temperature.Text" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="HomePage_Usage.Text" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="HomePage_KeyboardLighting.Text" xml:space="preserve">
+    <value>Keyboard Lighting</value>
+  </data>
+  <data name="HomePage_ColorsEffects.Text" xml:space="preserve">
+    <value>Colors and effects</value>
+  </data>
+  <data name="HomePage_ActivityLog.Text" xml:space="preserve">
+    <value>Activity History</value>
+  </data>
+  <data name="PowerLimits_Header.Text" xml:space="preserve">
+    <value>Power Limits Management</value>
+  </data>
+  <data name="PowerLimits_Telemetry.Text" xml:space="preserve">
+    <value>Real-time Power Consumptions</value>
+  </data>
+  <data name="PowerLimits_CPUTelemetry.Text" xml:space="preserve">
+    <value>CPU Consumption &amp; Temp</value>
+  </data>
+  <data name="PowerLimits_GPUTelemetry.Text" xml:space="preserve">
+    <value>GPU Consumption &amp; Temp</value>
+  </data>
+  <data name="PowerLimits_HardwareLimits.Text" xml:space="preserve">
+    <value>Hardware Limit Settings</value>
+  </data>
+  <data name="PowerLimits_CPUPL1.Text" xml:space="preserve">
+    <value>CPU PL1 (Sustained Power Limit)</value>
+  </data>
+  <data name="PowerLimits_CPUPL1Desc.Text" xml:space="preserve">
+    <value>Maximum power the processor can continuously draw.</value>
+  </data>
+  <data name="PowerLimits_CPUPL2.Text" xml:space="preserve">
+    <value>CPU PL2 (Short Boost Power Limit)</value>
+  </data>
+  <data name="PowerLimits_CPUPL2Desc.Text" xml:space="preserve">
+    <value>Maximum boost power the processor can draw during short bursts.</value>
+  </data>
+  <data name="PowerLimits_GPUTGP.Text" xml:space="preserve">
+    <value>GPU TGP (Graphics Power Limit)</value>
+  </data>
+  <data name="PowerLimits_GPUTGPDesc.Text" xml:space="preserve">
+    <value>Maximum target power allocated to the graphics card.</value>
+  </data>
+  <data name="PowerLimits_Warning.Text" xml:space="preserve">
+    <value>⚠️ Setting limits too high can cause high temperatures.</value>
+  </data>
+  <data name="PowerLimits_ApplyBtn.Content" xml:space="preserve">
+    <value>Apply Limits</value>
+  </data>
+  <data name="Lighting_Header.Text" xml:space="preserve">
+    <value>LIGHTING STUDIO</value>
+  </data>
+  <data name="Lighting_HeaderDesc.Text" xml:space="preserve">
+    <value>Configure your device's keyboard backlight and dynamic effects.</value>
+  </data>
+  <data name="Lighting_SelectedZone.Text" xml:space="preserve">
+    <value>Selected Zone: 1 (Left)</value>
+  </data>
+  <data name="Lighting_EffectSpeedHeader.Text" xml:space="preserve">
+    <value>Effect &amp; Speed Settings</value>
+  </data>
+  <data name="Lighting_LightingEffect.Text" xml:space="preserve">
+    <value>Lighting Effect</value>
+  </data>
+  <data name="Lighting_EffectStatic.Content" xml:space="preserve">
+    <value>Static</value>
+  </data>
+  <data name="Lighting_EffectBreathing.Content" xml:space="preserve">
+    <value>Breathing</value>
+  </data>
+  <data name="Lighting_EffectColorCycle.Content" xml:space="preserve">
+    <value>Color Cycle</value>
+  </data>
+  <data name="Lighting_EffectWave.Content" xml:space="preserve">
+    <value>Wave</value>
+  </data>
+  <data name="Lighting_Brightness.Text" xml:space="preserve">
+    <value>Keyboard Brightness</value>
+  </data>
+  <data name="Lighting_Speed.Text" xml:space="preserve">
+    <value>Effect Speed</value>
+  </data>
+  <data name="Lighting_ColorSelection.Text" xml:space="preserve">
+    <value>Color Selection</value>
+  </data>
+  <data name="Lighting_ColorSelectionDesc.Text" xml:space="preserve">
+    <value>Assign a preset color or choose a custom color for a zone or the entire keyboard.</value>
+  </data>
+  <data name="Lighting_CustomColor.ToolTip" xml:space="preserve">
+    <value>Custom Color</value>
+  </data>
+  <data name="Lighting_SelectCustomColor.Text" xml:space="preserve">
+    <value>Select Custom Color</value>
+  </data>
+  <data name="Lighting_RGBControllerDetected.Text" xml:space="preserve">
+    <value>OMEN RGB controller detected.</value>
+  </data>
+  <data name="Additional_Header.Text" xml:space="preserve">
+    <value>Additional Settings</value>
+  </data>
+  <data name="Additional_PowerBattery.Text" xml:space="preserve">
+    <value>Power and Battery</value>
+  </data>
+  <data name="Additional_BatteryCare.Text" xml:space="preserve">
+    <value>Battery Care (Adaptive Battery Optimizer)</value>
+  </data>
+  <data name="Additional_BatteryCareDesc.Text" xml:space="preserve">
+    <value>Limits the charge level to 80% to protect battery health.</value>
+  </data>
+  <data name="Additional_USBCharging.Text" xml:space="preserve">
+    <value>Always-On USB (USB Charging)</value>
+  </data>
+  <data name="Additional_USBChargingDesc.Text" xml:space="preserve">
+    <value>Continues to supply power from USB ports while the device is asleep or turned off.</value>
+  </data>
+  <data name="Additional_PowerAutomation.Text" xml:space="preserve">
+    <value>Power Mode Automation</value>
+  </data>
+  <data name="Additional_AutoProfile.Text" xml:space="preserve">
+    <value>Automatic Profile Switching</value>
+  </data>
+  <data name="Additional_AutoProfileDesc.Text" xml:space="preserve">
+    <value>Automatically switches the performance profile when the charger is plugged in or out.</value>
+  </data>
+  <data name="Additional_ACProfile.Text" xml:space="preserve">
+    <value>Profile to Apply on AC Power</value>
+  </data>
+  <data name="Additional_BatProfile.Text" xml:space="preserve">
+    <value>Profile to Apply on Battery</value>
+  </data>
+  <data name="Additional_ProfileQuiet.Content" xml:space="preserve">
+    <value>Quiet Mode</value>
+  </data>
+  <data name="Additional_ProfileDefault.Content" xml:space="preserve">
+    <value>Balanced Mode</value>
+  </data>
+  <data name="Additional_ProfilePerformance.Content" xml:space="preserve">
+    <value>Performance Mode</value>
+  </data>
+  <data name="Additional_HardwareLock.Text" xml:space="preserve">
+    <value>Hardware Lock</value>
+  </data>
+  <data name="Additional_WinKeyLock.Text" xml:space="preserve">
+    <value>Windows Key Lock</value>
+  </data>
+  <data name="Additional_WinKeyLockDesc.Text" xml:space="preserve">
+    <value>Prevents accidental opening of the Start menu during gaming.</value>
+  </data>
+  <data name="Additional_TouchpadLock.Text" xml:space="preserve">
+    <value>Touchpad Lock</value>
+  </data>
+  <data name="Additional_TouchpadLockDesc.Text" xml:space="preserve">
+    <value>Completely disables the touchpad while typing or gaming.</value>
+  </data>
+</root>

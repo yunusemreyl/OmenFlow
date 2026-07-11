@@ -109,7 +109,11 @@ public sealed partial class SettingsPage : Page
         {
             string lang = item.Tag?.ToString() ?? "";
             Helpers.LocalSettings.Values["AppLanguage"] = lang;
-            // Language applying will be implemented later
+            
+            if (App.Current is App app)
+            {
+                app.ReloadLanguage(lang, "settings");
+            }
         }
     }
 
@@ -163,10 +167,13 @@ public sealed partial class SettingsPage : Page
             if (App.IpcClient != null)
             {
                 string? response = await App.IpcClient.SendCommandWithResultAsync("ExportDiagnostics");
-                if (response != null && response.Contains("ZipPath"))
+                if (response != null)
                 {
                     using var doc = System.Text.Json.JsonDocument.Parse(response);
-                    if (doc.RootElement.TryGetProperty("ZipPath", out var pathProp))
+                    System.Text.Json.JsonElement pathProp;
+                    bool hasProperty = doc.RootElement.TryGetProperty("ZipPath", out pathProp) || 
+                                       doc.RootElement.TryGetProperty("zipPath", out pathProp);
+                    if (hasProperty)
                     {
                         string zipPath = pathProp.GetString() ?? "";
                         var dialog = new ContentDialog
@@ -177,6 +184,10 @@ public sealed partial class SettingsPage : Page
                             XamlRoot = this.XamlRoot
                         };
                         await dialog.ShowAsync();
+                    }
+                    else
+                    {
+                        throw new Exception("Yanıt içerisinde ZipPath parametresi bulunamadı.");
                     }
                 }
                 else

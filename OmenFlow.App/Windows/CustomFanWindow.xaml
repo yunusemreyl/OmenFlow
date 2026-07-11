@@ -11,7 +11,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Background="{ThemeResource PageBackgroundBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
@@ -33,11 +33,11 @@
             <Grid Padding="24">
                 <StackPanel Spacing="16" HorizontalAlignment="Center">
                     <StackPanel Spacing="4" HorizontalAlignment="Center">
-                        <TextBlock Text="Özel Fan Eğrisi Ayarları" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Noktaları sürükleyerek sıcaklık-hız eğrisini belirleyin." FontSize="12" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Özel Fan Eğrisi Ayarları" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Noktaları sürükleyerek sıcaklık-hız eğrisini belirleyin." FontSize="12" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Center"/>
                     </StackPanel>
                     
-                    <Border Background="{ThemeResource CardAltBackgroundBrush}" BorderBrush="{ThemeResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Border Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderBaseBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*" />
@@ -50,31 +50,31 @@
 
                             <!-- Y Axis Labels (Fan Hızı %) -->
                             <Grid Grid.Row="0" Grid.Column="0" Margin="0,0,12,0" Width="32">
-                                <TextBlock Text="100%" VerticalAlignment="Top" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
-                                <TextBlock Text="75%" VerticalAlignment="Top" Margin="0,44,0,0" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
-                                <TextBlock Text="50%" VerticalAlignment="Center" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
-                                <TextBlock Text="25%" VerticalAlignment="Bottom" Margin="0,0,0,44" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
-                                <TextBlock Text="0%" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="100%" VerticalAlignment="Top" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="75%" VerticalAlignment="Top" Margin="0,44,0,0" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="50%" VerticalAlignment="Center" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="25%" VerticalAlignment="Bottom" Margin="0,0,0,44" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="0%" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Right"/>
                             </Grid>
 
                             <!-- X Axis Labels (Sıcaklık °C) -->
                             <Grid Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" Height="20">
-                                <TextBlock Text="0°C" HorizontalAlignment="Left" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                <TextBlock Text="50°C" HorizontalAlignment="Center" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
-                                <TextBlock Text="100°C" HorizontalAlignment="Right" FontSize="11" Foreground="{ThemeResource TertiaryTextBrush}"/>
+                                <TextBlock Text="0°C" HorizontalAlignment="Left" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
+                                <TextBlock Text="50°C" HorizontalAlignment="Center" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
+                                <TextBlock Text="100°C" HorizontalAlignment="Right" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
                             </Grid>
 
                             <Canvas x:Name="FanCurveCanvas" Grid.Row="0" Grid.Column="1" Height="200" Width="300" HorizontalAlignment="Left" Background="Transparent" 
                                     PointerMoved="FanCurveCanvas_PointerMoved" PointerReleased="FanCurveCanvas_PointerReleased" PointerCanceled="FanCurveCanvas_PointerReleased">
                                 
                                 <!-- Background Grid Lines -->
-                                <Line X1="0" Y1="50" X2="300" Y2="50" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
-                                <Line X1="0" Y1="100" X2="300" Y2="100" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
-                                <Line X1="0" Y1="150" X2="300" Y2="150" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="0" Y1="50" X2="300" Y2="50" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="0" Y1="100" X2="300" Y2="100" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="0" Y1="150" X2="300" Y2="150" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
                                 
-                                <Line X1="75" Y1="0" X2="75" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
-                                <Line X1="150" Y1="0" X2="150" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
-                                <Line X1="225" Y1="0" X2="225" Y2="200" Stroke="{ThemeResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="75" Y1="0" X2="75" Y2="200" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="150" Y1="0" X2="150" Y2="200" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
+                                <Line X1="225" Y1="0" X2="225" Y2="200" Stroke="{ThemeResource OmenCardBorderBaseBrush}" StrokeThickness="1" StrokeDashArray="2,2"/>
 
                                 <!-- Eğri Çizgisi -->
                                 <Polyline x:Name="FanCurveLine" Stroke="#10B981" StrokeThickness="3" />

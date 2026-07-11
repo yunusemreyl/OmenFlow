@@ -41,7 +41,7 @@ public sealed partial class GraphicsSwitcherPage : Page
 
             if (!string.IsNullOrEmpty(discreteGpu))
             {
-                TxtDiscreteDesc.Text = $"Ekran gÃ¶rÃ¼ntÃ¼nÃ¼z {discreteGpu} Ã¼zerinden verilir.";
+                TxtDiscreteDesc.Text = $"Ekran görüntünüz {discreteGpu} üzerinden verilir.";
             }
         }
         catch
@@ -62,7 +62,14 @@ public sealed partial class GraphicsSwitcherPage : Page
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (_isSwitching) return; // KullanÄ±cÄ± seÃ§im yaparken arayÃ¼zÃ¼ telemetri ile ezme
+            if (LoadingRing != null && LoadingRing.IsActive)
+            {
+                LoadingRing.IsActive = false;
+                LoadingRing.Visibility = Visibility.Collapsed;
+                if (GpuButtonsGrid != null) GpuButtonsGrid.Visibility = Visibility.Visible;
+            }
+
+            if (_isSwitching) return; // Kullanıcı seçim yaparken arayüzü telemetri ile ezme
             int currentMode = _pendingGpuMode.HasValue ? _pendingGpuMode.Value : e.GpuMode;
             // GpuMode 0 = Hybrid, 1 = Dedicated/Discrete, 2 = Optimus
             if (BtnMuxHybrid != null) BtnMuxHybrid.IsChecked = (currentMode == 0 || currentMode == 2);
@@ -80,7 +87,7 @@ public sealed partial class GraphicsSwitcherPage : Page
 
         if (_isSwitching)
         {
-            // EÄŸer halihazÄ±rda iÅŸlem yapÄ±lÄ±yorsa, gÃ¶rsel olarak tÄ±klamayÄ± geri al
+            // Eğer halihazırda işlem yapılıyorsa, görsel olarak tıklamayı geri al
             if (newMode == 1) BtnMuxHybrid.IsChecked = true;
             else BtnMuxDiscrete.IsChecked = true;
             return;
@@ -101,7 +108,7 @@ public sealed partial class GraphicsSwitcherPage : Page
                     if (newMode == 1) BtnMuxHybrid.IsChecked = true;
                     else BtnMuxDiscrete.IsChecked = true;
                     
-                    await ShowCommandFailedDialogAsync("MUX deÄŸiÅŸtirilemedi", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                    await ShowCommandFailedDialogAsync("MUX değiştirilemedi", "Worker servisine erişilemedi ya da komut reddedildi.");
                     return;
                 }
 
@@ -136,7 +143,7 @@ public sealed partial class GraphicsSwitcherPage : Page
                 else
                 {
                     _pendingGpuMode = null;
-                    await ShowCommandFailedDialogAsync("SÄ±fÄ±rlama baÅŸarÄ±sÄ±z", "VarsayÄ±lan moda geÃ§iÅŸ yapÄ±lamadÄ±.");
+                    await ShowCommandFailedDialogAsync("Sıfırlama başarısız", "Varsayılana geçiş yapılamadı.");
                 }
             }
         }
@@ -172,9 +179,9 @@ public sealed partial class GraphicsSwitcherPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "Yeniden BaÅŸlatma Gerekli",
-                Content = "GPU MUX Modu deÄŸiÅŸikliÄŸinin etkinleÅŸmesi iÃ§in bilgisayarÄ±nÄ±zÄ± yeniden baÅŸlatmanÄ±z gerekiyor.",
-                PrimaryButtonText = "Yeniden BaÅŸlat",
+                Title = "Yeniden Başlatma Gerekli",
+                Content = "GPU MUX Modu değişikliğinin etkinleşmesi için bilgisayarınızı yeniden başlatmanız gerekiyor.",
+                PrimaryButtonText = "Yeniden Başlat",
                 CloseButtonText = "Daha Sonra",
                 XamlRoot = this.XamlRoot,
                 RequestedTheme = ElementTheme.Default

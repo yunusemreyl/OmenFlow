@@ -17,6 +17,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>icons\omenflow.ico</ApplicationIcon>
+    <CodePage>65001</CodePage>
   </PropertyGroup>
 
   <ItemGroup>

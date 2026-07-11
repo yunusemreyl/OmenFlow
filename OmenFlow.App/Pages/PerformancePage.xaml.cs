@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.UI;
@@ -24,8 +24,14 @@ public sealed partial class PerformancePage : Page
     private bool _profileChangeInProgress = false;
     private bool _fanModeChangeInProgress = false;
 
-    // Son bilinen performans profili â€” gereksiz tray bildirimi gÃ¶ndermemek iÃ§in
+    // Son bilinen performans profili — gereksiz tray bildirimi göndermemek için
     private int _lastNotifiedProfile = -1;
+
+    // Telemetry Sync Guard variables
+    private int _targetProfile = -1;
+    private DateTime _lastProfileChangeTime = DateTime.MinValue;
+    private int _targetFanMode = -1;
+    private DateTime _lastFanModeChangeTime = DateTime.MinValue;
 
     public PerformancePage()
     {
@@ -45,66 +51,102 @@ public sealed partial class PerformancePage : Page
         {
             try
             {
-                // â”€â”€ SÄ±caklÄ±k metinleri + dinamik renk â”€â”€
+                // Diagnostic log
+                OmenFlow.Core.Services.Logger.LogInfo($"[Telemetry UI] e.ActiveProfile={e.ActiveProfile}, e.ActiveFanMode={e.ActiveFanMode}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[UI State] Default.IsChecked={BtnPerfDefault?.IsChecked}, Perf.IsChecked={BtnPerfPerf?.IsChecked}, Default.IsEnabled={BtnPerfDefault?.IsEnabled}, Perf.IsEnabled={BtnPerfPerf?.IsEnabled}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[UI State] Auto.IsChecked={BtnFanAuto?.IsChecked}, Flow.IsChecked={BtnFanOmenFlow?.IsChecked}, Auto.IsEnabled={BtnFanAuto?.IsEnabled}, Flow.IsEnabled={BtnFanOmenFlow?.IsEnabled}");
+
+                // -- Hide Loading State --
+                if (MetricsLoadingContainer != null && MetricsLoadingContainer.Visibility == Visibility.Visible)
+                {
+                    MetricsLoadingContainer.Visibility = Visibility.Collapsed;
+                    if (MetricsContainer != null) MetricsContainer.Visibility = Visibility.Visible;
+                }
+
+                // —— Sıcaklık metinleri + dinamik renk ——
                 if (CpuTempText != null)
                 {
-                    CpuTempText.Text = $"{e.CpuTemp:F0}Â°C";
+                    CpuTempText.Text = $"{e.CpuTemp:F0}°C";
                     CpuTempText.Foreground = GetTempBrush(e.CpuTemp);
                 }
                 if (GpuTempText != null)
                 {
-                    GpuTempText.Text = $"{e.GpuTemp:F0}Â°C";
+                    GpuTempText.Text = $"{e.GpuTemp:F0}°C";
                     GpuTempText.Foreground = GetTempBrush(e.GpuTemp);
                 }
 
-                // â”€â”€ GÃ¼Ã§ ve YÃ¼k â”€â”€
+                // —— Güç ve Yük ——
                 if (CpuPowerText != null) CpuPowerText.Text = e.CpuPower > 0 ? $"{e.CpuPower:F1} W" : "-- W";
                 if (GpuPowerText != null) GpuPowerText.Text = e.GpuPower > 0 ? $"{e.GpuPower:F1} W" : "-- W";
                 if (CpuUsageText != null) CpuUsageText.Text = $"%{e.CpuLoad:F0}";
                 if (GpuUsageText != null) GpuUsageText.Text = $"%{e.GpuLoad:F0}";
 
-                // â”€â”€ GÃ¼Ã§ Detay Kutusu â”€â”€
+                // —— Güç Detay Kutusu ——
                 float totalPower = (e.CpuPower > 0 ? e.CpuPower : 0) + (e.GpuPower > 0 ? e.GpuPower : 0);
                 if (CpuPowerTextDetailed != null) CpuPowerTextDetailed.Text = e.CpuPower > 0 ? $"{e.CpuPower:F1} W" : "-- W";
                 if (GpuPowerTextDetailed != null) GpuPowerTextDetailed.Text = e.GpuPower > 0 ? $"{e.GpuPower:F1} W" : "-- W";
                 if (TotalPowerTextDetailed != null) TotalPowerTextDetailed.Text = totalPower > 0 ? $"{totalPower:F1} W" : "-- W";
 
-                // â”€â”€ Fan RPM â”€â”€
+                // —— Fan RPM ——
                 if (CpuFanText != null)
                     CpuFanText.Text = Helpers.TelemetryDisplayHelper.FormatFanRpm(e.CpuFanRpm, e.CpuFanState);
                 if (GpuFanText != null)
                     GpuFanText.Text = Helpers.TelemetryDisplayHelper.FormatFanRpm(e.GpuFanRpm, e.GpuFanState);
 
-                // â”€â”€ Performans profili senkronizasyonu (guard ile â€” Click tetiklenmesin) â”€â”€
-                _updatingFromTelemetry = true;
-                try
+                // —— Performans profili senkronizasyonu (guard ile — Click tetiklenmesin) ——
+                bool shouldSyncProfile = true;
+                if (DateTime.UtcNow - _lastProfileChangeTime < TimeSpan.FromSeconds(3.5))
                 {
-                    // ThermalProfile enum deÄŸerleri: Quiet=50, Default=30, Performance=31
-                    bool isQuiet   = ((int)e.ActiveProfile == 50);
-                    bool isDefault = ((int)e.ActiveProfile == 30);
-                    bool isPerf    = ((int)e.ActiveProfile == 31);
-
-                    if (isQuiet && BtnPerfQuiet?.IsChecked != true) { if (BtnPerfQuiet != null) BtnPerfQuiet.IsChecked = true; }
-                    else if (isDefault && BtnPerfDefault?.IsChecked != true) { if (BtnPerfDefault != null) BtnPerfDefault.IsChecked = true; }
-                    else if (isPerf && BtnPerfPerf?.IsChecked != true) { if (BtnPerfPerf != null) BtnPerfPerf.IsChecked = true; }
-                }
-                finally
-                {
-                    _updatingFromTelemetry = false;
+                    if ((int)e.ActiveProfile != _targetProfile)
+                    {
+                        shouldSyncProfile = false;
+                    }
                 }
 
-                // â”€â”€ Fan modu senkronizasyonu â”€â”€
-                _updatingFromTelemetry = true;
-                try
+                if (shouldSyncProfile)
                 {
-                    if (e.ActiveFanMode == 0 && BtnFanAuto?.IsChecked != true) { if (BtnFanAuto != null) BtnFanAuto.IsChecked = true; }
-                    else if (e.ActiveFanMode == 1 && BtnFanOmenFlow?.IsChecked != true) { if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsChecked = true; }
-                    else if (e.ActiveFanMode == 2 && BtnFanMax?.IsChecked != true) { if (BtnFanMax != null) BtnFanMax.IsChecked = true; }
-                    else if (e.ActiveFanMode == 3 && BtnFanManual?.IsChecked != true) { if (BtnFanManual != null) BtnFanManual.IsChecked = true; }
+                    _updatingFromTelemetry = true;
+                    try
+                    {
+                        // ThermalProfile enum değerleri: Quiet=50, Default=30, Performance=31
+                        bool isQuiet   = ((int)e.ActiveProfile == 50);
+                        bool isDefault = ((int)e.ActiveProfile == 30);
+                        bool isPerf    = ((int)e.ActiveProfile == 31);
+
+                        if (isQuiet && BtnPerfQuiet?.IsChecked != true) { if (BtnPerfQuiet != null) BtnPerfQuiet.IsChecked = true; }
+                        else if (isDefault && BtnPerfDefault?.IsChecked != true) { if (BtnPerfDefault != null) BtnPerfDefault.IsChecked = true; }
+                        else if (isPerf && BtnPerfPerf?.IsChecked != true) { if (BtnPerfPerf != null) BtnPerfPerf.IsChecked = true; }
+                    }
+                    finally
+                    {
+                        _updatingFromTelemetry = false;
+                    }
                 }
-                finally
+
+                // —— Fan modu senkronizasyonu ——
+                bool shouldSyncFan = true;
+                if (DateTime.UtcNow - _lastFanModeChangeTime < TimeSpan.FromSeconds(3.5))
                 {
-                    _updatingFromTelemetry = false;
+                    if (e.ActiveFanMode != _targetFanMode)
+                    {
+                        shouldSyncFan = false;
+                    }
+                }
+
+                if (shouldSyncFan)
+                {
+                    _updatingFromTelemetry = true;
+                    try
+                    {
+                        if (e.ActiveFanMode == 0 && BtnFanAuto?.IsChecked != true) { if (BtnFanAuto != null) BtnFanAuto.IsChecked = true; }
+                        else if (e.ActiveFanMode == 1 && BtnFanOmenFlow?.IsChecked != true) { if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsChecked = true; }
+                        else if (e.ActiveFanMode == 2 && BtnFanMax?.IsChecked != true) { if (BtnFanMax != null) BtnFanMax.IsChecked = true; }
+                        else if (e.ActiveFanMode == 3 && BtnFanManual?.IsChecked != true) { if (BtnFanManual != null) BtnFanManual.IsChecked = true; }
+                    }
+                    finally
+                    {
+                        _updatingFromTelemetry = false;
+                    }
                 }
 
                 // â”€â”€ Aktif fan modu etiket metni â”€â”€
@@ -112,10 +154,10 @@ public sealed partial class PerformancePage : Page
                 {
                     FanModeDescText.Text = e.ActiveFanMode switch
                     {
-                        0 => "BIOS otomatik â€” fanlar termal eÄŸriye gÃ¶re ayarlanÄ±r.",
-                        1 => "OmenFlow akÄ±llÄ± eÄŸrisi â€” sÄ±caklÄ±ÄŸa gÃ¶re optimize edilmiÅŸ.",
-                        2 => "Maksimum hÄ±z â€” fanlar tam gÃ¼Ã§te Ã§alÄ±ÅŸÄ±yor.",
-                        3 => "Ã–zel eÄŸri â€” kullanÄ±cÄ± tanÄ±mlÄ± fan profili aktif.",
+                        0 => "BIOS otomatik — fanlar termal eğriye göre ayarlanır.",
+                        1 => "OmenFlow akıllı eğrisi — sıcaklığa göre optimize edilmiş.",
+                        2 => "Maksimum hız — fanlar tam güçte çalışıyor.",
+                        3 => "Özel eğri — kullanıcı tanımlı fan profili aktif.",
                         _ => "Fan modu bilinmiyor."
                     };
                 }
@@ -130,10 +172,10 @@ public sealed partial class PerformancePage : Page
     private static Microsoft.UI.Xaml.Media.SolidColorBrush GetTempBrush(float tempC)
     {
         if (tempC >= 85f)
-            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38));   // KÄ±rmÄ±zÄ±
+            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 220, 38, 38));   // Kırmızı
         if (tempC >= 70f)
             return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 217, 119, 6));   // Turuncu
-        return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 16, 185, 129));       // YeÅŸil
+        return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 16, 185, 129));       // Yeşil
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -146,7 +188,7 @@ public sealed partial class PerformancePage : Page
         }
     }
 
-    // ========== OmenFlow AkÄ±llÄ± Fan Preseti ==========
+    // ========== OmenFlow Akıllı Fan Preseti ==========
     private static readonly List<FanCurvePointDto> OmenFlowPresetPoints = new()
     {
         new FanCurvePointDto { TemperatureCelsius = 50, FanSpeedPercent = 0 },
@@ -171,13 +213,13 @@ public sealed partial class PerformancePage : Page
     // ========== Performans Profili ==========
     private async void PerfMode_Click(object sender, RoutedEventArgs e)
     {
-        // Telemetri gÃ¼ncellemesinden gelen IsChecked deÄŸiÅŸikliÄŸi veya iÅŸlem devam ediyorsa â€” tÄ±klamayÄ± yoksay
+        // Telemetri güncellemesinden gelen IsChecked değişikliği veya işlem devam ediyorsa — tıklamayı yoksay
         if (_updatingFromTelemetry || _profileChangeInProgress) return;
 
         var btn = sender as RadioButton;
         if (btn == null) return;
 
-        // Zaten seÃ§ili olan buton tekrar tÄ±klandÄ±ysa iÅŸlem yapma
+        // Zaten seçili olan buton tekrar tıklandıysa işlem yapma
         if (btn.IsChecked != true) return;
 
         _profileChangeInProgress = true;
@@ -185,22 +227,25 @@ public sealed partial class PerformancePage : Page
         try
         {
             int profile = 30; // Default
-            string modeName = "VarsayÄ±lan";
-            string modeIcon = "âš™ï¸";
+            string modeName = "Varsayılan";
+            string modeIcon = "⚙️";
 
-            if (btn == BtnPerfQuiet)   { profile = 50; modeName = "Sessiz";      modeIcon = "ğŸŒ¿"; }
-            if (btn == BtnPerfPerf)    { profile = 31; modeName = "Performans";  modeIcon = "ğŸš€"; }
+            if (btn == BtnPerfQuiet)   { profile = 50; modeName = "Sessiz";      modeIcon = "🌿"; }
+            if (btn == BtnPerfPerf)    { profile = 31; modeName = "Performans";  modeIcon = "🚀"; }
+
+            _targetProfile = profile;
+            _lastProfileChangeTime = DateTime.UtcNow;
 
             if (App.IpcClient != null)
             {
                 bool sent = await App.IpcClient.SendCommandAsync("SetThermalProfile", profile);
                 if (!sent)
                 {
-                    await ShowCommandFailedDialogAsync("Profil uygulanamadÄ±", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                    await ShowCommandFailedDialogAsync("Profil uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                     return;
                 }
 
-                // Sadece profil gerÃ§ekten deÄŸiÅŸtiyse bildirim gÃ¶nder
+                // Sadece profil gerçekten değiştiyle bildirim gönder
                 if (_lastNotifiedProfile != profile)
                 {
                     _lastNotifiedProfile = profile;
@@ -244,7 +289,7 @@ public sealed partial class PerformancePage : Page
         }
         catch (Exception ex)
         {
-            OmenFlow.Core.Services.Logger.LogInfo($"[Toast] Bildirim gÃ¶nderilemedi: {ex.Message}");
+            OmenFlow.Core.Services.Logger.LogInfo($"[Toast] Bildirim gönderilemedi: {ex.Message}");
         }
     }
 
@@ -281,6 +326,15 @@ public sealed partial class PerformancePage : Page
         SetFanButtonsEnabled(false);
         try
         {
+            int targetMode = 0;
+            if (btn == BtnFanAuto) targetMode = 0;
+            else if (btn == BtnFanOmenFlow) targetMode = 1;
+            else if (btn == BtnFanMax) targetMode = 2;
+            else if (btn == BtnFanManual) targetMode = 3;
+
+            _targetFanMode = targetMode;
+            _lastFanModeChangeTime = DateTime.UtcNow;
+
             bool prevAuto      = BtnFanAuto.IsChecked == true;
             bool prevOmenFlow  = BtnFanOmenFlow.IsChecked == true;
             bool prevMax       = BtnFanMax.IsChecked == true;
@@ -298,7 +352,7 @@ public sealed partial class PerformancePage : Page
                     if (!sent)
                     {
                         RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
-                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadÄ±", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                     }
                 }
             }
@@ -310,7 +364,7 @@ public sealed partial class PerformancePage : Page
                     if (!sent)
                     {
                         RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
-                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadÄ±", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                     }
                 }
             }
@@ -322,7 +376,7 @@ public sealed partial class PerformancePage : Page
                     if (!sent)
                     {
                         RestoreFanModeRollback(prevAuto, prevOmenFlow, prevMax, prevManual);
-                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadÄ±", "Worker servisine eriÅŸilemedi ya da komut reddedildi.");
+                        await ShowCommandFailedDialogAsync("Fan modu uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
                     }
                 }
             }
@@ -372,18 +426,23 @@ public sealed partial class PerformancePage : Page
         if (App.IpcClient == null) return;
 
         BtnShowFanLogs.IsEnabled = false;
-        BtnShowFanLogs.Content   = "YÃ¼kleniyor...";
+        BtnShowFanLogs.Content   = "Yükleniyor...";
 
         try
         {
             string? response  = await App.IpcClient.SendCommandWithResultAsync("GetFanDiagnostics");
-            string reportText = "GÃ¼nlÃ¼k bilgisi alÄ±namadÄ±.";
+            string reportText = "Günlük bilgisi alınamadı.";
 
-            if (response != null && response.Contains("Report"))
+            if (response != null)
             {
                 using var doc = System.Text.Json.JsonDocument.Parse(response);
-                if (doc.RootElement.TryGetProperty("Report", out var rProp))
-                    reportText = rProp.GetString() ?? "Log geÃ§miÅŸi boÅŸ.";
+                System.Text.Json.JsonElement rProp;
+                bool hasProperty = doc.RootElement.TryGetProperty("Report", out rProp) || 
+                                   doc.RootElement.TryGetProperty("report", out rProp);
+                if (hasProperty)
+                {
+                    reportText = rProp.GetString() ?? "Log geçmişi boş.";
+                }
             }
 
             var scrollViewer = new ScrollViewer
@@ -404,7 +463,7 @@ public sealed partial class PerformancePage : Page
 
             var dialog = new ContentDialog
             {
-                Title           = "Fan TanÄ±lama GeÃ§miÅŸi (Log)",
+                Title           = "Fan Tanılama Geçmişi (Log)",
                 Content         = scrollViewer,
                 CloseButtonText = "Kapat",
                 XamlRoot        = this.XamlRoot
@@ -416,7 +475,7 @@ public sealed partial class PerformancePage : Page
             var dialog = new ContentDialog
             {
                 Title           = "Hata",
-                Content         = $"GÃ¼nlÃ¼kler yÃ¼klenirken hata oluÅŸtu:\n{ex.Message}",
+                Content         = $"Günlükler yüklenirken hata oluştu:\n{ex.Message}",
                 CloseButtonText = "Kapat",
                 XamlRoot        = this.XamlRoot
             };
@@ -425,11 +484,12 @@ public sealed partial class PerformancePage : Page
         finally
         {
             BtnShowFanLogs.IsEnabled = true;
-            BtnShowFanLogs.Content   = "Fan GÃ¼nlÃ¼kleri";
+            BtnShowFanLogs.Content   = "Fan Günlükleri";
         }
     }
     private void SetProfileButtonsEnabled(bool enabled)
     {
+        OmenFlow.Core.Services.Logger.LogInfo($"[UI Enable] SetProfileButtonsEnabled({enabled}) - _profileChangeInProgress={_profileChangeInProgress}");
         if (BtnPerfQuiet != null) BtnPerfQuiet.IsEnabled = enabled;
         if (BtnPerfDefault != null) BtnPerfDefault.IsEnabled = enabled;
         if (BtnPerfPerf != null) BtnPerfPerf.IsEnabled = enabled;
@@ -437,6 +497,7 @@ public sealed partial class PerformancePage : Page
 
     private void SetFanButtonsEnabled(bool enabled)
     {
+        OmenFlow.Core.Services.Logger.LogInfo($"[UI Enable] SetFanButtonsEnabled({enabled}) - _fanModeChangeInProgress={_fanModeChangeInProgress}");
         if (BtnFanAuto != null) BtnFanAuto.IsEnabled = enabled;
         if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsEnabled = enabled;
         if (BtnFanMax != null) BtnFanMax.IsEnabled = enabled;
@@ -445,8 +506,8 @@ public sealed partial class PerformancePage : Page
 }
 
 /// <summary>
-/// JSON serialization iÃ§in DTO. OmenFlow.Core.Models.FanCurvePoint record struct olduÄŸu iÃ§in
-/// System.Text.Json ile sorunsuz serialize edilebilmesi adÄ±na dÃ¼z bir sÄ±nÄ±f kullanÄ±yoruz.
+/// JSON serialization için DTO. OmenFlow.Core.Models.FanCurvePoint record struct olduğu için
+/// System.Text.Json ile sorunsuz serialize edilebilmesi adına düz bir sınıf kullanıyoruz.
 /// </summary>
 public class FanCurvePointDto
 {

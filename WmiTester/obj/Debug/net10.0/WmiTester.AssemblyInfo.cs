@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WmiTester")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71cb8135adfe3bd5becf1aa8752f446c7baa4e93")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+12aec01f5e4251b85d7bbf7fef3f9c71a6dcd8f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("WmiTester")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WmiTester")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -36,6 +36,7 @@
             PaneDisplayMode="Left"
             IsBackButtonVisible="Collapsed"
             IsPaneToggleButtonVisible="True"
+            IsPaneOpen="False"
             SelectionChanged="NavView_SelectionChanged">
             <NavigationView.Resources>
                 <x:Double x:Key="NavigationViewTopPaneHeight">36</x:Double>
@@ -69,8 +70,8 @@
                 </Grid.RowDefinitions>
                 <InfoBar x:Name="BackendConnectionInfoBar" Grid.Row="0" IsOpen="False" Severity="Error" Title="Bağlantı Hatası" Message="Arka plan servisi (OmenFlow.Worker) ile bağlantı kurulamadı. Yeniden bağlanılıyor..." IsClosable="False" Margin="16,8,16,0" />
                 <Border Grid.Row="1"
-                        Background="#CC070709" 
-                        BorderBrush="#1AFFFFFF" 
+                        Background="{ThemeResource OmenCardBackgroundDarkBrush}" 
+                        BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" 
                         BorderThickness="1" 
                         CornerRadius="10">
                     <Frame x:Name="NavFrame" />

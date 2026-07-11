@@ -1,12 +1,37 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\yeyil\\Documents\\OmenFlow\\",
-  "Documents": [],
+  "WorkspaceRootPath": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.App\\Pages\\PerformancePage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:OmenFlow.App\\Pages\\PerformancePage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PerformancePage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.App\\Pages\\PerformancePage.xaml.cs",
+              "RelativeDocumentMoniker": "OmenFlow.App\\Pages\\PerformancePage.xaml.cs",
+              "ToolTip": "C:\\Users\\yeyil\\Documents\\GitHub\\OmenFlow\\OmenFlow.App\\Pages\\PerformancePage.xaml.cs",
+              "RelativeToolTip": "OmenFlow.App\\Pages\\PerformancePage.xaml.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAqwDEAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-11T12:25:57.907Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="OmenFlow_App.Pages.PowerLimitsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,13 +7,13 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Background="{ThemeResource PageBackgroundBrush}">
+    <Grid Background="{ThemeResource OmenAppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Güç Limitleri Yönetimi" Visibility="Collapsed" FontSize="22" FontWeight="SemiBold" Margin="20,16,0,16" Foreground="{ThemeResource PrimaryTextBrush}"/>
+        <TextBlock x:Uid="PowerLimits_Header" Text="Güç Limitleri Yönetimi" Visibility="Collapsed" FontSize="22" FontWeight="SemiBold" Margin="20,16,0,16" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
 
         <ScrollViewer Grid.Row="1" Margin="16,12,16,20" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="24">
@@ -23,7 +23,7 @@
                     <Grid Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xE9D9;" FontSize="14" Foreground="#D97706"/>
-                            <TextBlock Text="Anlık Güç Tüketimleri" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                            <TextBlock x:Uid="PowerLimits_Telemetry" Text="Anlık Güç Tüketimleri" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                         </StackPanel>
                     </Grid>
                     
@@ -36,14 +36,14 @@
                             
                             <!-- CPU Telemetry -->
                             <StackPanel Grid.Column="0" Spacing="6" HorizontalAlignment="Center">
-                                <TextBlock Text="CPU Tüketim &amp; Sıcaklık" FontSize="11" Foreground="{ThemeResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Uid="PowerLimits_CPUTelemetry" Text="CPU Tüketim &amp; Sıcaklık" FontSize="11" Foreground="{ThemeResource OmenSecondaryTextBrush}" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="CpuPowerText" Text="-- W" FontSize="22" FontWeight="Bold" Foreground="#D97706" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="CpuTempText" Text="-- °C" FontSize="12" FontWeight="SemiBold" Foreground="#DC2626" HorizontalAlignment="Center"/>
                             </StackPanel>
                             
                             <!-- GPU Telemetry -->
                             <StackPanel Grid.Column="1" Spacing="6" HorizontalAlignment="Center">
-                                <TextBlock Text="GPU Tüketim &amp; Sıcaklık" FontSize="11" Foreground="{ThemeResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Uid="PowerLimits_GPUTelemetry" Text="GPU Tüketim &amp; Sıcaklık" FontSize="11" Foreground="{ThemeResource OmenSecondaryTextBrush}" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="GpuPowerText" Text="-- W" FontSize="22" FontWeight="Bold" Foreground="#10B981" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="GpuTempText" Text="-- °C" FontSize="12" FontWeight="SemiBold" Foreground="#DC2626" HorizontalAlignment="Center"/>
                             </StackPanel>
@@ -51,14 +51,14 @@
                     </Border>
                 </StackPanel>
 
-                <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
+                <Border Height="1" Background="{ThemeResource OmenCardBorderBaseBrush}"/>
 
                 <!-- 2. Power Limit Controls Card -->
                 <StackPanel Spacing="8">
                     <Grid Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xE7AD;" FontSize="14" Foreground="#2563EB"/>
-                            <TextBlock Text="Donanımsal Limit Ayarları" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}"/>
+                            <TextBlock x:Uid="PowerLimits_HardwareLimits" Text="Donanımsal Limit Ayarları" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                         </StackPanel>
                     </Grid>
 
@@ -71,10 +71,10 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="CPU PL1 (Sürekli Güç Limiti)" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="TextCpuPl1Value" Text="45 W" Grid.Column="1" FontWeight="SemiBold"/>
+                                    <TextBlock x:Uid="PowerLimits_CPUPL1" Text="CPU PL1 (Sürekli Güç Limiti)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                    <TextBlock x:Name="TextCpuPl1Value" Text="45 W" Grid.Column="1" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                                 </Grid>
-                                <TextBlock Text="İşlemcinin sürekli olarak çekebileceği maksimum güç." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="PowerLimits_CPUPL1Desc" Text="İşlemcinin sürekli olarak çekebileceği maksimum güç." Foreground="{ThemeResource OmenTertiaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
                                 <Slider x:Name="SliderCpuPl1" Minimum="15" Maximum="115" Value="45" TickFrequency="5" SnapsTo="Ticks" Header="" ValueChanged="Slider_ValueChanged"/>
                             </StackPanel>
 
@@ -85,14 +85,14 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="CPU PL2 (Kısa Süreli Boost Güç Limiti)" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="TextCpuPl2Value" Text="90 W" Grid.Column="1" FontWeight="SemiBold"/>
+                                    <TextBlock x:Uid="PowerLimits_CPUPL2" Text="CPU PL2 (Kısa Süreli Boost Güç Limiti)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                    <TextBlock x:Name="TextCpuPl2Value" Text="90 W" Grid.Column="1" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                                 </Grid>
-                                <TextBlock Text="İşlemcinin anlık aşırı yüklerde çekebileceği maksimum boost gücü." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="PowerLimits_CPUPL2Desc" Text="İşlemcinin anlık aşırı yüklerde çekebileceği maksimum boost gücü." Foreground="{ThemeResource OmenTertiaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
                                 <Slider x:Name="SliderCpuPl2" Minimum="15" Maximum="140" Value="90" TickFrequency="5" SnapsTo="Ticks" Header="" ValueChanged="Slider_ValueChanged"/>
                             </StackPanel>
 
-                            <Border Height="1" Background="{ThemeResource CardBorderBrush}"/>
+                            <Border Height="1" Background="{ThemeResource OmenCardBorderBaseBrush}"/>
 
                             <!-- GPU TGP -->
                             <StackPanel Spacing="6">
@@ -101,10 +101,10 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="GPU TGP (Ekran Kartı Güç Limiti)" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="TextGpuTgpValue" Text="80 W" Grid.Column="1" FontWeight="SemiBold"/>
+                                    <TextBlock x:Uid="PowerLimits_GPUTGP" Text="GPU TGP (Ekran Kartı Güç Limiti)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                    <TextBlock x:Name="TextGpuTgpValue" Text="80 W" Grid.Column="1" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                                 </Grid>
-                                <TextBlock Text="Ekran kartına tahsis edilecek maksimum hedef güç." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="PowerLimits_GPUTGPDesc" Text="Ekran kartına tahsis edilecek maksimum hedef güç." Foreground="{ThemeResource OmenTertiaryTextBrush}" FontSize="11" TextWrapping="Wrap"/>
                                 <Slider x:Name="SliderGpuTgp" Minimum="30" Maximum="150" Value="80" TickFrequency="5" SnapsTo="Ticks" Header="" ValueChanged="Slider_ValueChanged"/>
                             </StackPanel>
 
@@ -113,8 +113,8 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="⚠️ Limitleri aşırı yüksek ayarlamak yüksek sıcaklıklara yol açabilir." VerticalAlignment="Center" Foreground="{ThemeResource SecondaryTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,12,0"/>
-                                <Button x:Name="BtnApplyPowerLimits" Content="Limitleri Uygula" Grid.Column="1" Click="BtnApplyPowerLimits_Click" Style="{StaticResource AccentButtonStyle}" Width="160"/>
+                                <TextBlock x:Uid="PowerLimits_Warning" Text="⚠️ Limitleri aşırı yüksek ayarlamak yüksek sıcaklıklara yol açabilir." VerticalAlignment="Center" Foreground="{ThemeResource OmenTertiaryTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,12,0"/>
+                                <Button x:Uid="PowerLimits_ApplyBtn" x:Name="BtnApplyPowerLimits" Content="Limitleri Uygula" Grid.Column="1" Click="BtnApplyPowerLimits_Click" Style="{StaticResource AccentButtonStyle}" Width="160"/>
                             </Grid>
                         </StackPanel>
                     </Border>

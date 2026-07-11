@@ -1,6 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\OmenFlow.App"
   ],
+  "SelectedNode": "\\OmenFlow.App\\OmenFlow.App.csproj",
   "PreviewInSolutionExplorer": false
 }

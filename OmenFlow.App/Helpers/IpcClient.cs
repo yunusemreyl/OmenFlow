@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -58,8 +58,11 @@ public class IpcClient
     // â”€â”€ BaÅŸlatma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public void Connect()
     {
-        EnsureWorkerRunning();
-        _ = Task.Run(() => StartTelemetryLoopAsync(_cts.Token));
+        _ = Task.Run(() =>
+        {
+            EnsureWorkerRunning();
+            _ = StartTelemetryLoopAsync(_cts.Token);
+        });
     }
 
     // â”€â”€ Worker BaÅŸlatma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -185,8 +188,9 @@ public class IpcClient
     {
         try
         {
-            EnsureWorkerRunning();
+            await Task.Run(() => EnsureWorkerRunning());
             var json    = JsonSerializer.Serialize(new { Command = command, Value = value });
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] --> Gonderilen Komut: {command} - Payload: {json}");
             using var content  = new StringContent(json, Encoding.UTF8, "application/json");
             using var response = await _httpClient.PostAsync($"{WorkerUrl}/api/command", content);
             response.EnsureSuccessStatusCode();
@@ -203,8 +207,9 @@ public class IpcClient
     {
         try
         {
-            EnsureWorkerRunning();
+            await Task.Run(() => EnsureWorkerRunning());
             var json    = JsonSerializer.Serialize(new { Command = command, Value = value });
+            OmenFlow.Core.Services.Logger.LogInfo($"[IpcClient] --> Gonderilen Komut: {command} - Payload: {json}");
             using var content  = new StringContent(json, Encoding.UTF8, "application/json");
             using var response = await _httpClient.PostAsync($"{WorkerUrl}/api/command", content);
             response.EnsureSuccessStatusCode();

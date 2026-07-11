@@ -1,0 +1,444 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsPage_Header.Text" xml:space="preserve">
+    <value>GENEL AYARLAR</value>
+  </data>
+  <data name="SettingsPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Uygulama başlangıç, görünüm teması ve acil durum koruma sınırlarını yapılandırın.</value>
+  </data>
+  <data name="SettingsPage_Card1Title.Text" xml:space="preserve">
+    <value>Sistem &amp; Görünüm</value>
+  </data>
+  <data name="SettingsPage_StartupTitle.Text" xml:space="preserve">
+    <value>Başlangıçta Çalıştırma</value>
+  </data>
+  <data name="SettingsPage_StartupDesc.Text" xml:space="preserve">
+    <value>Bilgisayar açıldığında uygulamanın nasıl başlayacağını seçin.</value>
+  </data>
+  <data name="SettingsPage_Startup_OpenUI.Content" xml:space="preserve">
+    <value>Arayüzü Aç</value>
+  </data>
+  <data name="SettingsPage_Startup_Tray.Content" xml:space="preserve">
+    <value>Tray Olarak Başlat</value>
+  </data>
+  <data name="SettingsPage_Startup_Disabled.Content" xml:space="preserve">
+    <value>Başlatma</value>
+  </data>
+  <data name="SettingsPage_ThemeTitle.Text" xml:space="preserve">
+    <value>Uygulama Teması</value>
+  </data>
+  <data name="SettingsPage_ThemeDesc.Text" xml:space="preserve">
+    <value>Uygulamanın renk temasını değiştirin (Koyu önerilir).</value>
+  </data>
+  <data name="SettingsPage_Theme_System.Content" xml:space="preserve">
+    <value>Sistem Varsayılanı</value>
+  </data>
+  <data name="SettingsPage_Theme_Light.Content" xml:space="preserve">
+    <value>Açık Tema</value>
+  </data>
+  <data name="SettingsPage_Theme_Dark.Content" xml:space="preserve">
+    <value>Koyu Tema</value>
+  </data>
+  <data name="SettingsPage_LanguageTitle.Text" xml:space="preserve">
+    <value>Dil Seçeneği</value>
+  </data>
+  <data name="SettingsPage_LanguageDesc.Text" xml:space="preserve">
+    <value>Uygulama arayüz dilini değiştirin.</value>
+  </data>
+  <data name="SettingsPage_Card2Title.Text" xml:space="preserve">
+    <value>Güvenlik ve Aşırı Isınma Koruması</value>
+  </data>
+  <data name="SettingsPage_MaxFanTitle.Text" xml:space="preserve">
+    <value>Acil Durum Max Fan Koruması</value>
+  </data>
+  <data name="SettingsPage_MaxFanDesc.Text" xml:space="preserve">
+    <value>Sıcaklık 95°C'ye ulaştığında fanları koruma amacıyla otomatik olarak maksimum devire çıkarır.</value>
+  </data>
+  <data name="SettingsPage_QuietSafetyTitle.Text" xml:space="preserve">
+    <value>Sessiz Mod Isınma Koruması (Quiet Safety)</value>
+  </data>
+  <data name="SettingsPage_QuietSafetyDesc.Text" xml:space="preserve">
+    <value>Quiet moddayken CPU sıcaklığı 93°C'yi aştığında (8 saniye boyunca) profili otomatik olarak Dengeli moda yükseltir.</value>
+  </data>
+  <data name="SettingsPage_WarningText.Text" xml:space="preserve">
+    <value>⚠️ DİKKAT: Güvenlik korumalarını kapatmak, termal throttle veya aşırı ısınmaya sebep olabilir.</value>
+  </data>
+  <data name="SettingsPage_Card3Title.Text" xml:space="preserve">
+    <value>Tanılama ve Raporlama</value>
+  </data>
+  <data name="SettingsPage_ExportTitle.Text" xml:space="preserve">
+    <value>Tanılama Raporu Paketle (ZIP)</value>
+  </data>
+  <data name="SettingsPage_ExportDesc.Text" xml:space="preserve">
+    <value>Fan geçmişi, EC durum verileri ve donanım bilgilerini Masaüstünüze ZIP olarak kaydeder.</value>
+  </data>
+  <data name="SettingsPage_BtnExport.Content" xml:space="preserve">
+    <value>ZIP Raporu Üret</value>
+  </data>
+  <data name="SettingsPage_Card4Title.Text" xml:space="preserve">
+    <value>Hakkında</value>
+  </data>
+  <data name="SettingsPage_About1.Text" xml:space="preserve">
+    <value>OmenFlow, HP cihazlarını yönetmek için geliştirilmiş açık kaynaklı bağımsız bir uygulamadır.</value>
+  </data>
+  <data name="SettingsPage_About2.Text" xml:space="preserve">
+    <value>⚠️ HP Inc. ile hiçbir resmi bağı yoktur ve HP tarafından yapılmamıştır.</value>
+  </data>
+  <data name="SettingsPage_AboutLink.Content" xml:space="preserve">
+    <value>GitHub Hesabı ve Kaynak Kod</value>
+  </data>
+  <data name="SettingsPage_RestartTitle" xml:space="preserve">
+    <value>Yeniden Başlatma Gerekli</value>
+  </data>
+  <data name="SettingsPage_RestartContent" xml:space="preserve">
+    <value>Dil değişikliğinin uygulanabilmesi için uygulamanın yeniden başlatılması gerekmektedir.</value>
+  </data>
+  <data name="PerfPage_Header.Text" xml:space="preserve">
+    <value>PERFORMANS KONTROLÜ</value>
+  </data>
+  <data name="PerfPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Cihazınızın güç limitlerini ve soğutma profilini dinamik olarak yönetin.</value>
+  </data>
+  <data name="PerfPage_Section1Desc.Text" xml:space="preserve">
+    <value>Size en uygun modu seçerek performansınızı optimize edin.</value>
+  </data>
+  <data name="PerfPage_Comfort.Text" xml:space="preserve">
+    <value>Sessiz</value>
+  </data>
+  <data name="PerfPage_ComfortDesc.Text" xml:space="preserve">
+    <value>Günlük işler için ideal. CPU ve GPU sıcaklıklarını düşürür.</value>
+  </data>
+  <data name="PerfPage_Default.Text" xml:space="preserve">
+    <value>Dengeli</value>
+  </data>
+  <data name="PerfPage_DefaultDesc.Text" xml:space="preserve">
+    <value>Tüm iş yükleri için uygun. Gürültü ve performansı dengeler.</value>
+  </data>
+  <data name="PerfPage_Performance.Text" xml:space="preserve">
+    <value>Performans</value>
+  </data>
+  <data name="PerfPage_PerformanceDesc.Text" xml:space="preserve">
+    <value>Oyun için ideal. Isı ve fan gürültüsü artabilir.</value>
+  </data>
+  <data name="PerfPage_FanControl.Text" xml:space="preserve">
+    <value>Fan Kontrolü</value>
+  </data>
+  <data name="PerfPage_SysMetrics.Text" xml:space="preserve">
+    <value>ANLIK SİSTEM METRİKLERİ</value>
+  </data>
+  <data name="PerfPage_CpuTemp.Text" xml:space="preserve">
+    <value>CPU Sıcaklığı</value>
+  </data>
+  <data name="PerfPage_GpuTemp.Text" xml:space="preserve">
+    <value>GPU Sıcaklığı</value>
+  </data>
+  <data name="PerfPage_CpuUsage.Text" xml:space="preserve">
+    <value>CPU Kullanımı</value>
+  </data>
+  <data name="PerfPage_GpuUsage.Text" xml:space="preserve">
+    <value>GPU Yükü:</value>
+  </data>
+  <data name="PerfPage_PowerMetrics.Text" xml:space="preserve">
+    <value>ANLIK GÜÇ TÜKETİMİ (WATT)</value>
+  </data>
+  <data name="PerfPage_CpuPower.Text" xml:space="preserve">
+    <value>CPU Gücü</value>
+  </data>
+  <data name="PerfPage_GpuPower.Text" xml:space="preserve">
+    <value>GPU Gücü</value>
+  </data>
+  <data name="PerfPage_TotalPower.Text" xml:space="preserve">
+    <value>Toplam Tüketim</value>
+  </data>
+  <data name="PerfPage_Loading1.Text" xml:space="preserve">
+    <value>WMI Servisi ile iletişime geçiliyor...</value>
+  </data>
+  <data name="PerfPage_Loading2.Text" xml:space="preserve">
+    <value>Sistem sensörleri taranıyor, lütfen bekleyin.</value>
+  </data>
+  <data name="PerfPage_FanAuto.Content" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="PerfPage_FanFlow.Content" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="PerfPage_FanMax.Content" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="PerfPage_FanCustom.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="PerfPage_BtnFanLogs.Content" xml:space="preserve">
+    <value>Fan Günlükleri</value>
+  </data>
+  <data name="GraphicsPage_Header.Text" xml:space="preserve">
+    <value>GRAPHICS SWITCHER</value>
+  </data>
+  <data name="GraphicsPage_HeaderDesc.Text" xml:space="preserve">
+    <value>Dinamik MUX anahtarı ile dahili ve harici ekran kartları arasındaki geçişi yönetin.</value>
+  </data>
+  <data name="GraphicsPage_Hybrid.Text" xml:space="preserve">
+    <value>HYBRID</value>
+  </data>
+  <data name="GraphicsPage_HybridDesc.Text" xml:space="preserve">
+    <value>Ekran görüntünüz Dahili GPU üzerinden verilir.</value>
+  </data>
+  <data name="GraphicsPage_Discrete.Text" xml:space="preserve">
+    <value>DISCRETE</value>
+  </data>
+  <data name="GraphicsPage_DiscreteDesc.Text" xml:space="preserve">
+    <value>Ekran görüntünüz Harici GPU üzerinden verilir.</value>
+  </data>
+  <data name="GraphicsPage_BtnReset.Content" xml:space="preserve">
+    <value>SIFIRLA</value>
+  </data>
+  <data name="HomePage_Header.Text" xml:space="preserve">
+    <value>Cihaz Kontrol Merkezi</value>
+  </data>
+  <data name="HomePage_DeviceDetecting.Text" xml:space="preserve">
+    <value>Cihaz Tespiti Yapılıyor...</value>
+  </data>
+  <data name="HomePage_MyLaptop.Text" xml:space="preserve">
+    <value>Dizüstü bilgisayarım</value>
+  </data>
+  <data name="HomePage_SystemModelWait.Text" xml:space="preserve">
+    <value>Sistem Modeli: Bekleniyor</value>
+  </data>
+  <data name="HomePage_ConnectionIPC.Text" xml:space="preserve">
+    <value>Bağlantı: IPC Named Pipes</value>
+  </data>
+  <data name="HomePage_Messages.Text" xml:space="preserve">
+    <value>Mesajlar</value>
+  </data>
+  <data name="HomePage_CheckGithub.Text" xml:space="preserve">
+    <value>GitHub'dan Denetle</value>
+  </data>
+  <data name="HomePage_SystemStatusHeader.Text" xml:space="preserve">
+    <value>Sistem Durumu ve Kontrolleri</value>
+  </data>
+  <data name="HomePage_PowerCoolingStatus.Text" xml:space="preserve">
+    <value>Güç ve Soğutma Durumu</value>
+  </data>
+  <data name="HomePage_Advanced.Text" xml:space="preserve">
+    <value>Gelişmiş</value>
+  </data>
+  <data name="HomePage_PowerCoolingDesc.Text" xml:space="preserve">
+    <value>Cihazın güç modunu ve fan ayarlarını yönetin.</value>
+  </data>
+  <data name="HomePage_ActivePowerMode.Text" xml:space="preserve">
+    <value>Aktif Güç Modu:</value>
+  </data>
+  <data name="HomePage_FanControl.Text" xml:space="preserve">
+    <value>Fan Kontrolü:</value>
+  </data>
+  <data name="HomePage_AutoManagement.Text" xml:space="preserve">
+    <value>Otomatik Yönetim</value>
+  </data>
+  <data name="HomePage_CPU.Text" xml:space="preserve">
+    <value>İşlemci (CPU)</value>
+  </data>
+  <data name="HomePage_GPU.Text" xml:space="preserve">
+    <value>Ekran Kartı (GPU)</value>
+  </data>
+  <data name="HomePage_SystemMetrics.Text" xml:space="preserve">
+    <value>Sistem Metrikleri</value>
+  </data>
+  <data name="HomePage_Temperature.Text" xml:space="preserve">
+    <value>Sıcaklık</value>
+  </data>
+  <data name="HomePage_Usage.Text" xml:space="preserve">
+    <value>Kullanım</value>
+  </data>
+  <data name="HomePage_KeyboardLighting.Text" xml:space="preserve">
+    <value>Klavye Aydınlatması</value>
+  </data>
+  <data name="HomePage_ColorsEffects.Text" xml:space="preserve">
+    <value>Renk ve efektler</value>
+  </data>
+  <data name="HomePage_ActivityLog.Text" xml:space="preserve">
+    <value>Aktivite Geçmişi</value>
+  </data>
+  <data name="PowerLimits_Header.Text" xml:space="preserve">
+    <value>Güç Limitleri Yönetimi</value>
+  </data>
+  <data name="PowerLimits_Telemetry.Text" xml:space="preserve">
+    <value>Anlık Güç Tüketimleri</value>
+  </data>
+  <data name="PowerLimits_CPUTelemetry.Text" xml:space="preserve">
+    <value>CPU Tüketim &amp; Sıcaklık</value>
+  </data>
+  <data name="PowerLimits_GPUTelemetry.Text" xml:space="preserve">
+    <value>GPU Tüketim &amp; Sıcaklık</value>
+  </data>
+  <data name="PowerLimits_HardwareLimits.Text" xml:space="preserve">
+    <value>Donanımsal Limit Ayarları</value>
+  </data>
+  <data name="PowerLimits_CPUPL1.Text" xml:space="preserve">
+    <value>CPU PL1 (Sürekli Güç Limiti)</value>
+  </data>
+  <data name="PowerLimits_CPUPL1Desc.Text" xml:space="preserve">
+    <value>İşlemcinin sürekli olarak çekebileceği maksimum güç.</value>
+  </data>
+  <data name="PowerLimits_CPUPL2.Text" xml:space="preserve">
+    <value>CPU PL2 (Kısa Süreli Boost Güç Limiti)</value>
+  </data>
+  <data name="PowerLimits_CPUPL2Desc.Text" xml:space="preserve">
+    <value>İşlemcinin anlık aşırı yüklerde çekebileceği maksimum boost gücü.</value>
+  </data>
+  <data name="PowerLimits_GPUTGP.Text" xml:space="preserve">
+    <value>GPU TGP (Ekran Kartı Güç Limiti)</value>
+  </data>
+  <data name="PowerLimits_GPUTGPDesc.Text" xml:space="preserve">
+    <value>Ekran kartına tahsis edilecek maksimum hedef güç.</value>
+  </data>
+  <data name="PowerLimits_Warning.Text" xml:space="preserve">
+    <value>⚠️ Limitleri aşırı yüksek ayarlamak yüksek sıcaklıklara yol açabilir.</value>
+  </data>
+  <data name="PowerLimits_ApplyBtn.Content" xml:space="preserve">
+    <value>Limitleri Uygula</value>
+  </data>
+  <data name="Lighting_Header.Text" xml:space="preserve">
+    <value>LIGHTING STUDIO</value>
+  </data>
+  <data name="Lighting_HeaderDesc.Text" xml:space="preserve">
+    <value>Cihazınızın klavye arka plan aydınlatmasını ve dinamik efektlerini yapılandırın.</value>
+  </data>
+  <data name="Lighting_SelectedZone.Text" xml:space="preserve">
+    <value>Seçili Bölge: 1 (Sol)</value>
+  </data>
+  <data name="Lighting_EffectSpeedHeader.Text" xml:space="preserve">
+    <value>Efekt &amp; Hız Ayarları</value>
+  </data>
+  <data name="Lighting_LightingEffect.Text" xml:space="preserve">
+    <value>Aydınlatma Efekti</value>
+  </data>
+  <data name="Lighting_EffectStatic.Content" xml:space="preserve">
+    <value>Statik (Sabit)</value>
+  </data>
+  <data name="Lighting_EffectBreathing.Content" xml:space="preserve">
+    <value>Nefes Alma (Breathing)</value>
+  </data>
+  <data name="Lighting_EffectColorCycle.Content" xml:space="preserve">
+    <value>Renk Döngüsü (Color Cycle)</value>
+  </data>
+  <data name="Lighting_EffectWave.Content" xml:space="preserve">
+    <value>Dalga (Wave)</value>
+  </data>
+  <data name="Lighting_Brightness.Text" xml:space="preserve">
+    <value>Klavye Parlaklığı</value>
+  </data>
+  <data name="Lighting_Speed.Text" xml:space="preserve">
+    <value>Efekt Hızı</value>
+  </data>
+  <data name="Lighting_ColorSelection.Text" xml:space="preserve">
+    <value>Renk Seçimi</value>
+  </data>
+  <data name="Lighting_ColorSelectionDesc.Text" xml:space="preserve">
+    <value>Bölge veya klavye geneli için hazır bir renk atayın ya da özel renk seçin.</value>
+  </data>
+  <data name="Lighting_CustomColor.ToolTip" xml:space="preserve">
+    <value>Özel Renk</value>
+  </data>
+  <data name="Lighting_SelectCustomColor.Text" xml:space="preserve">
+    <value>Özel Renk Seç</value>
+  </data>
+  <data name="Lighting_RGBControllerDetected.Text" xml:space="preserve">
+    <value>OMEN RGB denetleyicisi algılandı.</value>
+  </data>
+  <data name="Additional_Header.Text" xml:space="preserve">
+    <value>Ek Ayarlar</value>
+  </data>
+  <data name="Additional_PowerBattery.Text" xml:space="preserve">
+    <value>Güç ve Pil</value>
+  </data>
+  <data name="Additional_BatteryCare.Text" xml:space="preserve">
+    <value>Pil Koruma (Adaptive Battery Optimizer)</value>
+  </data>
+  <data name="Additional_BatteryCareDesc.Text" xml:space="preserve">
+    <value>Pil sağlığını korumak için şarj seviyesini %80'de sınırlar.</value>
+  </data>
+  <data name="Additional_USBCharging.Text" xml:space="preserve">
+    <value>Her Zaman Açık USB (USB Charging)</value>
+  </data>
+  <data name="Additional_USBChargingDesc.Text" xml:space="preserve">
+    <value>Cihaz uykudayken veya kapalıyken USB portlarından güç vermeye devam eder.</value>
+  </data>
+  <data name="Additional_PowerAutomation.Text" xml:space="preserve">
+    <value>Güç Modu Otomasyonu</value>
+  </data>
+  <data name="Additional_AutoProfile.Text" xml:space="preserve">
+    <value>Otomatik Profil Değişimi</value>
+  </data>
+  <data name="Additional_AutoProfileDesc.Text" xml:space="preserve">
+    <value>Şarj cihazı takıldığında veya çıkarıldığında performans profilini otomatik olarak değiştirir.</value>
+  </data>
+  <data name="Additional_ACProfile.Text" xml:space="preserve">
+    <value>Şarja Takılıyken Uygulanacak Profil</value>
+  </data>
+  <data name="Additional_BatProfile.Text" xml:space="preserve">
+    <value>Bataryadayken Uygulanacak Profil</value>
+  </data>
+  <data name="Additional_ProfileQuiet.Content" xml:space="preserve">
+    <value>Sessiz Mod</value>
+  </data>
+  <data name="Additional_ProfileDefault.Content" xml:space="preserve">
+    <value>Dengeli Mod</value>
+  </data>
+  <data name="Additional_ProfilePerformance.Content" xml:space="preserve">
+    <value>Performans Modu</value>
+  </data>
+  <data name="Additional_HardwareLock.Text" xml:space="preserve">
+    <value>Donanım Kilidi</value>
+  </data>
+  <data name="Additional_WinKeyLock.Text" xml:space="preserve">
+    <value>Windows Tuşu Kilidi</value>
+  </data>
+  <data name="Additional_WinKeyLockDesc.Text" xml:space="preserve">
+    <value>Oyun sırasında yanlışlıkla Başlat menüsünün açılmasını engeller.</value>
+  </data>
+  <data name="Additional_TouchpadLock.Text" xml:space="preserve">
+    <value>Dokunmatik Yüzey (Touchpad) Kilidi</value>
+  </data>
+  <data name="Additional_TouchpadLockDesc.Text" xml:space="preserve">
+    <value>Yazı yazarken veya oyun oynarken touchpad'i tamamen devre dışı bırakır.</value>
+  </data>
+</root>

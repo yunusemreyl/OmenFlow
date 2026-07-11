@@ -1,0 +1,59 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.ThemeDictionaries>
+        
+        <!-- DARK THEME (Default OMEN DNA) -->
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="OmenAppBackgroundBrush" Color="Transparent" />
+            
+            <!-- Cards & Containers -->
+            <SolidColorBrush x:Key="OmenCardBackgroundDarkBrush" Color="#0C0C0E" />
+            <SolidColorBrush x:Key="OmenCardBackgroundBaseBrush" Color="#111113" />
+            <SolidColorBrush x:Key="OmenCardBackgroundElevatedBrush" Color="#151518" />
+            <SolidColorBrush x:Key="OmenCardBackgroundHoverBrush" Color="#18181C" />
+            <SolidColorBrush x:Key="OmenCardBackgroundPressedBrush" Color="#0F0F11" />
+            
+            <SolidColorBrush x:Key="OmenCardBorderDarkBrush" Color="#1B1B1E" />
+            <SolidColorBrush x:Key="OmenCardBorderBaseBrush" Color="#222226" />
+            <SolidColorBrush x:Key="OmenCardBorderElevatedBrush" Color="#2F2F35" />
+            
+            <SolidColorBrush x:Key="OmenSegmentBackgroundBrush" Color="#1A1A1E" />
+            <SolidColorBrush x:Key="OmenSegmentBorderBrush" Color="#2A2A30" />
+            
+            <!-- Typography -->
+            <SolidColorBrush x:Key="OmenPrimaryTextBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="OmenSecondaryTextBrush" Color="#D1D5DB" />
+            <SolidColorBrush x:Key="OmenTertiaryTextBrush" Color="#9CA3AF" />
+            <SolidColorBrush x:Key="OmenMutedTextBrush" Color="#7C7C82" />
+        </ResourceDictionary>
+
+        <!-- LIGHT THEME -->
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="OmenAppBackgroundBrush" Color="Transparent" />
+            
+            <!-- Cards & Containers -->
+            <SolidColorBrush x:Key="OmenCardBackgroundDarkBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="OmenCardBackgroundBaseBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="OmenCardBackgroundElevatedBrush" Color="#F9FAFB" />
+            <SolidColorBrush x:Key="OmenCardBackgroundHoverBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="OmenCardBackgroundPressedBrush" Color="#E5E7EB" />
+            
+            <SolidColorBrush x:Key="OmenCardBorderDarkBrush" Color="#E5E7EB" />
+            <SolidColorBrush x:Key="OmenCardBorderBaseBrush" Color="#D1D5DB" />
+            <SolidColorBrush x:Key="OmenCardBorderElevatedBrush" Color="#D1D5DB" />
+            
+            <SolidColorBrush x:Key="OmenSegmentBackgroundBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="OmenSegmentBorderBrush" Color="#D1D5DB" />
+            
+            <!-- Typography -->
+            <SolidColorBrush x:Key="OmenPrimaryTextBrush" Color="#111827" />
+            <SolidColorBrush x:Key="OmenSecondaryTextBrush" Color="#374151" />
+            <SolidColorBrush x:Key="OmenTertiaryTextBrush" Color="#4B5563" />
+            <SolidColorBrush x:Key="OmenMutedTextBrush" Color="#6B7280" />
+        </ResourceDictionary>
+        
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

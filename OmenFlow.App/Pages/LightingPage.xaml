@@ -7,7 +7,7 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Background="#070709" Padding="24,20,24,24">
+    <Grid Background="{ThemeResource OmenAppBackgroundBrush}" Padding="24,20,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -16,8 +16,8 @@
         <!-- Top Header -->
         <Grid Grid.Row="0" Margin="0,0,0,16">
             <StackPanel>
-                <TextBlock Text="LIGHTING STUDIO" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Cihazınızın klavye arka plan aydınlatmasını ve dinamik efektlerini yapılandırın." FontSize="12" Foreground="#8F8F98" Margin="0,4,0,0"/>
+                <TextBlock x:Uid="Lighting_Header" Text="LIGHTING STUDIO" FontSize="20" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                <TextBlock x:Uid="Lighting_HeaderDesc" Text="Cihazınızın klavye arka plan aydınlatmasını ve dinamik efektlerini yapılandırın." FontSize="12" Foreground="{ThemeResource OmenTertiaryTextBrush}" Margin="0,4,0,0"/>
             </StackPanel>
         </Grid>
 
@@ -26,7 +26,7 @@
             <StackPanel Spacing="24">
                 
                 <!-- Keyboard Display Area Card -->
-                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="20">
+                <Border Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1" CornerRadius="10" Padding="20">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -109,7 +109,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <!-- These borders act as buttons and selection indicators -->
-                                    <Border x:Name="Zone0Overlay" Grid.Column="0" Background="#01000000" BorderBrush="{ThemeResource PrimaryTextBrush}" BorderThickness="2" CornerRadius="12,0,0,12" Tapped="Zone_Tapped" Tag="0" Margin="4,4,2,4"/>
+                                    <Border x:Name="Zone0Overlay" Grid.Column="0" Background="#01000000" BorderBrush="{ThemeResource OmenPrimaryTextBrush}" BorderThickness="2" CornerRadius="12,0,0,12" Tapped="Zone_Tapped" Tag="0" Margin="4,4,2,4"/>
                                     <Border x:Name="Zone1Overlay" Grid.Column="1" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="1" Margin="2,4,2,4"/>
                                     <Border x:Name="Zone2Overlay" Grid.Column="2" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" Tapped="Zone_Tapped" Tag="2" Margin="2,4,2,4"/>
                                     <Border x:Name="Zone3Overlay" Grid.Column="3" Background="#01000000" BorderBrush="Transparent" BorderThickness="2" CornerRadius="0,12,12,0" Tapped="Zone_Tapped" Tag="3" Margin="2,4,4,4"/>
@@ -117,7 +117,7 @@
                             </Grid>
                         </Viewbox>
                         
-                        <TextBlock Grid.Row="1" x:Name="SelectedZoneText" Text="Seçili Bölge: 1 (Sol)" FontWeight="SemiBold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Uid="Lighting_SelectedZone" x:Name="SelectedZoneText" Text="Seçili Bölge: 1 (Sol)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" HorizontalAlignment="Center"/>
                     </Grid>
                 </Border>
 
@@ -129,28 +129,28 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Column Controls: Effect, Brightness, Speed -->
-                    <Border Grid.Column="0" Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                    <Border Grid.Column="0" Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1" CornerRadius="10" Padding="18">
                         <StackPanel Spacing="16">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE765;" FontSize="15" Foreground="#8B5CF6"/>
-                                <TextBlock Text="Efekt &amp; Hız Ayarları" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                <TextBlock x:Uid="Lighting_EffectSpeedHeader" Text="Efekt &amp; Hız Ayarları" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                             </StackPanel>
 
                             <!-- Effect ComboBox -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="Aydınlatma Efekti" FontSize="11" Foreground="#9CA3AF"/>
-                                <ComboBox x:Name="EffectComboBox" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="EffectComboBox_SelectionChanged" Background="#151518" BorderBrush="#2F2F35" Foreground="#FFFFFF">
-                                    <ComboBoxItem Content="Statik (Sabit)"/>
-                                    <ComboBoxItem Content="Nefes Alma (Breathing)"/>
-                                    <ComboBoxItem Content="Renk Döngüsü (Color Cycle)"/>
-                                    <ComboBoxItem Content="Dalga (Wave)"/>
+                                <TextBlock x:Uid="Lighting_LightingEffect" Text="Aydınlatma Efekti" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
+                                <ComboBox x:Name="EffectComboBox" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="EffectComboBox_SelectionChanged" Background="{ThemeResource OmenCardBackgroundElevatedBrush}" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Foreground="{ThemeResource OmenPrimaryTextBrush}">
+                                    <ComboBoxItem x:Uid="Lighting_EffectStatic" Content="Statik (Sabit)"/>
+                                    <ComboBoxItem x:Uid="Lighting_EffectBreathing" Content="Nefes Alma (Breathing)"/>
+                                    <ComboBoxItem x:Uid="Lighting_EffectColorCycle" Content="Renk Döngüsü (Color Cycle)"/>
+                                    <ComboBoxItem x:Uid="Lighting_EffectWave" Content="Dalga (Wave)"/>
                                 </ComboBox>
                             </StackPanel>
 
                             <!-- Brightness Slider -->
                             <StackPanel Spacing="6">
                                 <Grid>
-                                    <TextBlock Text="Klavye Parlaklığı" FontSize="11" Foreground="#9CA3AF"/>
+                                    <TextBlock x:Uid="Lighting_Brightness" Text="Klavye Parlaklığı" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <TextBlock Text="{Binding ElementName=BrightnessSlider, Path=Value}" FontSize="11" Foreground="#8B5CF6"/>
                                         <TextBlock Text="%" FontSize="11" Foreground="#8B5CF6"/>
@@ -162,7 +162,7 @@
                             <!-- Speed Slider -->
                             <StackPanel Spacing="6">
                                 <Grid>
-                                    <TextBlock Text="Efekt Hızı" FontSize="11" Foreground="#9CA3AF"/>
+                                    <TextBlock x:Uid="Lighting_Speed" Text="Efekt Hızı" FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <TextBlock Text="{Binding ElementName=SpeedSlider, Path=Value}" FontSize="11" Foreground="#8B5CF6"/>
                                         <TextBlock Text="%" FontSize="11" Foreground="#8B5CF6"/>
@@ -174,26 +174,26 @@
                     </Border>
 
                     <!-- Right Column Controls: Color Selection -->
-                    <Border Grid.Column="1" Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                    <Border Grid.Column="1" Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1" CornerRadius="10" Padding="18">
                         <StackPanel Spacing="16" VerticalAlignment="Stretch">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE790;" FontSize="15" Foreground="#FF00A2"/>
-                                <TextBlock Text="Renk Seçimi" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                <TextBlock x:Uid="Lighting_ColorSelection" Text="Renk Seçimi" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                             </StackPanel>
 
-                            <TextBlock Text="Bölge veya klavye geneli için hazır bir renk atayın ya da özel renk seçin." FontSize="11" Foreground="#7C7C82" Margin="0,0,0,8"/>
+                            <TextBlock x:Uid="Lighting_ColorSelectionDesc" Text="Bölge veya klavye geneli için hazır bir renk atayın ya da özel renk seçin." FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" Margin="0,0,0,8"/>
 
                             <!-- Presets Grid -->
                             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,4,0,16">
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FF0000" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FFFF00" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#00FF00" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#0000FF" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FF00FF" Click="PresetColor_Click"/>
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Background="#FFFFFF" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#FF0000" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#FFFF00" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#00FF00" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#0000FF" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#FF00FF" Click="PresetColor_Click"/>
+                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Background="#FFFFFF" Click="PresetColor_Click"/>
                                 
                                 <!-- Custom Color Picker Button -->
-                                <Button Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="#2F2F35" Padding="0" ToolTipService.ToolTip="Özel Renk">
+                                <Button x:Uid="Lighting_CustomColor_Btn" Width="36" Height="36" CornerRadius="18" BorderThickness="1.5" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Padding="0" ToolTipService.ToolTip="Özel Renk">
                                     <Button.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                             <GradientStop Color="#FF0000" Offset="0.0"/>
@@ -204,19 +204,19 @@
                                     </Button.Background>
                                     <Button.Flyout>
                                         <Flyout>
-                                            <StackPanel Spacing="12" Background="#111113" Padding="12" CornerRadius="8">
-                                                <TextBlock Text="Özel Renk Seç" FontWeight="Bold" Foreground="#FFFFFF"/>
-                                                <ColorPicker x:Name="ZoneColorPicker" IsMoreButtonVisible="True" IsColorSliderVisible="True" IsColorChannelTextInputVisible="True" IsHexInputVisible="True" IsAlphaEnabled="False" ColorChanged="ZoneColorPicker_ColorChanged" Height="300" Foreground="#FFFFFF"/>
+                                            <StackPanel Spacing="12" Background="{ThemeResource OmenCardBackgroundElevatedBrush}" Padding="12" CornerRadius="8">
+                                                <TextBlock x:Uid="Lighting_SelectCustomColor" Text="Özel Renk Seç" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                                <ColorPicker x:Name="ZoneColorPicker" IsMoreButtonVisible="True" IsColorSliderVisible="True" IsColorChannelTextInputVisible="True" IsHexInputVisible="True" IsAlphaEnabled="False" ColorChanged="ZoneColorPicker_ColorChanged" Height="300" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                                             </StackPanel>
                                         </Flyout>
                                     </Button.Flyout>
                                 </Button>
                             </StackPanel>
                             
-                            <Border BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="6" Padding="10" Background="#151518">
+                            <Border BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Background="{ThemeResource OmenCardBackgroundBaseBrush}">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <Path Data="M 12,2 L 22,12 L 12,22 L 2,12 Z" Fill="#FF00A2" Height="14" Width="14" Stretch="Uniform" VerticalAlignment="Center"/>
-                                    <TextBlock Text="OMEN RGB denetleyicisi algılandı." FontSize="11" Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                                    <TextBlock x:Uid="Lighting_RGBControllerDetected" Text="OMEN RGB denetleyicisi algılandı." FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

@@ -23,6 +23,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CodePage>65001</CodePage>
   </PropertyGroup>
 
 </Project>

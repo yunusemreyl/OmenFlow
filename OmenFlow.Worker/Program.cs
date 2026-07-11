@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -310,7 +310,8 @@ class Program
             {
                 string cmd = req.Command;
                 var root = req.Value;
-                OmenFlow.Core.Services.Logger.LogInfo($"[Command API] Received: {cmd}");
+                string payloadStr = root.HasValue ? root.Value.GetRawText() : "null";
+                OmenFlow.Core.Services.Logger.LogInfo($"[Command API] <-- Alinan Komut: {cmd} - Payload: {payloadStr}");
 
                 try
                 {

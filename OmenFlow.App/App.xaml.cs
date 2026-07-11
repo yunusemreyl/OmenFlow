@@ -25,7 +25,39 @@ public partial class App : Application
 
     public App()
     {
+        // Apply saved language before components initialize
+        if (Helpers.LocalSettings.Values.TryGetValue("AppLanguage", out object? langObj))
+        {
+            string lang = langObj?.ToString() ?? "";
+            if (!string.IsNullOrEmpty(lang))
+            {
+                Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = lang;
+            }
+        }
+
         this.InitializeComponent();
+
+        // Global Exception Handlers
+        this.UnhandledException += (s, e) =>
+        {
+            OmenFlow.Core.Services.Logger.LogError("[App] Unhandled XAML Exception", e.Exception);
+            e.Handled = true; // Attempt to prevent instant crash
+        };
+
+        System.AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            if (e.ExceptionObject is System.Exception ex)
+            {
+                OmenFlow.Core.Services.Logger.LogError("[App] AppDomain Unhandled Exception", ex);
+            }
+        };
+
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (s, e) =>
+        {
+            OmenFlow.Core.Services.Logger.LogError("[App] Unobserved Task Exception", e.Exception);
+            e.SetObserved();
+        };
+
         IpcClient.Connect();
     }
 
@@ -42,5 +74,23 @@ public partial class App : Application
     public Window GetMainWindow()
     {
         return _window;
+    }
+
+    public void ReloadLanguage(string lang, string? initialPage = null)
+    {
+        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = lang;
+        try
+        {
+            Windows.ApplicationModel.Resources.Core.ResourceContext.GetForViewIndependentUse().Reset();
+        }
+        catch (System.Exception ex)
+        {
+            OmenFlow.Core.Services.Logger.LogError("[App] ResourceContext Reset Failed", ex);
+        }
+        
+        var oldWindow = _window;
+        _window = new MainWindow(initialPage);
+        _window.Activate();
+        oldWindow?.Close();
     }
 }

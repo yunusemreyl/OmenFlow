@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="OmenFlow_App.Pages.AdditionalSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,13 +7,13 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Padding="24,16,24,16" RowSpacing="24">
+    <Grid Padding="24,16,24,16" RowSpacing="24" Background="{ThemeResource OmenAppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         
-        <TextBlock Text="Ek Ayarlar" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="12,0,0,16" />
+        <TextBlock x:Uid="Additional_Header" Text="Ek Ayarlar" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" Margin="12,0,0,16" />
         
         <ScrollViewer Grid.Row="1">
             <StackPanel Spacing="16" MaxWidth="800" HorizontalAlignment="Left">
@@ -21,7 +21,7 @@
                 <!-- Güç ve Pil Ayarları -->
                 <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Güç ve Pil" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        <TextBlock x:Uid="Additional_PowerBattery" Text="Güç ve Pil" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" Margin="0,0,0,16"/>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -29,8 +29,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Pil Koruma (Adaptive Battery Optimizer)" FontWeight="SemiBold"/>
-                                <TextBlock Text="Pil sağlığını korumak için şarj seviyesini %80'de sınırlar." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="Additional_BatteryCare" Text="Pil Koruma (Adaptive Battery Optimizer)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <TextBlock x:Uid="Additional_BatteryCareDesc" Text="Pil sağlığını korumak için şarj seviyesini %80'de sınırlar." Foreground="{ThemeResource OmenSecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ToggleSwitch x:Name="ToggleBatteryCare" Grid.Column="1" Toggled="ToggleBatteryCare_Toggled"/>
                         </Grid>
@@ -41,8 +41,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Her Zaman Açık USB (USB Charging)" FontWeight="SemiBold"/>
-                                <TextBlock Text="Cihaz uykudayken veya kapalıyken USB portlarından güç vermeye devam eder." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="Additional_USBCharging" Text="Her Zaman Açık USB (USB Charging)" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <TextBlock x:Uid="Additional_USBChargingDesc" Text="Cihaz uykudayken veya kapalıyken USB portlarından güç vermeye devam eder." Foreground="{ThemeResource OmenSecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ToggleSwitch x:Name="ToggleUsbCharging" Grid.Column="1" Toggled="ToggleUsbCharging_Toggled"/>
                         </Grid>
@@ -51,7 +51,7 @@
                 <!-- Güç Modu Otomasyonu -->
                 <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Güç Modu Otomasyonu" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        <TextBlock x:Uid="Additional_PowerAutomation" Text="Güç Modu Otomasyonu" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" Margin="0,0,0,16"/>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -59,8 +59,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Otomatik Profil Değişimi" FontWeight="SemiBold"/>
-                                <TextBlock Text="Şarj cihazı takıldığında veya çıkarıldığında performans profilini otomatik olarak değiştirir." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="Additional_AutoProfile" Text="Otomatik Profil Değişimi" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <TextBlock x:Uid="Additional_AutoProfileDesc" Text="Şarj cihazı takıldığında veya çıkarıldığında performans profilini otomatik olarak değiştirir." Foreground="{ThemeResource OmenSecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ToggleSwitch x:Name="TogglePowerAutomation" Grid.Column="1" Toggled="TogglePowerAutomation_Toggled"/>
                         </Grid>
@@ -71,11 +71,11 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Şarja Takılıyken Uygulanacak Profil" VerticalAlignment="Center"/>
-                                <ComboBox x:Name="ComboAcProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged">
-                                    <ComboBoxItem Content="Sessiz Mod" Tag="Quiet"/>
-                                    <ComboBoxItem Content="Dengeli Mod" Tag="Default"/>
-                                    <ComboBoxItem Content="Performans Modu" Tag="Performance"/>
+                                <TextBlock x:Uid="Additional_ACProfile" Text="Şarja Takılıyken Uygulanacak Profil" VerticalAlignment="Center" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <ComboBox x:Name="ComboAcProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged" Background="{ThemeResource OmenCardBackgroundElevatedBrush}" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Foreground="{ThemeResource OmenPrimaryTextBrush}">
+                                    <ComboBoxItem x:Uid="Additional_ProfileQuiet" Content="Sessiz Mod" Tag="Quiet"/>
+                                    <ComboBoxItem x:Uid="Additional_ProfileDefault" Content="Dengeli Mod" Tag="Default"/>
+                                    <ComboBoxItem x:Uid="Additional_ProfilePerformance" Content="Performans Modu" Tag="Performance"/>
                                 </ComboBox>
                             </Grid>
 
@@ -84,11 +84,11 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Bataryadayken Uygulanacak Profil" VerticalAlignment="Center"/>
-                                <ComboBox x:Name="ComboBatProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged">
-                                    <ComboBoxItem Content="Sessiz Mod" Tag="Quiet"/>
-                                    <ComboBoxItem Content="Dengeli Mod" Tag="Default"/>
-                                    <ComboBoxItem Content="Performans Modu" Tag="Performance"/>
+                                <TextBlock x:Uid="Additional_BatProfile" Text="Bataryadayken Uygulanacak Profil" VerticalAlignment="Center" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <ComboBox x:Name="ComboBatProfile" Grid.Column="1" Width="160" SelectionChanged="AutomationProfile_SelectionChanged" Background="{ThemeResource OmenCardBackgroundElevatedBrush}" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Foreground="{ThemeResource OmenPrimaryTextBrush}">
+                                    <ComboBoxItem x:Uid="Additional_ProfileQuiet" Content="Sessiz Mod" Tag="Quiet"/>
+                                    <ComboBoxItem x:Uid="Additional_ProfileDefault" Content="Dengeli Mod" Tag="Default"/>
+                                    <ComboBoxItem x:Uid="Additional_ProfilePerformance" Content="Performans Modu" Tag="Performance"/>
                                 </ComboBox>
                             </Grid>
                         </StackPanel>
@@ -97,7 +97,7 @@
                 
                 <Border Style="{StaticResource ShadowCardStyle}" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Donanım Kilidi" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                        <TextBlock x:Uid="Additional_HardwareLock" Text="Donanım Kilidi" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}" Margin="0,0,0,16"/>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -105,8 +105,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Windows Tuşu Kilidi" FontWeight="SemiBold"/>
-                                <TextBlock Text="Oyun sırasında yanlışlıkla Başlat menüsünün açılmasını engeller." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="Additional_WinKeyLock" Text="Windows Tuşu Kilidi" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <TextBlock x:Uid="Additional_WinKeyLockDesc" Text="Oyun sırasında yanlışlıkla Başlat menüsünün açılmasını engeller." Foreground="{ThemeResource OmenSecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ToggleSwitch x:Name="ToggleWinKeyLock" Grid.Column="1" Toggled="ToggleWinKeyLock_Toggled"/>
                         </Grid>
@@ -117,8 +117,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Dokunmatik Yüzey (Touchpad) Kilidi" FontWeight="SemiBold"/>
-                                <TextBlock Text="Yazı yazarken veya oyun oynarken touchpad'i tamamen devre dışı bırakır." Foreground="{ThemeResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="Additional_TouchpadLock" Text="Dokunmatik Yüzey (Touchpad) Kilidi" FontWeight="SemiBold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                                <TextBlock x:Uid="Additional_TouchpadLockDesc" Text="Yazı yazarken veya oyun oynarken touchpad'i tamamen devre dışı bırakır." Foreground="{ThemeResource OmenSecondaryTextBrush}" FontSize="12" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ToggleSwitch x:Name="ToggleTouchpadLock" Grid.Column="1" Toggled="ToggleTouchpadLock_Toggled"/>
                         </Grid>

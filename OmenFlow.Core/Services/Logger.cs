@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace OmenFlow.Core.Services;
 
@@ -16,14 +17,47 @@ public static class Logger
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             LogDirectory = Path.Combine(appData, "OmenFlow", "Logs");
             Directory.CreateDirectory(LogDirectory);
-            LogFilePath = Path.Combine(LogDirectory, $"OmenFlow_{DateTime.Now:yyyyMMdd}.log");
+            LogFilePath = Path.Combine(LogDirectory, $"OmenFlow_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+            CleanupOldLogs();
         }
         catch
         {
             // Fallback to local directory if AppData is not accessible
             LogDirectory = Path.Combine(AppContext.BaseDirectory, "Logs");
             Directory.CreateDirectory(LogDirectory);
-            LogFilePath = Path.Combine(LogDirectory, $"OmenFlow_{DateTime.Now:yyyyMMdd}.log");
+            LogFilePath = Path.Combine(LogDirectory, $"OmenFlow_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+            CleanupOldLogs();
+        }
+    }
+
+    private static void CleanupOldLogs()
+    {
+        try
+        {
+            var directory = new DirectoryInfo(LogDirectory);
+            var files = directory.GetFiles("OmenFlow_*.log")
+                                 .OrderByDescending(f => f.LastWriteTime)
+                                 .ToList();
+
+            // Keep the newest 10 logs
+            if (files.Count > 10)
+            {
+                for (int i = 10; i < files.Count; i++)
+                {
+                    try
+                    {
+                        files[i].Delete();
+                    }
+                    catch
+                    {
+                        // Ignore files that are in use
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Ignore cleanup failures
         }
     }
 

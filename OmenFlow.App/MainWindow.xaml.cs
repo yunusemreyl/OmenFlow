@@ -13,7 +13,7 @@ public sealed partial class MainWindow : Window
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hwnd);
 
-    public MainWindow()
+    public MainWindow(string? initialPage = null)
     {
         InitializeComponent();
 
@@ -36,7 +36,37 @@ public sealed partial class MainWindow : Window
         int y = workArea.Y + (workArea.Height - height) / 2;
         AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
 
-        NavFrame.Navigate(typeof(PerformancePage));
+        if (initialPage == "settings")
+        {
+            NavView.Loaded += (s, e) =>
+            {
+                NavView.SelectedItem = NavView.SettingsItem;
+                NavFrame.Navigate(typeof(SettingsPage));
+            };
+        }
+        else if (initialPage == "graphics_switcher")
+        {
+            NavView.Loaded += (s, e) =>
+            {
+                foreach (var item in NavView.MenuItems)
+                {
+                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "graphics_switcher")
+                    {
+                        NavView.SelectedItem = navItem;
+                        NavFrame.Navigate(typeof(GraphicsSwitcherPage));
+                        break;
+                    }
+                }
+            };
+        }
+        else if (initialPage == "lighting")
+        {
+            NavView.Loaded += (s, e) => NavigateToLighting();
+        }
+        else
+        {
+            NavFrame.Navigate(typeof(PerformancePage));
+        }
 
         if (App.IpcClient != null)
         {
@@ -45,6 +75,18 @@ public sealed partial class MainWindow : Window
         }
 
         this.SizeChanged += MainWindow_SizeChanged;
+        
+        // Apply saved theme
+        if (Helpers.LocalSettings.Values.TryGetValue("AppTheme", out object? themeObj))
+        {
+            string theme = themeObj?.ToString() ?? "";
+            if (this.Content is FrameworkElement rootElement)
+            {
+                if (theme == "Light") rootElement.RequestedTheme = ElementTheme.Light;
+                else if (theme == "Dark") rootElement.RequestedTheme = ElementTheme.Dark;
+                else rootElement.RequestedTheme = ElementTheme.Default;
+            }
+        }
     }
 
     private void MainWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)

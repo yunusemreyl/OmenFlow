@@ -1,31 +1,30 @@
 using System;
-using System.Linq;
-using System.IO;
 using Microsoft.Management.Infrastructure;
 
 class Program {
     static void Main() {
         try {
-            using var cimSession = CimSession.Create(null);
-            using var biosDataClass = cimSession.GetClass(@"root\WMI", "hpqBDataIn");
-            using var input = new CimInstance(biosDataClass);
-            input.CimInstanceProperties["Sign"].Value = new byte[] { 0x53, 0x45, 0x43, 0x55 };
-            input.CimInstanceProperties["Command"].Value = (uint)0x00002;
-            input.CimInstanceProperties["CommandType"].Value = (uint)0x52;
-            // Write mode 0 (Hybrid)
-            input.CimInstanceProperties["hpqBData"].Value = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-            input.CimInstanceProperties["Size"].Value = (uint)4;
-
-            using var biosMethods = cimSession.EnumerateInstances(@"root\WMI", "hpqBIntM").FirstOrDefault();
+            using var cimSession = Microsoft.Management.Infrastructure.CimSession.Create(null);
+            var gpus = cimSession.QueryInstances(@"root\cimv2", "WQL", "SELECT Name, Availability FROM Win32_VideoController");
             
-            using var methodParameters = new CimMethodParametersCollection {
-                CimMethodParameter.Create("InData", input, CimType.Instance, CimFlags.In)
-            };
-
-            using var result = cimSession.InvokeMethod(@"root\WMI", biosMethods, "hpqBIOSInt4", methodParameters);
-            using var outDataObj = (CimInstance)result.OutParameters["OutData"].Value;
-            int returnCode = Convert.ToInt32(outDataObj.CimInstanceProperties["rwReturnCode"].Value);
-            File.WriteAllText("C:\Users\yeyil\Documents\GitHub\OmenFlow\wmi_test3.txt", $"write ret={returnCode}");
-        } catch (Exception ex) {}
+            bool hasOfflineOrMissingIGpu = true;
+            foreach (var gpu in gpus)
+            {
+                string name = gpu.CimInstanceProperties["Name"]?.Value?.ToString() ?? "";
+                Console.WriteLine("Found GPU: " + name);
+                if (name.Contains("Intel") || (name.Contains("AMD") && name.Contains("Radeon")))
+                {
+                    ushort availability = Convert.ToUInt16(gpu.CimInstanceProperties["Availability"]?.Value ?? 3);
+                    Console.WriteLine("IGpu Availability: " + availability);
+                    if (availability != 8) 
+                    {
+                        hasOfflineOrMissingIGpu = false;
+                    }
+                }
+            }
+            Console.WriteLine("Is Discrete: " + hasOfflineOrMissingIGpu);
+        } catch (Exception ex) {
+            Console.WriteLine("Error: " + ex.Message);
+        }
     }
 }

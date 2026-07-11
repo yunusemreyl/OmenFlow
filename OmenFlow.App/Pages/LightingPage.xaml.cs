@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.Win32;
 using Windows.UI;
 using Microsoft.UI;
+using System.Threading.Tasks;
 
 namespace OmenFlow_App.Pages;
 
@@ -18,7 +19,7 @@ public sealed partial class LightingPage : Page
     private Color[] zoneColors = new Color[] {
         Color.FromArgb(255, 255, 0, 0),    // Full Red
         Color.FromArgb(255, 255, 255, 0),  // Full Yellow
-        Color.FromArgb(255, 0, 255, 0),    // Full Green
+        Color.FromArgb(255, 255, 0, 0),    // Full Green
         Color.FromArgb(255, 0, 0, 255)     // Full Blue
     };
 
@@ -27,17 +28,6 @@ public sealed partial class LightingPage : Page
     public LightingPage()
     {
         this.InitializeComponent();
-        DetectSystemAndSetKeyboardLayout();
-        
-        // Initialize Color Picker with Zone 0
-        if (isOmen)
-        {
-            ZoneColorPicker.Color = zoneColors[0];
-        }
-        else
-        {
-            ZoneColorPicker.Color = singleZoneColor;
-        }
 
         _colorUpdateTimer = new DispatcherTimer { Interval = System.TimeSpan.FromMilliseconds(100) };
         _colorUpdateTimer.Tick += (s, e) =>
@@ -47,7 +37,59 @@ public sealed partial class LightingPage : Page
         };
 
         App.IpcClient.TelemetryReceived += IpcClient_TelemetryReceived;
-        this.Unloaded += (s, e) => App.IpcClient.TelemetryReceived -= IpcClient_TelemetryReceived;
+        this.Unloaded += (s, e) =>
+        {
+            _colorUpdateTimer?.Stop();
+            App.IpcClient.TelemetryReceived -= IpcClient_TelemetryReceived;
+        };
+
+        // Run registry detection on background thread to prevent kernel-level UI deadlock
+        _ = Task.Run(DetectSystemOnBackground);
+    }
+
+    private void DetectSystemOnBackground()
+    {
+        // *** Background thread only — do NOT access any UI elements here ***
+        bool detectedIsOmen = true;
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS");
+            string productName = key?.GetValue("SystemProductName")?.ToString() ?? "";
+            detectedIsOmen = !productName.Contains("Victus", System.StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            detectedIsOmen = true;
+        }
+
+        // Marshal back to UI thread for all UI updates
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            isOmen = detectedIsOmen;
+
+            if (isOmen)
+            {
+                SingleZoneGlow.Visibility = Visibility.Collapsed;
+                MultiZoneGlow.Visibility = Visibility.Visible;
+                ZoneClickOverlay.Visibility = Visibility.Visible;
+                SelectedZoneText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SingleZoneGlow.Visibility = Visibility.Visible;
+                MultiZoneGlow.Visibility = Visibility.Collapsed;
+                ZoneClickOverlay.Visibility = Visibility.Collapsed;
+                SelectedZoneText.Visibility = Visibility.Collapsed;
+            }
+
+            // Initialize Color Picker now that we know the layout
+            if (ZoneColorPicker != null)
+            {
+                _isSyncingFromServer = true;
+                ZoneColorPicker.Color = isOmen ? zoneColors[0] : singleZoneColor;
+                _isSyncingFromServer = false;
+            }
+        });
     }
 
     private void IpcClient_TelemetryReceived(object? sender, Helpers.TelemetryData e)
@@ -70,7 +112,7 @@ public sealed partial class LightingPage : Page
                             {
                                 zoneColors[i] = Color.FromArgb(255, zones[i * 3], zones[i * 3 + 1], zones[i * 3 + 2]);
                             }
-                            ZoneColorPicker.Color = zoneColors[currentZone];
+                            if (ZoneColorPicker != null) ZoneColorPicker.Color = zoneColors[currentZone];
                             ApplyColorStopsOnly(zoneColors[0], 0);
                             ApplyColorStopsOnly(zoneColors[1], 1);
                             ApplyColorStopsOnly(zoneColors[2], 2);
@@ -79,7 +121,7 @@ public sealed partial class LightingPage : Page
                         else
                         {
                             singleZoneColor = Color.FromArgb(255, zones[0], zones[1], zones[2]);
-                            ZoneColorPicker.Color = singleZoneColor;
+                            if (ZoneColorPicker != null) ZoneColorPicker.Color = singleZoneColor;
                             ApplyColorStopsOnly(singleZoneColor, 0);
                         }
                         if (BrightnessSlider != null)
@@ -117,39 +159,6 @@ public sealed partial class LightingPage : Page
         }
     }
 
-    private void DetectSystemAndSetKeyboardLayout()
-    {
-        try
-        {
-            using var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS");
-            string productName = key?.GetValue("SystemProductName")?.ToString() ?? "";
-
-            if (productName.Contains("Victus", System.StringComparison.OrdinalIgnoreCase))
-            {
-                isOmen = false;
-                SingleZoneGlow.Visibility = Visibility.Visible;
-                MultiZoneGlow.Visibility = Visibility.Collapsed;
-                ZoneClickOverlay.Visibility = Visibility.Collapsed;
-                SelectedZoneText.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                isOmen = true;
-                SingleZoneGlow.Visibility = Visibility.Collapsed;
-                MultiZoneGlow.Visibility = Visibility.Visible;
-                ZoneClickOverlay.Visibility = Visibility.Visible;
-                SelectedZoneText.Visibility = Visibility.Visible;
-            }
-        }
-        catch
-        {
-            isOmen = true;
-            SingleZoneGlow.Visibility = Visibility.Collapsed;
-            MultiZoneGlow.Visibility = Visibility.Visible;
-            ZoneClickOverlay.Visibility = Visibility.Visible;
-            SelectedZoneText.Visibility = Visibility.Visible;
-        }
-    }
 
     private void Zone_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
@@ -172,7 +181,7 @@ public sealed partial class LightingPage : Page
 
             // Update Color Picker without triggering ColorChanged on the other zones
             _isSyncingFromServer = true;
-            ZoneColorPicker.Color = zoneColors[zoneIndex];
+            if (ZoneColorPicker != null) ZoneColorPicker.Color = zoneColors[zoneIndex];
             _isSyncingFromServer = false;
         }
     }
@@ -185,7 +194,7 @@ public sealed partial class LightingPage : Page
             ApplyColorToZone(c);
             
             // Sync Color Picker
-            ZoneColorPicker.Color = c;
+            if (ZoneColorPicker != null) ZoneColorPicker.Color = c;
         }
     }
 
@@ -261,7 +270,7 @@ public sealed partial class LightingPage : Page
         string effectName = "static";
         if (EffectComboBox?.SelectedItem is ComboBoxItem item)
         {
-            string content = item.Content.ToString() ?? "";
+            string content = item.Content?.ToString() ?? "";
             if (content.Contains("Nefes Alma") || content.Contains("Breathing")) effectName = "breathing";
             if (content.Contains("Renk Döngüsü") || content.Contains("Color Cycle")) effectName = "colorcycle";
             if (content.Contains("Dalga") || content.Contains("Wave")) effectName = "wave";

@@ -17,8 +17,8 @@
 
         <!-- OMEN Premium Card Style for RadioButtons -->
         <Style x:Key="OmenCardToggleStyle" TargetType="RadioButton">
-            <Setter Property="Background" Value="#111113"/>
-            <Setter Property="BorderBrush" Value="#222226"/>
+            <Setter Property="Background" Value="{ThemeResource OmenCardBackgroundBaseBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource OmenCardBorderBaseBrush}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="20"/>
@@ -40,48 +40,52 @@
                                                   HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Stretch"/>
                             </Border>
-
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal"/>
                                     <VisualState x:Name="PointerOver">
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#18181C" Duration="0:0:0.1"/>
-                                            <ColorAnimation Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" To="#333339" Duration="0:0:0.1"/>
-                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundHoverBrush}"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource OmenCardBorderElevatedBrush}"/>
+                                        </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(Grid.Background).(SolidColorBrush.Color)" To="#0F0F11" Duration="0:0:0.1"/>
-                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundPressedBrush}"/>
+                                        </VisualState.Setters>
                                     </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#111113"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#222226"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="1.5"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="0.4"/>
+                                        </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Checked">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#131316"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource OmenGradientBrush}"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="2.0"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundElevatedBrush}"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#E00078"/>
+                                            <Setter Target="BorderElement.BorderThickness" Value="2.0"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundElevatedBrush}"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#FF0088"/>
+                                            <Setter Target="BorderElement.BorderThickness" Value="2.0"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundPressedBrush}"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#E00078"/>
+                                            <Setter Target="BorderElement.BorderThickness" Value="2.0"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedDisabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="0.4"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#E00078"/>
+                                            <Setter Target="BorderElement.BorderThickness" Value="2.0"/>
+                                        </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
@@ -93,10 +97,10 @@
 
         <!-- Segmented Selector Button Style for Sub-controls (Fan Mode Radio) -->
         <Style x:Key="OmenSegmentButtonStyle" TargetType="RadioButton">
-            <Setter Property="Background" Value="#1A1A1E"/>
-            <Setter Property="BorderBrush" Value="#2A2A30"/>
+            <Setter Property="Background" Value="{ThemeResource OmenSegmentBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource OmenSegmentBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="Foreground" Value="{ThemeResource OmenSecondaryTextBrush}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -119,45 +123,49 @@
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal"/>
                                     <VisualState x:Name="PointerOver">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#25252B"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#3F3F46"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundHoverBrush}"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource OmenCardBorderElevatedBrush}"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource OmenPrimaryTextBrush}"/>
+                                        </VisualState.Setters>
                                     </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#1A1A1E"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#2A2A30"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#9CA3AF"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource OmenCardBackgroundPressedBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="0.4"/>
+                                        </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Checked">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#2563EB"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#3B82F6"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#FFFFFF"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="#2563EB"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#3B82F6"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="#FFFFFF"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="#1D4ED8"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#2563EB"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="#FFFFFF"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="#1E40AF"/>
+                                            <Setter Target="BorderElement.BorderBrush" Value="#1D4ED8"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="#FFFFFF"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedDisabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="0.4"/>
+                                            <Setter Target="RootGrid.Background" Value="#2563EB"/>
+                                            <Setter Target="ContentPresenter.Foreground" Value="#FFFFFF"/>
+                                        </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
@@ -168,7 +176,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid Background="Transparent" Padding="24,20,24,24">
+    <Grid Background="{ThemeResource OmenAppBackgroundBrush}" Padding="24,20,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -181,10 +189,10 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <TextBlock Text="PERFORMANS KONTROLÜ" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Cihazınızın güç limitlerini ve soğutma profilini dinamik olarak yönetin." FontSize="12" Foreground="#8F8F98" Margin="0,4,0,0"/>
+                <TextBlock x:Uid="PerfPage_Header" Text="PERFORMANS KONTROLÜ" FontSize="20" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
+                <TextBlock x:Uid="PerfPage_HeaderDesc" Text="Cihazınızın güç limitlerini ve soğutma profilini dinamik olarak yönetin." FontSize="12" Foreground="{ThemeResource OmenTertiaryTextBrush}" Margin="0,4,0,0"/>
             </StackPanel>
-            <Button x:Name="BtnShowFanLogs" Content="Fan Günlükleri" Grid.Column="1" VerticalAlignment="Center" Click="BtnShowFanLogs_Click" Style="{StaticResource DefaultButtonStyle}" Background="#151518" BorderBrush="#2F2F35" Foreground="#D1D5DB"/>
+            <Button x:Name="BtnShowFanLogs" x:Uid="PerfPage_BtnFanLogs" Content="Fan Günlükleri" Grid.Column="1" VerticalAlignment="Center" Click="BtnShowFanLogs_Click" Style="{StaticResource DefaultButtonStyle}" Background="{ThemeResource OmenCardBackgroundElevatedBrush}" BorderBrush="{ThemeResource OmenCardBorderElevatedBrush}" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
         </Grid>
 
         <!-- Scrollable Main Content -->
@@ -193,7 +201,7 @@
 
                 <!-- Section 1: Performance Profiles (Comfort, Default, Performance) -->
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Optimize your performance by selecting the mode that works best for you." FontSize="13" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,8,0,8"/>
+                    <TextBlock x:Uid="PerfPage_Section1Desc" Text="Optimize your performance by selecting the mode that works best for you." FontSize="13" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Center" Margin="0,8,0,8"/>
                     
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -208,8 +216,8 @@
                         <RadioButton x:Name="BtnPerfQuiet" Grid.Column="0" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" Click="PerfMode_Click" Height="170">
                             <Grid RowDefinitions="Auto,Auto,*" Margin="4">
                                 <Path Grid.Row="0" Data="M12,2A3,3,0,0,0,9,5v5.38A4.5,4.5,0,0,0,12,19a4.5,4.5,0,0,0,3-8.62V5A3,3,0,0,0,12,2Zm1,8.38v5.27a1.5,1.5,0,1,1-2,0V10.38a1,1,0,0,1,2,0Z" Fill="#00D2FF" Height="30" Width="30" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                                <TextBlock Grid.Row="1" Text="Comfort" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
-                                <TextBlock Grid.Row="2" Text="Suitable for casual tasks. Lowers CPU and GPU temperatures." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock x:Uid="PerfPage_Comfort" Grid.Row="1" Text="Comfort" FontSize="16" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Uid="PerfPage_ComfortDesc" Grid.Row="2" Text="Suitable for casual tasks. Lowers CPU and GPU temperatures." FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
                             </Grid>
                         </RadioButton>
 
@@ -217,8 +225,8 @@
                         <RadioButton x:Name="BtnPerfDefault" Grid.Column="2" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" IsChecked="True" Click="PerfMode_Click" Height="170">
                             <Grid RowDefinitions="Auto,Auto,*" Margin="4">
                                 <Path Grid.Row="0" Data="M 12,2 L 22,12 L 12,22 L 2,12 Z" Fill="#E00078" Height="28" Width="28" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,2,0,12"/>
-                                <TextBlock Grid.Row="1" Text="Default" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
-                                <TextBlock Grid.Row="2" Text="Suitable for all types of tasks. Balances noise and hardware limits." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock x:Uid="PerfPage_Default" Grid.Row="1" Text="Default" FontSize="16" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Uid="PerfPage_DefaultDesc" Grid.Row="2" Text="Suitable for all types of tasks. Balances noise and hardware limits." FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
                             </Grid>
                         </RadioButton>
 
@@ -226,129 +234,137 @@
                         <RadioButton x:Name="BtnPerfPerf" Grid.Column="4" GroupName="PerfProfiles" Style="{StaticResource OmenCardToggleStyle}" Click="PerfMode_Click" Height="170">
                             <Grid RowDefinitions="Auto,Auto,*" Margin="4">
                                 <Path Grid.Row="0" Data="M4,18H8V10H4V18ZM10,18H14V4H10V18ZM16,18H20V12H16V18Z" Fill="#FF4B00" Height="28" Width="28" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,2,0,12"/>
-                                <TextBlock Grid.Row="1" Text="Performance" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
-                                <TextBlock Grid.Row="2" Text="Suitable for gaming. May increase heat and noise levels." FontSize="11" Foreground="#8F8F98" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock x:Uid="PerfPage_Performance" Grid.Row="1" Text="Performance" FontSize="16" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Uid="PerfPage_PerformanceDesc" Grid.Row="2" Text="Suitable for gaming. May increase heat and noise levels." FontSize="11" Foreground="{ThemeResource OmenTertiaryTextBrush}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
                             </Grid>
                         </RadioButton>
                     </Grid>
                 </StackPanel>
 
                 <!-- Section 2: Fan Control -->
-                <Border Background="#0E0E10" BorderBrush="#1C1C20" BorderThickness="1" CornerRadius="10" Padding="18">
+                <Border Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1" CornerRadius="10" Padding="18">
                     <StackPanel Spacing="16">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE9CA;" FontSize="16" Foreground="#3B82F6"/>
-                            <TextBlock Text="Fan Kontrolü" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                            <TextBlock x:Uid="PerfPage_FanControl" Text="Fan Kontrolü" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}"/>
                         </StackPanel>
 
                         <Grid ColumnDefinitions="*,*,*,*">
-                            <RadioButton x:Name="BtnFanAuto" Grid.Column="0" Content="Auto" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" IsChecked="True" Click="FanMode_Click" Margin="0,0,4,0"/>
-                            <RadioButton x:Name="BtnFanOmenFlow" Grid.Column="1" Content="Flow" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
-                            <RadioButton x:Name="BtnFanMax" Grid.Column="2" Content="Max" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
-                            <RadioButton x:Name="BtnFanManual" Grid.Column="3" Content="Custom" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="4,0,0,0"/>
+                            <RadioButton x:Name="BtnFanAuto" x:Uid="PerfPage_FanAuto" Grid.Column="0" Content="Auto" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" IsChecked="True" Click="FanMode_Click" Margin="0,0,4,0"/>
+                            <RadioButton x:Name="BtnFanOmenFlow" x:Uid="PerfPage_FanFlow" Grid.Column="1" Content="Flow" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
+                            <RadioButton x:Name="BtnFanMax" x:Uid="PerfPage_FanMax" Grid.Column="2" Content="Max" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="2,0,2,0"/>
+                            <RadioButton x:Name="BtnFanManual" x:Uid="PerfPage_FanCustom" Grid.Column="3" Content="Custom" GroupName="FanModes" Style="{StaticResource OmenSegmentButtonStyle}" Click="FanMode_Click" Margin="4,0,0,0"/>
                         </Grid>
-                        <TextBlock x:Name="FanModeDescText" Text="OmenFlow akıllı eğrisi veya BIOS otomatik modunu seçin." FontSize="11" Foreground="#7C7C82"/>
+                        <TextBlock x:Name="FanModeDescText" Text="OmenFlow akıllı eğrisi veya BIOS otomatik modunu seçin." FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Section 3: Premium Vitals Dashboard (OMEN DNA Style) -->
-                <Border Background="#0C0C0E" BorderBrush="#1B1B1E" BorderThickness="1.5" CornerRadius="12" Padding="20">
-                    <StackPanel Spacing="16">
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
-                            <FontIcon Glyph="&#xE9D9;" FontSize="15" Foreground="#00FFCC"/>
-                            <TextBlock Text="ANLIK SİSTEM METRİKLERİ" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="#9CA3AF"/>
+                <!-- Loading State for Metrics -->
+                <StackPanel x:Name="MetricsLoadingContainer" Spacing="16" Margin="0,32,0,32" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressRing IsActive="True" Width="48" Height="48" Foreground="#00FFCC" HorizontalAlignment="Center"/>
+                    <TextBlock x:Uid="PerfPage_Loading1" Text="WMI Servisi ile iletişime geçiliyor..." FontSize="14" Foreground="{ThemeResource OmenTertiaryTextBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock x:Uid="PerfPage_Loading2" Text="Sistem sensörleri taranıyor, lütfen bekleyin." FontSize="12" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel x:Name="MetricsContainer" Spacing="24" Visibility="Collapsed">
+                    <!-- Section 3: Premium Vitals Dashboard (OMEN DNA Style) -->
+                    <Border Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1.5" CornerRadius="12" Padding="20">
+                        <StackPanel Spacing="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
+                                <FontIcon Glyph="&#xE9D9;" FontSize="15" Foreground="#00FFCC"/>
+                                <TextBlock x:Uid="PerfPage_SysMetrics" Text="ANLIK SİSTEM METRİKLERİ" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
+                            </StackPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Column 1: CPU Temp & RPM & Power -->
+                                <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="CpuTempText" Text="45°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_CpuTemp" Text="CPU Temperature" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="CpuFanText" Text="2400 RPM" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
+                                        <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}"/>
+                                        <TextBlock x:Name="CpuPowerText" Text="15.2 W" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border Grid.Column="1" Background="{ThemeResource OmenCardBorderBaseBrush}" Width="1" Margin="0,10,0,10"/>
+
+                                <!-- Column 2: GPU Temp & RPM & Power -->
+                                <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="GpuTempText" Text="38°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_GpuTemp" Text="GPU Temperature" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="GpuFanText" Text="0 RPM" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
+                                        <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}"/>
+                                        <TextBlock x:Name="GpuPowerText" Text="8.4 W" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border Grid.Column="3" Background="{ThemeResource OmenCardBorderBaseBrush}" Width="1" Margin="0,10,0,10"/>
+
+                                <!-- Column 3: CPU & GPU Utilization -->
+                                <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="CpuUsageText" Text="%12" FontSize="36" FontWeight="Bold" Foreground="{ThemeResource OmenPrimaryTextBrush}" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_CpuUsage" Text="CPU Utilization" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,6"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                        <TextBlock x:Uid="PerfPage_GpuUsage" Text="GPU Yükü:" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}"/>
+                                        <TextBlock x:Name="GpuUsageText" Text="%4" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OmenSecondaryTextBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Column 1: CPU Temp & RPM & Power -->
-                            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="CpuTempText" Text="45°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="CPU Temperature" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
-                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="CpuFanText" Text="2400 RPM" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
-                                    <TextBlock Text="•" FontSize="11" Foreground="#4B5563"/>
-                                    <TextBlock x:Name="CpuPowerText" Text="15.2 W" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
-                                </StackPanel>
+                    </Border>
+     
+                    <!-- Section 4: Power Consumption Dashboard -->
+                    <Border Background="{ThemeResource OmenCardBackgroundDarkBrush}" BorderBrush="{ThemeResource OmenCardBorderDarkBrush}" BorderThickness="1.5" CornerRadius="12" Padding="20">
+                        <StackPanel Spacing="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
+                                <FontIcon Glyph="&#xE9D2;" FontSize="15" Foreground="#FFB000"/>
+                                <TextBlock x:Uid="PerfPage_PowerMetrics" Text="ANLIK GÜÇ TÜKETİMİ (WATT)" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="{ThemeResource OmenTertiaryTextBrush}"/>
                             </StackPanel>
 
-                            <Border Grid.Column="1" Background="#222226" Width="1" Margin="0,10,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <!-- Column 2: GPU Temp & RPM & Power -->
-                            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="GpuTempText" Text="38°C" FontSize="36" FontWeight="Bold" Foreground="#00FFCC" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="GPU Temperature" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
-                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="GpuFanText" Text="0 RPM" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
-                                    <TextBlock Text="•" FontSize="11" Foreground="#4B5563"/>
-                                    <TextBlock x:Name="GpuPowerText" Text="8.4 W" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                <!-- Column 1: CPU Power -->
+                                <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="CpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#FF9F1C" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_CpuPower" Text="CPU Gücü" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
-                            </StackPanel>
 
-                            <Border Grid.Column="3" Background="#222226" Width="1" Margin="0,10,0,10"/>
+                                <Border Grid.Column="1" Background="{ThemeResource OmenCardBorderBaseBrush}" Width="1" Margin="0,5,0,5"/>
 
-                            <!-- Column 3: CPU & GPU Utilization -->
-                            <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="CpuUsageText" Text="%12" FontSize="36" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="CPU Utilization" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,6"/>
-                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                    <TextBlock Text="GPU Yükü:" FontSize="11" Foreground="#7C7C82"/>
-                                    <TextBlock x:Name="GpuUsageText" Text="%4" FontSize="11" FontWeight="SemiBold" Foreground="#D1D5DB"/>
+                                <!-- Column 2: GPU Power -->
+                                <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="GpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#10B981" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_GpuPower" Text="GPU Gücü" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
- 
-                <!-- Section 4: Power Consumption Dashboard -->
-                <Border Background="#0C0C0E" BorderBrush="#1B1B1E" BorderThickness="1.5" CornerRadius="12" Padding="20">
-                    <StackPanel Spacing="16">
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,0">
-                            <FontIcon Glyph="&#xE9D2;" FontSize="15" Foreground="#FFB000"/>
-                            <TextBlock Text="ANLIK GÜÇ TÜKETİMİ (WATT)" FontSize="13" FontWeight="Bold" CharacterSpacing="100" Foreground="#9CA3AF"/>
+
+                                <Border Grid.Column="3" Background="{ThemeResource OmenCardBorderBaseBrush}" Width="1" Margin="0,5,0,5"/>
+
+                                <!-- Column 3: Total Power -->
+                                <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TotalPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#EC4899" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Uid="PerfPage_TotalPower" Text="Toplam Tüketim" FontSize="11" Foreground="{ThemeResource OmenMutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Column 1: CPU Power -->
-                            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="CpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#FF9F1C" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="CPU Gücü" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                            </StackPanel>
-
-                            <Border Grid.Column="1" Background="#222226" Width="1" Margin="0,5,0,5"/>
-
-                            <!-- Column 2: GPU Power -->
-                            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="GpuPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#10B981" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="GPU Gücü" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                            </StackPanel>
-
-                            <Border Grid.Column="3" Background="#222226" Width="1" Margin="0,5,0,5"/>
-
-                            <!-- Column 3: Total Power -->
-                            <StackPanel Grid.Column="4" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPowerTextDetailed" Text="0.0 W" FontSize="32" FontWeight="Bold" Foreground="#EC4899" FontFamily="Segoe UI" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Toplam Tüketim" FontSize="11" Foreground="#7C7C82" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>
