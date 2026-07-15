@@ -1,10 +1,22 @@
 # OmenFlow
 
-**OmenFlow** is a lightweight, modern, and reliable hardware management and lighting control application designed for HP Omen and Victus laptops (specifically the 8BBE motherboard series and similar models). It operates directly at the hardware level (via Embedded Controller - EC and WMI BIOS methods).
+**OmenFlow** is a lightweight, modern, and reliable hardware management and lighting control application designed for HP Omen and Victus laptops. It operates directly at the hardware level (via Embedded Controller - EC and WMI BIOS methods).
 
 > [!WARNING]
 > **Project Status: Early Development Phase (Work in Progress)**
 > This project is fully functional in terms of hardware layer, service architecture, and core features, but it is under active development.
+
+---
+
+## 💻 Supported Models
+
+OmenFlow is designed to work with modern HP gaming laptops. Below is a list of known working series and models:
+
+* **HP Victus 16 (2023/2024)** (e.g., s0xxx series, 8BBE and similar motherboards)
+* **HP Victus 15**
+* **HP Omen 16 (2022/2023/2024)**
+* **HP Omen 17**
+* *Other modern HP Omen and Victus models sharing the same WMI and EC architecture.*
 
 ---
 
