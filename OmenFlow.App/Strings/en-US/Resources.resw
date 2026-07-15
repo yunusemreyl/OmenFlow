@@ -441,4 +441,61 @@
   <data name="Additional_TouchpadLockDesc.Text" xml:space="preserve">
     <value>Completely disables the touchpad while typing or gaming.</value>
   </data>
+  <data name="Settings_Exporting" xml:space="preserve">
+    <value>Preparing...</value>
+  </data>
+  <data name="Settings_ExportSuccessTitle" xml:space="preserve">
+    <value>Diagnostic Report Successful</value>
+  </data>
+  <data name="Settings_ExportSuccessContent" xml:space="preserve">
+    <value>Report successfully generated and saved to Desktop:\n\n{0}</value>
+  </data>
+  <data name="Settings_ExportNoZipPath" xml:space="preserve">
+    <value>ZipPath parameter not found in the response.</value>
+  </data>
+  <data name="Settings_ExportEmptyResponse" xml:space="preserve">
+    <value>Empty or invalid response received.</value>
+  </data>
+  <data name="Settings_ExportErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Settings_ExportErrorContent" xml:space="preserve">
+    <value>An error occurred while generating the report:\n{0}</value>
+  </data>
+  <data name="Settings_ExportBtnDefault" xml:space="preserve">
+    <value>Generate ZIP Report</value>
+  </data>
+  <data name="PowerLimits_Applying" xml:space="preserve">
+    <value>Applying...</value>
+  </data>
+  <data name="PowerLimits_ApplySuccessTitle" xml:space="preserve">
+    <value>Limits Applied</value>
+  </data>
+  <data name="PowerLimits_ApplyFailTitle" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="PowerLimits_ApplySuccessContent" xml:space="preserve">
+    <value>Power limits successfully sent:\nCPU PL1: {0}W\nCPU PL2: {1}W\nGPU TGP: {2}W\n\nNote: If your hardware does not support WMI limit controls or is locked, these limits may have been ignored.</value>
+  </data>
+  <data name="PowerLimits_ApplyFailContent" xml:space="preserve">
+    <value>Power limits were rejected by the worker or communication with the worker failed.</value>
+  </data>
+  <data name="PowerLimits_ApplyErrorContent" xml:space="preserve">
+    <value>An error occurred while applying power limits:\n{0}</value>
+  </data>
+  <data name="PowerLimits_ApplyBtnDefault" xml:space="preserve">
+    <value>Apply Limits</value>
+  </data>
+  <data name="HomePage_UnknownSystem" xml:space="preserve">
+    <value>Unknown System</value>
+  </data>
+  <data name="HomePage_SystemModel" xml:space="preserve">
+    <value>System Model: {0}</value>
+  </data>
+  <data name="HomePage_SystemModelError" xml:space="preserve">
+    <value>System Model: Could not read</value>
+  </data>
+  <data name="DialogOk" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

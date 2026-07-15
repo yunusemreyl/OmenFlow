@@ -1,0 +1,541 @@
+﻿{
+    "value":  [
+                  {
+                      "name":  "SettingsPage_Header.Text",
+                      "value":  "GENERAL SETTINGS"
+                  },
+                  {
+                      "name":  "SettingsPage_HeaderDesc.Text",
+                      "value":  "Configure application startup, appearance theme, and emergency thermal protection limits."
+                  },
+                  {
+                      "name":  "SettingsPage_Card1Title.Text",
+                      "value":  "System \u0026 Appearance"
+                  },
+                  {
+                      "name":  "SettingsPage_StartupTitle.Text",
+                      "value":  "Run on Startup"
+                  },
+                  {
+                      "name":  "SettingsPage_StartupDesc.Text",
+                      "value":  "Choose how the application should start when the computer turns on."
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_OpenUI.Content",
+                      "value":  "Open Interface"
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_Tray.Content",
+                      "value":  "Start minimized to Tray"
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_Disabled.Content",
+                      "value":  "Do not start"
+                  },
+                  {
+                      "name":  "SettingsPage_ThemeTitle.Text",
+                      "value":  "App Theme"
+                  },
+                  {
+                      "name":  "SettingsPage_ThemeDesc.Text",
+                      "value":  "Change the color theme of the application (Dark recommended)."
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_System.Content",
+                      "value":  "System Default"
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_Light.Content",
+                      "value":  "Light Theme"
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_Dark.Content",
+                      "value":  "Dark Theme"
+                  },
+                  {
+                      "name":  "SettingsPage_LanguageTitle.Text",
+                      "value":  "Language"
+                  },
+                  {
+                      "name":  "SettingsPage_LanguageDesc.Text",
+                      "value":  "Change the application interface language."
+                  },
+                  {
+                      "name":  "SettingsPage_Card2Title.Text",
+                      "value":  "Security \u0026 Thermal Protection"
+                  },
+                  {
+                      "name":  "SettingsPage_MaxFanTitle.Text",
+                      "value":  "Emergency Max Fan Protection"
+                  },
+                  {
+                      "name":  "SettingsPage_MaxFanDesc.Text",
+                      "value":  "Automatically ramps fans up to max speed when temperature reaches 95°C for protection."
+                  },
+                  {
+                      "name":  "SettingsPage_QuietSafetyTitle.Text",
+                      "value":  "Quiet Mode Thermal Protection"
+                  },
+                  {
+                      "name":  "SettingsPage_QuietSafetyDesc.Text",
+                      "value":  "Automatically upgrades profile to Balanced when CPU exceeds 93°C for 8 seconds in Quiet mode."
+                  },
+                  {
+                      "name":  "SettingsPage_WarningText.Text",
+                      "value":  "⚠️ WARNING: Disabling safety protections may cause thermal throttling or overheating."
+                  },
+                  {
+                      "name":  "SettingsPage_Card3Title.Text",
+                      "value":  "Diagnostics \u0026 Reporting"
+                  },
+                  {
+                      "name":  "SettingsPage_ExportTitle.Text",
+                      "value":  "Pack Diagnostic Report (ZIP)"
+                  },
+                  {
+                      "name":  "SettingsPage_ExportDesc.Text",
+                      "value":  "Saves fan history, EC state data, and hardware information to your Desktop as a ZIP file."
+                  },
+                  {
+                      "name":  "SettingsPage_BtnExport.Content",
+                      "value":  "Generate ZIP Report"
+                  },
+                  {
+                      "name":  "SettingsPage_Card4Title.Text",
+                      "value":  "About"
+                  },
+                  {
+                      "name":  "SettingsPage_About1.Text",
+                      "value":  "OmenFlow is an open-source, independent application developed to manage HP devices."
+                  },
+                  {
+                      "name":  "SettingsPage_About2.Text",
+                      "value":  "⚠️ It has no official affiliation with HP Inc. and is not made by HP."
+                  },
+                  {
+                      "name":  "SettingsPage_AboutLink.Content",
+                      "value":  "GitHub Account \u0026 Source Code"
+                  },
+                  {
+                      "name":  "SettingsPage_RestartTitle",
+                      "value":  "Restart Required"
+                  },
+                  {
+                      "name":  "SettingsPage_RestartContent",
+                      "value":  "The application must be restarted for the language changes to take effect."
+                  },
+                  {
+                      "name":  "PerfPage_Header.Text",
+                      "value":  "PERFORMANCE CONTROL"
+                  },
+                  {
+                      "name":  "PerfPage_HeaderDesc.Text",
+                      "value":  "Dynamically manage your device\u0027s power limits and cooling profile."
+                  },
+                  {
+                      "name":  "PerfPage_Section1Desc.Text",
+                      "value":  "Optimize your performance by selecting the mode that works best for you."
+                  },
+                  {
+                      "name":  "PerfPage_Comfort.Text",
+                      "value":  "Comfort"
+                  },
+                  {
+                      "name":  "PerfPage_ComfortDesc.Text",
+                      "value":  "Suitable for casual tasks. Lowers CPU and GPU temperatures."
+                  },
+                  {
+                      "name":  "PerfPage_Default.Text",
+                      "value":  "Default"
+                  },
+                  {
+                      "name":  "PerfPage_DefaultDesc.Text",
+                      "value":  "Suitable for all types of tasks. Balances noise and hardware limits."
+                  },
+                  {
+                      "name":  "PerfPage_Performance.Text",
+                      "value":  "Performance"
+                  },
+                  {
+                      "name":  "PerfPage_PerformanceDesc.Text",
+                      "value":  "Suitable for gaming. May increase heat and noise levels."
+                  },
+                  {
+                      "name":  "PerfPage_FanControl.Text",
+                      "value":  "Fan Control"
+                  },
+                  {
+                      "name":  "PerfPage_SysMetrics.Text",
+                      "value":  "REAL-TIME SYSTEM METRICS"
+                  },
+                  {
+                      "name":  "PerfPage_CpuTemp.Text",
+                      "value":  "CPU Temperature"
+                  },
+                  {
+                      "name":  "PerfPage_GpuTemp.Text",
+                      "value":  "GPU Temperature"
+                  },
+                  {
+                      "name":  "PerfPage_CpuUsage.Text",
+                      "value":  "CPU Utilization"
+                  },
+                  {
+                      "name":  "PerfPage_GpuUsage.Text",
+                      "value":  "GPU Load:"
+                  },
+                  {
+                      "name":  "PerfPage_PowerMetrics.Text",
+                      "value":  "REAL-TIME POWER CONSUMPTION (WATT)"
+                  },
+                  {
+                      "name":  "PerfPage_CpuPower.Text",
+                      "value":  "CPU Power"
+                  },
+                  {
+                      "name":  "PerfPage_GpuPower.Text",
+                      "value":  "GPU Power"
+                  },
+                  {
+                      "name":  "PerfPage_TotalPower.Text",
+                      "value":  "Total Power"
+                  },
+                  {
+                      "name":  "PerfPage_Loading1.Text",
+                      "value":  "Communicating with WMI Service..."
+                  },
+                  {
+                      "name":  "PerfPage_Loading2.Text",
+                      "value":  "Scanning system sensors, please wait."
+                  },
+                  {
+                      "name":  "PerfPage_FanAuto.Content",
+                      "value":  "Auto"
+                  },
+                  {
+                      "name":  "PerfPage_FanFlow.Content",
+                      "value":  "Flow"
+                  },
+                  {
+                      "name":  "PerfPage_FanMax.Content",
+                      "value":  "Max"
+                  },
+                  {
+                      "name":  "PerfPage_FanCustom.Content",
+                      "value":  "Custom"
+                  },
+                  {
+                      "name":  "PerfPage_BtnFanLogs.Content",
+                      "value":  "Fan Logs"
+                  },
+                  {
+                      "name":  "GraphicsPage_Header.Text",
+                      "value":  "GRAPHICS SWITCHER"
+                  },
+                  {
+                      "name":  "GraphicsPage_HeaderDesc.Text",
+                      "value":  "Manage switching between integrated and dedicated graphics with the Dynamic MUX switch."
+                  },
+                  {
+                      "name":  "GraphicsPage_Hybrid.Text",
+                      "value":  "HYBRID"
+                  },
+                  {
+                      "name":  "GraphicsPage_HybridDesc.Text",
+                      "value":  "Your display output is rendered via the Integrated GPU."
+                  },
+                  {
+                      "name":  "GraphicsPage_Discrete.Text",
+                      "value":  "DISCRETE"
+                  },
+                  {
+                      "name":  "GraphicsPage_DiscreteDesc.Text",
+                      "value":  "Your display output is rendered via the Dedicated GPU."
+                  },
+                  {
+                      "name":  "GraphicsPage_BtnReset.Content",
+                      "value":  "RESET TO DEFAULT"
+                  },
+                  {
+                      "name":  "HomePage_Header.Text",
+                      "value":  "Device Control Center"
+                  },
+                  {
+                      "name":  "HomePage_DeviceDetecting.Text",
+                      "value":  "Detecting Device..."
+                  },
+                  {
+                      "name":  "HomePage_MyLaptop.Text",
+                      "value":  "My Laptop"
+                  },
+                  {
+                      "name":  "HomePage_SystemModelWait.Text",
+                      "value":  "System Model: Waiting"
+                  },
+                  {
+                      "name":  "HomePage_ConnectionIPC.Text",
+                      "value":  "Connection: IPC Named Pipes"
+                  },
+                  {
+                      "name":  "HomePage_Messages.Text",
+                      "value":  "Messages"
+                  },
+                  {
+                      "name":  "HomePage_CheckGithub.Text",
+                      "value":  "Check on GitHub"
+                  },
+                  {
+                      "name":  "HomePage_SystemStatusHeader.Text",
+                      "value":  "System Status \u0026 Controls"
+                  },
+                  {
+                      "name":  "HomePage_PowerCoolingStatus.Text",
+                      "value":  "Power \u0026 Cooling Status"
+                  },
+                  {
+                      "name":  "HomePage_Advanced.Text",
+                      "value":  "Advanced"
+                  },
+                  {
+                      "name":  "HomePage_PowerCoolingDesc.Text",
+                      "value":  "Manage the device\u0027s power mode and fan settings."
+                  },
+                  {
+                      "name":  "HomePage_ActivePowerMode.Text",
+                      "value":  "Active Power Mode:"
+                  },
+                  {
+                      "name":  "HomePage_FanControl.Text",
+                      "value":  "Fan Control:"
+                  },
+                  {
+                      "name":  "HomePage_AutoManagement.Text",
+                      "value":  "Auto Management"
+                  },
+                  {
+                      "name":  "HomePage_CPU.Text",
+                      "value":  "Processor (CPU)"
+                  },
+                  {
+                      "name":  "HomePage_GPU.Text",
+                      "value":  "Graphics Card (GPU)"
+                  },
+                  {
+                      "name":  "HomePage_SystemMetrics.Text",
+                      "value":  "System Metrics"
+                  },
+                  {
+                      "name":  "HomePage_Temperature.Text",
+                      "value":  "Temperature"
+                  },
+                  {
+                      "name":  "HomePage_Usage.Text",
+                      "value":  "Usage"
+                  },
+                  {
+                      "name":  "HomePage_KeyboardLighting.Text",
+                      "value":  "Keyboard Lighting"
+                  },
+                  {
+                      "name":  "HomePage_ColorsEffects.Text",
+                      "value":  "Colors and effects"
+                  },
+                  {
+                      "name":  "HomePage_ActivityLog.Text",
+                      "value":  "Activity History"
+                  },
+                  {
+                      "name":  "PowerLimits_Header.Text",
+                      "value":  "Power Limits Management"
+                  },
+                  {
+                      "name":  "PowerLimits_Telemetry.Text",
+                      "value":  "Real-time Power Consumptions"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUTelemetry.Text",
+                      "value":  "CPU Consumption \u0026 Temp"
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTelemetry.Text",
+                      "value":  "GPU Consumption \u0026 Temp"
+                  },
+                  {
+                      "name":  "PowerLimits_HardwareLimits.Text",
+                      "value":  "Hardware Limit Settings"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL1.Text",
+                      "value":  "CPU PL1 (Sustained Power Limit)"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL1Desc.Text",
+                      "value":  "Maximum power the processor can continuously draw."
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL2.Text",
+                      "value":  "CPU PL2 (Short Boost Power Limit)"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL2Desc.Text",
+                      "value":  "Maximum boost power the processor can draw during short bursts."
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTGP.Text",
+                      "value":  "GPU TGP (Graphics Power Limit)"
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTGPDesc.Text",
+                      "value":  "Maximum target power allocated to the graphics card."
+                  },
+                  {
+                      "name":  "PowerLimits_Warning.Text",
+                      "value":  "⚠️ Setting limits too high can cause high temperatures."
+                  },
+                  {
+                      "name":  "PowerLimits_ApplyBtn.Content",
+                      "value":  "Apply Limits"
+                  },
+                  {
+                      "name":  "Lighting_Header.Text",
+                      "value":  "LIGHTING STUDIO"
+                  },
+                  {
+                      "name":  "Lighting_HeaderDesc.Text",
+                      "value":  "Configure your device\u0027s keyboard backlight and dynamic effects."
+                  },
+                  {
+                      "name":  "Lighting_SelectedZone.Text",
+                      "value":  "Selected Zone: 1 (Left)"
+                  },
+                  {
+                      "name":  "Lighting_EffectSpeedHeader.Text",
+                      "value":  "Effect \u0026 Speed Settings"
+                  },
+                  {
+                      "name":  "Lighting_LightingEffect.Text",
+                      "value":  "Lighting Effect"
+                  },
+                  {
+                      "name":  "Lighting_EffectStatic.Content",
+                      "value":  "Static"
+                  },
+                  {
+                      "name":  "Lighting_EffectBreathing.Content",
+                      "value":  "Breathing"
+                  },
+                  {
+                      "name":  "Lighting_EffectColorCycle.Content",
+                      "value":  "Color Cycle"
+                  },
+                  {
+                      "name":  "Lighting_EffectWave.Content",
+                      "value":  "Wave"
+                  },
+                  {
+                      "name":  "Lighting_Brightness.Text",
+                      "value":  "Keyboard Brightness"
+                  },
+                  {
+                      "name":  "Lighting_Speed.Text",
+                      "value":  "Effect Speed"
+                  },
+                  {
+                      "name":  "Lighting_ColorSelection.Text",
+                      "value":  "Color Selection"
+                  },
+                  {
+                      "name":  "Lighting_ColorSelectionDesc.Text",
+                      "value":  "Assign a preset color or choose a custom color for a zone or the entire keyboard."
+                  },
+                  {
+                      "name":  "Lighting_CustomColor.ToolTip",
+                      "value":  "Custom Color"
+                  },
+                  {
+                      "name":  "Lighting_SelectCustomColor.Text",
+                      "value":  "Select Custom Color"
+                  },
+                  {
+                      "name":  "Lighting_RGBControllerDetected.Text",
+                      "value":  "OMEN RGB controller detected."
+                  },
+                  {
+                      "name":  "Additional_Header.Text",
+                      "value":  "Additional Settings"
+                  },
+                  {
+                      "name":  "Additional_PowerBattery.Text",
+                      "value":  "Power and Battery"
+                  },
+                  {
+                      "name":  "Additional_BatteryCare.Text",
+                      "value":  "Battery Care (Adaptive Battery Optimizer)"
+                  },
+                  {
+                      "name":  "Additional_BatteryCareDesc.Text",
+                      "value":  "Limits the charge level to 80% to protect battery health."
+                  },
+                  {
+                      "name":  "Additional_USBCharging.Text",
+                      "value":  "Always-On USB (USB Charging)"
+                  },
+                  {
+                      "name":  "Additional_USBChargingDesc.Text",
+                      "value":  "Continues to supply power from USB ports while the device is asleep or turned off."
+                  },
+                  {
+                      "name":  "Additional_PowerAutomation.Text",
+                      "value":  "Power Mode Automation"
+                  },
+                  {
+                      "name":  "Additional_AutoProfile.Text",
+                      "value":  "Automatic Profile Switching"
+                  },
+                  {
+                      "name":  "Additional_AutoProfileDesc.Text",
+                      "value":  "Automatically switches the performance profile when the charger is plugged in or out."
+                  },
+                  {
+                      "name":  "Additional_ACProfile.Text",
+                      "value":  "Profile to Apply on AC Power"
+                  },
+                  {
+                      "name":  "Additional_BatProfile.Text",
+                      "value":  "Profile to Apply on Battery"
+                  },
+                  {
+                      "name":  "Additional_ProfileQuiet.Content",
+                      "value":  "Quiet Mode"
+                  },
+                  {
+                      "name":  "Additional_ProfileDefault.Content",
+                      "value":  "Balanced Mode"
+                  },
+                  {
+                      "name":  "Additional_ProfilePerformance.Content",
+                      "value":  "Performance Mode"
+                  },
+                  {
+                      "name":  "Additional_HardwareLock.Text",
+                      "value":  "Hardware Lock"
+                  },
+                  {
+                      "name":  "Additional_WinKeyLock.Text",
+                      "value":  "Windows Key Lock"
+                  },
+                  {
+                      "name":  "Additional_WinKeyLockDesc.Text",
+                      "value":  "Prevents accidental opening of the Start menu during gaming."
+                  },
+                  {
+                      "name":  "Additional_TouchpadLock.Text",
+                      "value":  "Touchpad Lock"
+                  },
+                  {
+                      "name":  "Additional_TouchpadLockDesc.Text",
+                      "value":  "Completely disables the touchpad while typing or gaming."
+                  }
+              ],
+    "Count":  134
+}

@@ -27,6 +27,9 @@ public sealed partial class PerformancePage : Page
     // Son bilinen performans profili — gereksiz tray bildirimi göndermemek için
     private int _lastNotifiedProfile = -1;
 
+    // CPU Turbo senkronizasyon guard
+    private bool _cpuTurboChangeInProgress = false;
+
     // Telemetry Sync Guard variables
     private int _targetProfile = -1;
     private DateTime _lastProfileChangeTime = DateTime.MinValue;
@@ -160,6 +163,23 @@ public sealed partial class PerformancePage : Page
                         3 => "Özel eğri — kullanıcı tanımlı fan profili aktif.",
                         _ => "Fan modu bilinmiyor."
                     };
+                }
+
+                // —— CPU Turbo Boost senkronizasyonu ——
+                if (ToggleCpuTurbo != null && !_cpuTurboChangeInProgress)
+                {
+                    _updatingFromTelemetry = true;
+                    try
+                    {
+                        if (ToggleCpuTurbo.IsOn != e.CpuTurboEnabled)
+                        {
+                            ToggleCpuTurbo.IsOn = e.CpuTurboEnabled;
+                        }
+                    }
+                    finally
+                    {
+                        _updatingFromTelemetry = false;
+                    }
                 }
             }
             catch (Exception ex)
@@ -502,6 +522,47 @@ public sealed partial class PerformancePage : Page
         if (BtnFanOmenFlow != null) BtnFanOmenFlow.IsEnabled = enabled;
         if (BtnFanMax != null) BtnFanMax.IsEnabled = enabled;
         if (BtnFanManual != null) BtnFanManual.IsEnabled = enabled;
+    }
+
+    private async void ToggleCpuTurbo_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_updatingFromTelemetry || _cpuTurboChangeInProgress) return;
+        
+        var toggle = sender as ToggleSwitch;
+        if (toggle == null) return;
+
+        _cpuTurboChangeInProgress = true;
+        toggle.IsEnabled = false;
+
+        try
+        {
+            if (App.IpcClient != null)
+            {
+                bool sent = await App.IpcClient.SendCommandAsync("SetCpuTurbo", toggle.IsOn);
+                if (!sent)
+                {
+                    await ShowCommandFailedDialogAsync("Turbo ayarı uygulanamadı", "Worker servisine erişilemedi ya da komut reddedildi.");
+                    
+                    // Geri al
+                    _updatingFromTelemetry = true;
+                    toggle.IsOn = !toggle.IsOn;
+                    _updatingFromTelemetry = false;
+                }
+                else
+                {
+                    ShowTrayNotification("İşlemci Kontrolü", $"CPU Turbo Boost başarıyla {(toggle.IsOn ? "açıldı" : "kapatıldı")}.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            OmenFlow.Core.Services.Logger.LogInfo($"[ToggleCpuTurbo] Exception: {ex.Message}");
+        }
+        finally
+        {
+            toggle.IsEnabled = true;
+            _cpuTurboChangeInProgress = false;
+        }
     }
 }
 

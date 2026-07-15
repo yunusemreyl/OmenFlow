@@ -441,4 +441,61 @@
   <data name="Additional_TouchpadLockDesc.Text" xml:space="preserve">
     <value>Yazı yazarken veya oyun oynarken touchpad'i tamamen devre dışı bırakır.</value>
   </data>
+  <data name="Settings_Exporting" xml:space="preserve">
+    <value>Hazırlanıyor...</value>
+  </data>
+  <data name="Settings_ExportSuccessTitle" xml:space="preserve">
+    <value>Tanılama Raporu Başarılı</value>
+  </data>
+  <data name="Settings_ExportSuccessContent" xml:space="preserve">
+    <value>Rapor başarıyla üretildi ve Masaüstüne kaydedildi:\n\n{0}</value>
+  </data>
+  <data name="Settings_ExportNoZipPath" xml:space="preserve">
+    <value>Yanıt içerisinde ZipPath parametresi bulunamadı.</value>
+  </data>
+  <data name="Settings_ExportEmptyResponse" xml:space="preserve">
+    <value>Boş veya hatalı yanıt alındı.</value>
+  </data>
+  <data name="Settings_ExportErrorTitle" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Settings_ExportErrorContent" xml:space="preserve">
+    <value>Rapor üretilirken bir hata oluştu:\n{0}</value>
+  </data>
+  <data name="Settings_ExportBtnDefault" xml:space="preserve">
+    <value>ZIP Raporu Üret</value>
+  </data>
+  <data name="PowerLimits_Applying" xml:space="preserve">
+    <value>Uygulanıyor...</value>
+  </data>
+  <data name="PowerLimits_ApplySuccessTitle" xml:space="preserve">
+    <value>Limitler Uygulandı</value>
+  </data>
+  <data name="PowerLimits_ApplyFailTitle" xml:space="preserve">
+    <value>Başarısız</value>
+  </data>
+  <data name="PowerLimits_ApplySuccessContent" xml:space="preserve">
+    <value>Güç limitleri başarıyla gönderildi:\nCPU PL1: {0}W\nCPU PL2: {1}W\nGPU TGP: {2}W\n\nNot: Donanımınız WMI limit kontrollerini desteklemiyorsa veya kilitliyse bu limitler yoksayılmış olabilir.</value>
+  </data>
+  <data name="PowerLimits_ApplyFailContent" xml:space="preserve">
+    <value>Güç limitleri worker tarafından reddedildi veya worker ile iletişim kurulamadı.</value>
+  </data>
+  <data name="PowerLimits_ApplyErrorContent" xml:space="preserve">
+    <value>Güç limitleri uygulanırken hata oluştu:\n{0}</value>
+  </data>
+  <data name="PowerLimits_ApplyBtnDefault" xml:space="preserve">
+    <value>Limitleri Uygula</value>
+  </data>
+  <data name="HomePage_UnknownSystem" xml:space="preserve">
+    <value>Bilinmeyen Sistem</value>
+  </data>
+  <data name="HomePage_SystemModel" xml:space="preserve">
+    <value>Sistem Modeli: {0}</value>
+  </data>
+  <data name="HomePage_SystemModelError" xml:space="preserve">
+    <value>Sistem Modeli: Okunamadı</value>
+  </data>
+  <data name="DialogOk" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
 </root>

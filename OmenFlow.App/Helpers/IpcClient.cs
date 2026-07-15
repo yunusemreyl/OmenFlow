@@ -31,6 +31,7 @@ public class TelemetryData
     public string ZoneColors   { get; set; } = "";
     public int   ActiveFanMode { get; set; }
     public int   GpuMaxTgp     { get; set; } = 150;
+    public bool  CpuTurboEnabled { get; set; } = true;
 }
 
 public class IpcClient

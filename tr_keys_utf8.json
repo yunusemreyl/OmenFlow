@@ -1,0 +1,541 @@
+﻿{
+    "value":  [
+                  {
+                      "name":  "SettingsPage_Header.Text",
+                      "value":  "GENEL AYARLAR"
+                  },
+                  {
+                      "name":  "SettingsPage_HeaderDesc.Text",
+                      "value":  "Uygulama başlangıç, görünüm teması ve acil durum koruma sınırlarını yapılandırın."
+                  },
+                  {
+                      "name":  "SettingsPage_Card1Title.Text",
+                      "value":  "Sistem \u0026 Görünüm"
+                  },
+                  {
+                      "name":  "SettingsPage_StartupTitle.Text",
+                      "value":  "Başlangıçta Çalıştırma"
+                  },
+                  {
+                      "name":  "SettingsPage_StartupDesc.Text",
+                      "value":  "Bilgisayar açıldığında uygulamanın nasıl başlayacağını seçin."
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_OpenUI.Content",
+                      "value":  "Arayüzü Aç"
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_Tray.Content",
+                      "value":  "Tray Olarak Başlat"
+                  },
+                  {
+                      "name":  "SettingsPage_Startup_Disabled.Content",
+                      "value":  "Başlatma"
+                  },
+                  {
+                      "name":  "SettingsPage_ThemeTitle.Text",
+                      "value":  "Uygulama Teması"
+                  },
+                  {
+                      "name":  "SettingsPage_ThemeDesc.Text",
+                      "value":  "Uygulamanın renk temasını değiştirin (Koyu önerilir)."
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_System.Content",
+                      "value":  "Sistem Varsayılanı"
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_Light.Content",
+                      "value":  "Açık Tema"
+                  },
+                  {
+                      "name":  "SettingsPage_Theme_Dark.Content",
+                      "value":  "Koyu Tema"
+                  },
+                  {
+                      "name":  "SettingsPage_LanguageTitle.Text",
+                      "value":  "Dil Seçeneği"
+                  },
+                  {
+                      "name":  "SettingsPage_LanguageDesc.Text",
+                      "value":  "Uygulama arayüz dilini değiştirin."
+                  },
+                  {
+                      "name":  "SettingsPage_Card2Title.Text",
+                      "value":  "Güvenlik ve Aşırı Isınma Koruması"
+                  },
+                  {
+                      "name":  "SettingsPage_MaxFanTitle.Text",
+                      "value":  "Acil Durum Max Fan Koruması"
+                  },
+                  {
+                      "name":  "SettingsPage_MaxFanDesc.Text",
+                      "value":  "Sıcaklık 95°C\u0027ye ulaştığında fanları koruma amacıyla otomatik olarak maksimum devire çıkarır."
+                  },
+                  {
+                      "name":  "SettingsPage_QuietSafetyTitle.Text",
+                      "value":  "Sessiz Mod Isınma Koruması (Quiet Safety)"
+                  },
+                  {
+                      "name":  "SettingsPage_QuietSafetyDesc.Text",
+                      "value":  "Quiet moddayken CPU sıcaklığı 93°C\u0027yi aştığında (8 saniye boyunca) profili otomatik olarak Dengeli moda yükseltir."
+                  },
+                  {
+                      "name":  "SettingsPage_WarningText.Text",
+                      "value":  "⚠️ DİKKAT: Güvenlik korumalarını kapatmak, termal throttle veya aşırı ısınmaya sebep olabilir."
+                  },
+                  {
+                      "name":  "SettingsPage_Card3Title.Text",
+                      "value":  "Tanılama ve Raporlama"
+                  },
+                  {
+                      "name":  "SettingsPage_ExportTitle.Text",
+                      "value":  "Tanılama Raporu Paketle (ZIP)"
+                  },
+                  {
+                      "name":  "SettingsPage_ExportDesc.Text",
+                      "value":  "Fan geçmişi, EC durum verileri ve donanım bilgilerini Masaüstünüze ZIP olarak kaydeder."
+                  },
+                  {
+                      "name":  "SettingsPage_BtnExport.Content",
+                      "value":  "ZIP Raporu Üret"
+                  },
+                  {
+                      "name":  "SettingsPage_Card4Title.Text",
+                      "value":  "Hakkında"
+                  },
+                  {
+                      "name":  "SettingsPage_About1.Text",
+                      "value":  "OmenFlow, HP cihazlarını yönetmek için geliştirilmiş açık kaynaklı bağımsız bir uygulamadır."
+                  },
+                  {
+                      "name":  "SettingsPage_About2.Text",
+                      "value":  "⚠️ HP Inc. ile hiçbir resmi bağı yoktur ve HP tarafından yapılmamıştır."
+                  },
+                  {
+                      "name":  "SettingsPage_AboutLink.Content",
+                      "value":  "GitHub Hesabı ve Kaynak Kod"
+                  },
+                  {
+                      "name":  "SettingsPage_RestartTitle",
+                      "value":  "Yeniden Başlatma Gerekli"
+                  },
+                  {
+                      "name":  "SettingsPage_RestartContent",
+                      "value":  "Dil değişikliğinin uygulanabilmesi için uygulamanın yeniden başlatılması gerekmektedir."
+                  },
+                  {
+                      "name":  "PerfPage_Header.Text",
+                      "value":  "PERFORMANS KONTROLÜ"
+                  },
+                  {
+                      "name":  "PerfPage_HeaderDesc.Text",
+                      "value":  "Cihazınızın güç limitlerini ve soğutma profilini dinamik olarak yönetin."
+                  },
+                  {
+                      "name":  "PerfPage_Section1Desc.Text",
+                      "value":  "Size en uygun modu seçerek performansınızı optimize edin."
+                  },
+                  {
+                      "name":  "PerfPage_Comfort.Text",
+                      "value":  "Sessiz"
+                  },
+                  {
+                      "name":  "PerfPage_ComfortDesc.Text",
+                      "value":  "Günlük işler için ideal. CPU ve GPU sıcaklıklarını düşürür."
+                  },
+                  {
+                      "name":  "PerfPage_Default.Text",
+                      "value":  "Dengeli"
+                  },
+                  {
+                      "name":  "PerfPage_DefaultDesc.Text",
+                      "value":  "Tüm iş yükleri için uygun. Gürültü ve performansı dengeler."
+                  },
+                  {
+                      "name":  "PerfPage_Performance.Text",
+                      "value":  "Performans"
+                  },
+                  {
+                      "name":  "PerfPage_PerformanceDesc.Text",
+                      "value":  "Oyun için ideal. Isı ve fan gürültüsü artabilir."
+                  },
+                  {
+                      "name":  "PerfPage_FanControl.Text",
+                      "value":  "Fan Kontrolü"
+                  },
+                  {
+                      "name":  "PerfPage_SysMetrics.Text",
+                      "value":  "ANLIK SİSTEM METRİKLERİ"
+                  },
+                  {
+                      "name":  "PerfPage_CpuTemp.Text",
+                      "value":  "CPU Sıcaklığı"
+                  },
+                  {
+                      "name":  "PerfPage_GpuTemp.Text",
+                      "value":  "GPU Sıcaklığı"
+                  },
+                  {
+                      "name":  "PerfPage_CpuUsage.Text",
+                      "value":  "CPU Kullanımı"
+                  },
+                  {
+                      "name":  "PerfPage_GpuUsage.Text",
+                      "value":  "GPU Yükü:"
+                  },
+                  {
+                      "name":  "PerfPage_PowerMetrics.Text",
+                      "value":  "ANLIK GÜÇ TÜKETİMİ (WATT)"
+                  },
+                  {
+                      "name":  "PerfPage_CpuPower.Text",
+                      "value":  "CPU Gücü"
+                  },
+                  {
+                      "name":  "PerfPage_GpuPower.Text",
+                      "value":  "GPU Gücü"
+                  },
+                  {
+                      "name":  "PerfPage_TotalPower.Text",
+                      "value":  "Toplam Tüketim"
+                  },
+                  {
+                      "name":  "PerfPage_Loading1.Text",
+                      "value":  "WMI Servisi ile iletişime geçiliyor..."
+                  },
+                  {
+                      "name":  "PerfPage_Loading2.Text",
+                      "value":  "Sistem sensörleri taranıyor, lütfen bekleyin."
+                  },
+                  {
+                      "name":  "PerfPage_FanAuto.Content",
+                      "value":  "Auto"
+                  },
+                  {
+                      "name":  "PerfPage_FanFlow.Content",
+                      "value":  "Flow"
+                  },
+                  {
+                      "name":  "PerfPage_FanMax.Content",
+                      "value":  "Max"
+                  },
+                  {
+                      "name":  "PerfPage_FanCustom.Content",
+                      "value":  "Custom"
+                  },
+                  {
+                      "name":  "PerfPage_BtnFanLogs.Content",
+                      "value":  "Fan Günlükleri"
+                  },
+                  {
+                      "name":  "GraphicsPage_Header.Text",
+                      "value":  "GRAPHICS SWITCHER"
+                  },
+                  {
+                      "name":  "GraphicsPage_HeaderDesc.Text",
+                      "value":  "Dinamik MUX anahtarı ile dahili ve harici ekran kartları arasındaki geçişi yönetin."
+                  },
+                  {
+                      "name":  "GraphicsPage_Hybrid.Text",
+                      "value":  "HYBRID"
+                  },
+                  {
+                      "name":  "GraphicsPage_HybridDesc.Text",
+                      "value":  "Ekran görüntünüz Dahili GPU üzerinden verilir."
+                  },
+                  {
+                      "name":  "GraphicsPage_Discrete.Text",
+                      "value":  "DISCRETE"
+                  },
+                  {
+                      "name":  "GraphicsPage_DiscreteDesc.Text",
+                      "value":  "Ekran görüntünüz Harici GPU üzerinden verilir."
+                  },
+                  {
+                      "name":  "GraphicsPage_BtnReset.Content",
+                      "value":  "SIFIRLA"
+                  },
+                  {
+                      "name":  "HomePage_Header.Text",
+                      "value":  "Cihaz Kontrol Merkezi"
+                  },
+                  {
+                      "name":  "HomePage_DeviceDetecting.Text",
+                      "value":  "Cihaz Tespiti Yapılıyor..."
+                  },
+                  {
+                      "name":  "HomePage_MyLaptop.Text",
+                      "value":  "Dizüstü bilgisayarım"
+                  },
+                  {
+                      "name":  "HomePage_SystemModelWait.Text",
+                      "value":  "Sistem Modeli: Bekleniyor"
+                  },
+                  {
+                      "name":  "HomePage_ConnectionIPC.Text",
+                      "value":  "Bağlantı: IPC Named Pipes"
+                  },
+                  {
+                      "name":  "HomePage_Messages.Text",
+                      "value":  "Mesajlar"
+                  },
+                  {
+                      "name":  "HomePage_CheckGithub.Text",
+                      "value":  "GitHub\u0027dan Denetle"
+                  },
+                  {
+                      "name":  "HomePage_SystemStatusHeader.Text",
+                      "value":  "Sistem Durumu ve Kontrolleri"
+                  },
+                  {
+                      "name":  "HomePage_PowerCoolingStatus.Text",
+                      "value":  "Güç ve Soğutma Durumu"
+                  },
+                  {
+                      "name":  "HomePage_Advanced.Text",
+                      "value":  "Gelişmiş"
+                  },
+                  {
+                      "name":  "HomePage_PowerCoolingDesc.Text",
+                      "value":  "Cihazın güç modunu ve fan ayarlarını yönetin."
+                  },
+                  {
+                      "name":  "HomePage_ActivePowerMode.Text",
+                      "value":  "Aktif Güç Modu:"
+                  },
+                  {
+                      "name":  "HomePage_FanControl.Text",
+                      "value":  "Fan Kontrolü:"
+                  },
+                  {
+                      "name":  "HomePage_AutoManagement.Text",
+                      "value":  "Otomatik Yönetim"
+                  },
+                  {
+                      "name":  "HomePage_CPU.Text",
+                      "value":  "İşlemci (CPU)"
+                  },
+                  {
+                      "name":  "HomePage_GPU.Text",
+                      "value":  "Ekran Kartı (GPU)"
+                  },
+                  {
+                      "name":  "HomePage_SystemMetrics.Text",
+                      "value":  "Sistem Metrikleri"
+                  },
+                  {
+                      "name":  "HomePage_Temperature.Text",
+                      "value":  "Sıcaklık"
+                  },
+                  {
+                      "name":  "HomePage_Usage.Text",
+                      "value":  "Kullanım"
+                  },
+                  {
+                      "name":  "HomePage_KeyboardLighting.Text",
+                      "value":  "Klavye Aydınlatması"
+                  },
+                  {
+                      "name":  "HomePage_ColorsEffects.Text",
+                      "value":  "Renk ve efektler"
+                  },
+                  {
+                      "name":  "HomePage_ActivityLog.Text",
+                      "value":  "Aktivite Geçmişi"
+                  },
+                  {
+                      "name":  "PowerLimits_Header.Text",
+                      "value":  "Güç Limitleri Yönetimi"
+                  },
+                  {
+                      "name":  "PowerLimits_Telemetry.Text",
+                      "value":  "Anlık Güç Tüketimleri"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUTelemetry.Text",
+                      "value":  "CPU Tüketim \u0026 Sıcaklık"
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTelemetry.Text",
+                      "value":  "GPU Tüketim \u0026 Sıcaklık"
+                  },
+                  {
+                      "name":  "PowerLimits_HardwareLimits.Text",
+                      "value":  "Donanımsal Limit Ayarları"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL1.Text",
+                      "value":  "CPU PL1 (Sürekli Güç Limiti)"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL1Desc.Text",
+                      "value":  "İşlemcinin sürekli olarak çekebileceği maksimum güç."
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL2.Text",
+                      "value":  "CPU PL2 (Kısa Süreli Boost Güç Limiti)"
+                  },
+                  {
+                      "name":  "PowerLimits_CPUPL2Desc.Text",
+                      "value":  "İşlemcinin anlık aşırı yüklerde çekebileceği maksimum boost gücü."
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTGP.Text",
+                      "value":  "GPU TGP (Ekran Kartı Güç Limiti)"
+                  },
+                  {
+                      "name":  "PowerLimits_GPUTGPDesc.Text",
+                      "value":  "Ekran kartına tahsis edilecek maksimum hedef güç."
+                  },
+                  {
+                      "name":  "PowerLimits_Warning.Text",
+                      "value":  "⚠️ Limitleri aşırı yüksek ayarlamak yüksek sıcaklıklara yol açabilir."
+                  },
+                  {
+                      "name":  "PowerLimits_ApplyBtn.Content",
+                      "value":  "Limitleri Uygula"
+                  },
+                  {
+                      "name":  "Lighting_Header.Text",
+                      "value":  "LIGHTING STUDIO"
+                  },
+                  {
+                      "name":  "Lighting_HeaderDesc.Text",
+                      "value":  "Cihazınızın klavye arka plan aydınlatmasını ve dinamik efektlerini yapılandırın."
+                  },
+                  {
+                      "name":  "Lighting_SelectedZone.Text",
+                      "value":  "Seçili Bölge: 1 (Sol)"
+                  },
+                  {
+                      "name":  "Lighting_EffectSpeedHeader.Text",
+                      "value":  "Efekt \u0026 Hız Ayarları"
+                  },
+                  {
+                      "name":  "Lighting_LightingEffect.Text",
+                      "value":  "Aydınlatma Efekti"
+                  },
+                  {
+                      "name":  "Lighting_EffectStatic.Content",
+                      "value":  "Statik (Sabit)"
+                  },
+                  {
+                      "name":  "Lighting_EffectBreathing.Content",
+                      "value":  "Nefes Alma (Breathing)"
+                  },
+                  {
+                      "name":  "Lighting_EffectColorCycle.Content",
+                      "value":  "Renk Döngüsü (Color Cycle)"
+                  },
+                  {
+                      "name":  "Lighting_EffectWave.Content",
+                      "value":  "Dalga (Wave)"
+                  },
+                  {
+                      "name":  "Lighting_Brightness.Text",
+                      "value":  "Klavye Parlaklığı"
+                  },
+                  {
+                      "name":  "Lighting_Speed.Text",
+                      "value":  "Efekt Hızı"
+                  },
+                  {
+                      "name":  "Lighting_ColorSelection.Text",
+                      "value":  "Renk Seçimi"
+                  },
+                  {
+                      "name":  "Lighting_ColorSelectionDesc.Text",
+                      "value":  "Bölge veya klavye geneli için hazır bir renk atayın ya da özel renk seçin."
+                  },
+                  {
+                      "name":  "Lighting_CustomColor.ToolTip",
+                      "value":  "Özel Renk"
+                  },
+                  {
+                      "name":  "Lighting_SelectCustomColor.Text",
+                      "value":  "Özel Renk Seç"
+                  },
+                  {
+                      "name":  "Lighting_RGBControllerDetected.Text",
+                      "value":  "OMEN RGB denetleyicisi algılandı."
+                  },
+                  {
+                      "name":  "Additional_Header.Text",
+                      "value":  "Ek Ayarlar"
+                  },
+                  {
+                      "name":  "Additional_PowerBattery.Text",
+                      "value":  "Güç ve Pil"
+                  },
+                  {
+                      "name":  "Additional_BatteryCare.Text",
+                      "value":  "Pil Koruma (Adaptive Battery Optimizer)"
+                  },
+                  {
+                      "name":  "Additional_BatteryCareDesc.Text",
+                      "value":  "Pil sağlığını korumak için şarj seviyesini %80\u0027de sınırlar."
+                  },
+                  {
+                      "name":  "Additional_USBCharging.Text",
+                      "value":  "Her Zaman Açık USB (USB Charging)"
+                  },
+                  {
+                      "name":  "Additional_USBChargingDesc.Text",
+                      "value":  "Cihaz uykudayken veya kapalıyken USB portlarından güç vermeye devam eder."
+                  },
+                  {
+                      "name":  "Additional_PowerAutomation.Text",
+                      "value":  "Güç Modu Otomasyonu"
+                  },
+                  {
+                      "name":  "Additional_AutoProfile.Text",
+                      "value":  "Otomatik Profil Değişimi"
+                  },
+                  {
+                      "name":  "Additional_AutoProfileDesc.Text",
+                      "value":  "Şarj cihazı takıldığında veya çıkarıldığında performans profilini otomatik olarak değiştirir."
+                  },
+                  {
+                      "name":  "Additional_ACProfile.Text",
+                      "value":  "Şarja Takılıyken Uygulanacak Profil"
+                  },
+                  {
+                      "name":  "Additional_BatProfile.Text",
+                      "value":  "Bataryadayken Uygulanacak Profil"
+                  },
+                  {
+                      "name":  "Additional_ProfileQuiet.Content",
+                      "value":  "Sessiz Mod"
+                  },
+                  {
+                      "name":  "Additional_ProfileDefault.Content",
+                      "value":  "Dengeli Mod"
+                  },
+                  {
+                      "name":  "Additional_ProfilePerformance.Content",
+                      "value":  "Performans Modu"
+                  },
+                  {
+                      "name":  "Additional_HardwareLock.Text",
+                      "value":  "Donanım Kilidi"
+                  },
+                  {
+                      "name":  "Additional_WinKeyLock.Text",
+                      "value":  "Windows Tuşu Kilidi"
+                  },
+                  {
+                      "name":  "Additional_WinKeyLockDesc.Text",
+                      "value":  "Oyun sırasında yanlışlıkla Başlat menüsünün açılmasını engeller."
+                  },
+                  {
+                      "name":  "Additional_TouchpadLock.Text",
+                      "value":  "Dokunmatik Yüzey (Touchpad) Kilidi"
+                  },
+                  {
+                      "name":  "Additional_TouchpadLockDesc.Text",
+                      "value":  "Yazı yazarken veya oyun oynarken touchpad\u0027i tamamen devre dışı bırakır."
+                  }
+              ],
+    "Count":  134
+}

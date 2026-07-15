@@ -160,7 +160,7 @@ public sealed partial class SettingsPage : Page
     private async void BtnExportDiagnostics_Click(object sender, RoutedEventArgs e)
     {
         BtnExportDiagnostics.IsEnabled = false;
-        BtnExportDiagnostics.Content = "Hazırlanıyor...";
+        BtnExportDiagnostics.Content = Helpers.ResourceHelper.GetString("Settings_Exporting");
 
         try
         {
@@ -178,21 +178,21 @@ public sealed partial class SettingsPage : Page
                         string zipPath = pathProp.GetString() ?? "";
                         var dialog = new ContentDialog
                         {
-                            Title = "Tanılama Raporu Başarılı",
-                            Content = $"Rapor başarıyla üretildi ve Masaüstüne kaydedildi:\n\n{zipPath}",
-                            CloseButtonText = "Tamam",
+                            Title = Helpers.ResourceHelper.GetString("Settings_ExportSuccessTitle"),
+                            Content = string.Format(Helpers.ResourceHelper.GetString("Settings_ExportSuccessContent"), zipPath),
+                            CloseButtonText = Helpers.ResourceHelper.GetString("DialogOk"),
                             XamlRoot = this.XamlRoot
                         };
                         await dialog.ShowAsync();
                     }
                     else
                     {
-                        throw new Exception("Yanıt içerisinde ZipPath parametresi bulunamadı.");
+                        throw new Exception(Helpers.ResourceHelper.GetString("Settings_ExportNoZipPath"));
                     }
                 }
                 else
                 {
-                    throw new Exception("Boş veya hatalı yanıt alındı.");
+                    throw new Exception(Helpers.ResourceHelper.GetString("Settings_ExportEmptyResponse"));
                 }
             }
         }
@@ -200,9 +200,9 @@ public sealed partial class SettingsPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "Hata",
-                Content = $"Rapor üretilirken bir hata oluştu:\n{ex.Message}",
-                CloseButtonText = "Tamam",
+                Title = Helpers.ResourceHelper.GetString("Settings_ExportErrorTitle"),
+                Content = string.Format(Helpers.ResourceHelper.GetString("Settings_ExportErrorContent"), ex.Message),
+                CloseButtonText = Helpers.ResourceHelper.GetString("DialogOk"),
                 XamlRoot = this.XamlRoot
             };
             await dialog.ShowAsync();
@@ -210,7 +210,7 @@ public sealed partial class SettingsPage : Page
         finally
         {
             BtnExportDiagnostics.IsEnabled = true;
-            BtnExportDiagnostics.Content = "ZIP Raporu Üret";
+            BtnExportDiagnostics.Content = Helpers.ResourceHelper.GetString("Settings_ExportBtnDefault");
         }
     }
 }

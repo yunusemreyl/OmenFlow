@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -58,7 +58,7 @@ public sealed partial class PowerLimitsPage : Page
         if (App.IpcClient == null) return;
 
         BtnApplyPowerLimits.IsEnabled = false;
-        BtnApplyPowerLimits.Content = "Uygulanıyor...";
+        BtnApplyPowerLimits.Content = Helpers.ResourceHelper.GetString("PowerLimits_Applying");
 
         int pl1 = (int)SliderCpuPl1.Value;
         int pl2 = (int)SliderCpuPl2.Value;
@@ -75,11 +75,11 @@ public sealed partial class PowerLimitsPage : Page
 
             var dialog = new ContentDialog
             {
-                Title = success ? "Limitler Uygulandı" : "Başarısız",
+                Title = success ? Helpers.ResourceHelper.GetString("PowerLimits_ApplySuccessTitle") : Helpers.ResourceHelper.GetString("PowerLimits_ApplyFailTitle"),
                 Content = success 
-                    ? $"Güç limitleri başarıyla gönderildi:\nCPU PL1: {pl1}W\nCPU PL2: {pl2}W\nGPU TGP: {tgp}W\n\nNot: Donanımınız WMI limit kontrollerini desteklemiyorsa veya kilitliyse bu limitler yoksayılmış olabilir."
-                    : "Güç limitleri worker tarafından reddedildi veya worker ile iletişim kurulamadı.",
-                CloseButtonText = "Tamam",
+                    ? string.Format(Helpers.ResourceHelper.GetString("PowerLimits_ApplySuccessContent"), pl1, pl2, tgp)
+                    : Helpers.ResourceHelper.GetString("PowerLimits_ApplyFailContent"),
+                CloseButtonText = Helpers.ResourceHelper.GetString("DialogOk"),
                 XamlRoot = this.XamlRoot
             };
             await dialog.ShowAsync();
@@ -88,9 +88,9 @@ public sealed partial class PowerLimitsPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "Hata",
-                Content = $"Güç limitleri uygulanırken hata oluştu:\n{ex.Message}",
-                CloseButtonText = "Tamam",
+                Title = Helpers.ResourceHelper.GetString("Settings_ExportErrorTitle"),
+                Content = string.Format(Helpers.ResourceHelper.GetString("PowerLimits_ApplyErrorContent"), ex.Message),
+                CloseButtonText = Helpers.ResourceHelper.GetString("DialogOk"),
                 XamlRoot = this.XamlRoot
             };
             await dialog.ShowAsync();
@@ -98,7 +98,7 @@ public sealed partial class PowerLimitsPage : Page
         finally
         {
             BtnApplyPowerLimits.IsEnabled = true;
-            BtnApplyPowerLimits.Content = "Limitleri Uygula";
+            BtnApplyPowerLimits.Content = Helpers.ResourceHelper.GetString("PowerLimits_ApplyBtnDefault");
         }
     }
 }

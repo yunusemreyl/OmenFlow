@@ -63,6 +63,32 @@ public class SensorReader : IDisposable
         _updateVisitor = new UpdateVisitor();
     }
 
+    private bool IsDiscreteGpuSleeping()
+    {
+        try
+        {
+            using var searcher = new System.Management.ManagementObjectSearcher("SELECT Availability, Name FROM Win32_VideoController");
+            foreach (System.Management.ManagementObject obj in searcher.Get())
+            {
+                string name = obj["Name"]?.ToString() ?? "";
+                // Optimus or Switchable Graphics GPUs
+                if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon RX", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (ushort.TryParse(obj["Availability"]?.ToString(), out ushort availability))
+                    {
+                        // 8 = Off Line, 7 = Power Off, 4 = Warning (sometimes used when asleep)
+                        if (availability == 8 || availability == 7)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+        return false;
+    }
+
     /// <summary>
     /// TÃ¼m LHM donanÄ±mÄ±nÄ± gÃ¼nceller ve metrikleri dÃ¶ndÃ¼rÃ¼r.
     /// Dahili fan RPM'leri 0 Ã§Ã¼nkÃ¼ WMI/EC doÄŸrudan enjekte edilir â€” yine de
@@ -72,6 +98,7 @@ public class SensorReader : IDisposable
     {
         try
         {
+            _updateVisitor.IsDiscreteGpuSleeping = IsDiscreteGpuSleeping();
             _computer.Accept(_updateVisitor);
 
             float cpuTemp = 0f, cpuLoad = 0f, cpuPower = 0f;
@@ -248,9 +275,20 @@ public class SensorReader : IDisposable
 
 public class UpdateVisitor : IVisitor
 {
+    public bool IsDiscreteGpuSleeping { get; set; } = false;
+
     public void VisitComputer(IComputer computer) => computer.Traverse(this);
     public void VisitHardware(IHardware hardware)
     {
+        // Don't wake up sleeping discrete GPUs
+        bool isDiscreteGpu = hardware.HardwareType == HardwareType.GpuNvidia || 
+                             (hardware.HardwareType == HardwareType.GpuAmd && hardware.Name.Contains("RX", StringComparison.OrdinalIgnoreCase));
+                             
+        if (isDiscreteGpu && IsDiscreteGpuSleeping)
+        {
+            return; // Skip Update() so we don't wake it up
+        }
+
         hardware.Update();
         foreach (var sub in hardware.SubHardware) sub.Accept(this);
     }

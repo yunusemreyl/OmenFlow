@@ -233,6 +233,7 @@ class Program
             using var perfModeService    = new PerformanceModeService(biosService, ecService, boardConfig, gpuControlService);
             var powerService             = new PowerService(biosService);
             var presetService            = new PresetService();
+            var cpuTurboService          = new CpuTurboService();
 
             fanCurveService.TelemetryProvider = () => wmiBiosMonitor.Read();
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
@@ -288,8 +289,9 @@ class Program
                 var gpuPowerTask = gpuControlService.GetGpuPowerAsync();
                 var lightingTask = lightingService.GetLightingAsync();
                 var profileTask  = perfModeService.GetCurrentModeAsync();
+                var turboTask    = cpuTurboService.IsTurboEnabledAsync();
 
-                await Task.WhenAll(gpuModeTask, gpuPowerTask, lightingTask, profileTask);
+                await Task.WhenAll(gpuModeTask, gpuPowerTask, lightingTask, profileTask, turboTask);
 
                 telemetry.GpuMode       = gpuModeTask.Result;
                 telemetry.GpuPowerLevel = gpuPowerTask.Result;
@@ -301,6 +303,7 @@ class Program
                 telemetry.BacklightOn = lightingResult.backlightOn;
                 telemetry.ZoneColors  = lightingResult.zoneColors;
                 telemetry.GpuMaxTgp   = gpuControlService.GetGpuMaxPowerLimit();
+                telemetry.CpuTurboEnabled = turboTask.Result;
 
                 return Results.Json(telemetry);
             });
@@ -574,6 +577,13 @@ class Program
                                 if (powerAutoService.IsEnabled) await powerAutoService.ForceApplyCurrentSourceAsync();
                             }
                             return Results.Ok(new { Success = true, IsEnabled = powerAutoService.IsEnabled });
+                        }
+                        case "SetCpuTurbo":
+                        {
+                            bool enabled = root?.ValueKind == JsonValueKind.True;
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetCpuTurbo: {enabled}");
+                            bool success = await cpuTurboService.SetTurboEnabledAsync(enabled);
+                            return Results.Ok(new { Success = success });
                         }
                         case "SetQuietSafety":
                         {

@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -55,7 +55,7 @@ public sealed partial class HomePage : Page
     {
         try
         {
-            string systemModel = "Bilinmeyen Sistem";
+            string systemModel = Helpers.ResourceHelper.GetString("HomePage_UnknownSystem");
             
             using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS"))
             {
@@ -69,7 +69,7 @@ public sealed partial class HomePage : Page
                 }
             }
 
-            BoardNumberText.Text = $"Sistem Modeli: {systemModel}";
+            BoardNumberText.Text = string.Format(Helpers.ResourceHelper.GetString("HomePage_SystemModel"), systemModel);
 
             if (systemModel.IndexOf("Victus", StringComparison.OrdinalIgnoreCase) >= 0)
             {
@@ -91,7 +91,7 @@ public sealed partial class HomePage : Page
         catch (Exception)
         {
             DeviceTitleText.Text = "HP Laptop";
-            BoardNumberText.Text = "Sistem Modeli: Okunamadı";
+            BoardNumberText.Text = Helpers.ResourceHelper.GetString("HomePage_SystemModelError");
         }
     }
 

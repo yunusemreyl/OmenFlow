@@ -23,6 +23,7 @@ public record WorkerTelemetry(
     public GpuMode GpuMode { get; set; } = GpuMode.Hybrid;
     public GpuPowerLevel GpuPowerLevel { get; set; } = GpuPowerLevel.BasePower;
     public KeyboardType KeyboardType { get; set; } = KeyboardType.Unknown;
+    public bool CpuTurboEnabled { get; set; } = true;
     public bool BacklightOn { get; set; } = false;
     public string ZoneColors { get; set; } = ""; // base64 encoded
     public ThermalProfile ActiveProfile { get; set; } = ThermalProfile.Default;
