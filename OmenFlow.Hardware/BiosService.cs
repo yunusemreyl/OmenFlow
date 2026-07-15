@@ -27,7 +27,7 @@ public class BiosService : IBiosService, IDisposable
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
 
-        // 2023+ Omen/Victus cihazlarÄ±n WMI komutlarÄ±nÄ± kilitlemesini engellemek iÃ§in 60 saniyelik Heartbeat
+        // 60-second Heartbeat to prevent 2023+ Omen/Victus devices from locking WMI commands
         _heartbeatTimer = new Timer(
             _ => _ = SendCommandAsync(0x20008, 0x10, new byte[4], 4, CancellationToken.None),
             null,

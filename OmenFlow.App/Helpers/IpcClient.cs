@@ -184,7 +184,33 @@ public class IpcClient
         }
     }
 
-    // â”€â”€ Komut GÃ¶nderme â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    public async Task<List<string>?> GetAutoProfileGamesAsync()
+    {
+        var resultStr = await SendCommandWithResultAsync("GetAutoProfileGames");
+        if (resultStr == null) return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(resultStr);
+            if (doc.RootElement.TryGetProperty("Success", out var suc) && suc.GetBoolean())
+            {
+                if (doc.RootElement.TryGetProperty("Games", out var gamesProp))
+                {
+                    var list = new List<string>();
+                    foreach (var g in gamesProp.EnumerateArray())
+                    {
+                        var s = g.GetString();
+                        if (!string.IsNullOrEmpty(s)) list.Add(s);
+                    }
+                    return list;
+                }
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    // ——— Komut Gönderme ——————————————————————————————————————————
     public async Task<bool> SendCommandAsync(string command, object? value = null)
     {
         try

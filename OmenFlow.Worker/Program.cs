@@ -173,6 +173,12 @@ class Program
 
     static async Task Main(string[] args)
     {
+        if (args.Contains("--omenkey"))
+        {
+            OmenKeyService.HandleOmenKeyLaunch();
+            return;
+        }
+
         OmenFlow.Core.Services.Logger.LogInfo("OmenFlow Worker Process (HTTP Minimal API) starting...");
         try
         {
@@ -239,7 +245,7 @@ class Program
             fanCurveService.SetThermalSafetyEnabled(s_thermalSafetyEnabled);
             _ = fanCurveService.StartAsync(CancellationToken.None);
 
-            // â”€â”€ New Services (Faz 4-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ─── New Services (Phase 4-6) ──────────────────────────────────
             var fanVerifyService  = new FanVerificationService(fanControlService, boardConfig);
             var fanCalibService   = new FanCalibrationService(boardConfig);
             var powerLimitService = new PowerLimitService(biosService, ecService, boardConfig);
@@ -247,6 +253,13 @@ class Program
             // Power Automation (AC/Battery auto profile switch)
             using var powerAutoService = new PowerAutomationService(perfModeService);
             _ = powerAutoService.StartAsync(CancellationToken.None);
+
+            // Auto Game/App Profiles
+            using var autoProfileService = new AutoProfileService(perfModeService);
+            _ = autoProfileService.StartAsync(CancellationToken.None);
+
+            // Omen Key Intercept Service
+            var omenKeyService = new OmenKeyService();
 
             // Quiet Safety Monitor
             using var quietSafety = new QuietSafetyMonitor(perfModeService);
@@ -280,9 +293,9 @@ class Program
 
             app.MapGet("/api/telemetry", async () =>
             {
-                // Fan RPM'i LHM Ã¶nbelleÄŸinden al (GetFanRpmAsync her istekte
-                // birden fazla engelleyici WMI Ã§aÄŸrÄ±sÄ± yapÄ±yordu â€” performans sorunu).
-                // WmiBiosMonitor arka planda 2sn'de bir LHM'yi gÃ¼ncelliyor.
+                // Fetch Fan RPM from LHM cache (GetFanRpmAsync was making
+                // multiple blocking WMI calls per request — performance issue).
+                // WmiBiosMonitor updates LHM in the background every 2s.
                 var telemetry = wmiBiosMonitor.Read();
 
                 var gpuModeTask  = gpuControlService.GetGpuModeAsync();
@@ -314,7 +327,7 @@ class Program
                 string cmd = req.Command;
                 var root = req.Value;
                 string payloadStr = root.HasValue ? root.Value.GetRawText() : "null";
-                OmenFlow.Core.Services.Logger.LogInfo($"[Command API] <-- Alinan Komut: {cmd} - Payload: {payloadStr}");
+                OmenFlow.Core.Services.Logger.LogInfo($"[Command API] <-- Received Command: {cmd} - Payload: {payloadStr}");
 
                 try
                 {
@@ -421,7 +434,7 @@ class Program
                                 {
                                     try
                                     {
-                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âš¡ Starting profile switch fan kick to 55%...");
+                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] ⚡ Starting profile switch fan kick to 55%...");
                                         fanCurveService.SetTemporaryOverride(true);
                                         await fanControlService.SetFanLevelAsync(55);
                                         await Task.Delay(3000);
@@ -439,7 +452,7 @@ class Program
                                         {
                                             fanCurveService.TriggerImmediateApply();
                                         }
-                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] âœ“ Profile switch fan kick complete.");
+                                        OmenFlow.Core.Services.Logger.LogInfo("[PerformanceMode] ✓ Profile switch fan kick complete.");
                                     }
                                     catch (Exception ex)
                                     {
@@ -591,6 +604,41 @@ class Program
                             OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetQuietSafety: {enabled}");
                             quietSafety.IsEnabled = enabled;
                             return Results.Ok(new { Success = true, IsEnabled = enabled });
+                        }
+                        case "SetOmenKeyIntercept":
+                        {
+                            bool enabled = root?.ValueKind == JsonValueKind.True;
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] SetOmenKeyIntercept: {enabled}");
+                            await omenKeyService.SetInterceptEnabledAsync(enabled);
+                            return Results.Ok(new { Success = true });
+                        }
+                        case "SetAutoProfileConfig":
+                        {
+                            OmenFlow.Core.Services.Logger.LogInfo("[Command] SetAutoProfileConfig");
+                            if (root?.ValueKind == JsonValueKind.Object)
+                            {
+                                if (root.Value.TryGetProperty("IsEnabled", out var en)) autoProfileService.IsEnabled = en.GetBoolean();
+                                autoProfileService.SaveConfig();
+                            }
+                            return Results.Ok(new { Success = true });
+                        }
+                        case "AutoProfileAddGame":
+                        {
+                            string game = root?.ValueKind == JsonValueKind.String ? root.Value.GetString() ?? "" : "";
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] AutoProfileAddGame: {game}");
+                            if (!string.IsNullOrEmpty(game)) autoProfileService.AddGame(game);
+                            return Results.Ok(new { Success = true, Games = autoProfileService.GetGames() });
+                        }
+                        case "AutoProfileRemoveGame":
+                        {
+                            string game = root?.ValueKind == JsonValueKind.String ? root.Value.GetString() ?? "" : "";
+                            OmenFlow.Core.Services.Logger.LogInfo($"[Command] AutoProfileRemoveGame: {game}");
+                            if (!string.IsNullOrEmpty(game)) autoProfileService.RemoveGame(game);
+                            return Results.Ok(new { Success = true, Games = autoProfileService.GetGames() });
+                        }
+                        case "GetAutoProfileGames":
+                        {
+                            return Results.Ok(new { Success = true, Games = autoProfileService.GetGames() });
                         }
                         default:
                             OmenFlow.Core.Services.Logger.LogInfo($"[Command] Unknown command: {cmd}");

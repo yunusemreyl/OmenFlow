@@ -1,40 +1,40 @@
 # OmenFlow
 
-**OmenFlow**, HP Omen ve Victus dizüstü bilgisayarlar (özellikle 8BBE anakart serisi ve benzeri modeller) için tasarlanmış, doğrudan donanım seviyesinde (Embedded Controller - EC ve WMI BIOS metotları üzerinden) çalışan; hafif, modern ve güvenilir bir donanım yönetim ve aydınlatma kontrol uygulamasıdır.
+**OmenFlow** is a lightweight, modern, and reliable hardware management and lighting control application designed for HP Omen and Victus laptops (specifically the 8BBE motherboard series and similar models). It operates directly at the hardware level (via Embedded Controller - EC and WMI BIOS methods).
 
 > [!WARNING]
-> **Proje Durumu: Erken Geliştirme Aşaması (Work in Progress)**
-> Bu proje donanım katmanı, servis mimarisi ve temel işlevler açısından tam işlevsel olmakla birlikte aktif bir geliştirme aşamasındadır.
+> **Project Status: Early Development Phase (Work in Progress)**
+> This project is fully functional in terms of hardware layer, service architecture, and core features, but it is under active development.
 
 ---
 
-## 📸 Ekran Görüntüleri
+## 📸 Screenshots
 
-WinUI 3 ile tasarlanan modern kullanıcı arayüzüne ait ekran görüntüleri:
+Screenshots of the modern user interface designed with WinUI 3:
 
-### 1. Performans ve Fan Kontrolü
-![Performans Sayfası](screenshots/performance.png)
+### 1. Performance and Fan Control
+![Performance Page](screenshots/performance.png)
 
-### 2. GPU MUX Grafik Değiştirici
-![Grafik Değiştirici](screenshots/mux.png)
+### 2. GPU MUX Graphics Switcher
+![Graphics Switcher](screenshots/mux.png)
 
-### 3. Klavye Aydınlatması & RGB Efektleri
-![RGB Sayfası](screenshots/keyboard.png)
+### 3. Keyboard Lighting & RGB Effects
+![RGB Page](screenshots/keyboard.png)
 
-### 4. Ek Güç ve Sistem Ayarları
-![Ayarlar Sayfası](screenshots/settings.png)
+### 4. Additional Power and System Settings
+![Settings Page](screenshots/settings.png)
 
 ---
 
-## 🌐 İletişim Mimarisi (Communication Architecture)
+## 🌐 Communication Architecture
 
-OmenFlow, güvenliği ve kararlılığı artırmak adına kullanıcı arayüzü (Arayüz Katmanı) ile donanım kontrolünü (Çekirdek Katman) iki farklı işleme (process) böler:
+To improve security and stability, OmenFlow separates the user interface (Client Layer) and hardware control (Core Layer) into two different processes:
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │               OmenFlow App (WinUI 3 UI)                │
-│    (HomePage, PerformancePage, LightingPage, vb.)     │
-│                     (Standart Yetki)                   │
+│    (HomePage, PerformancePage, LightingPage, etc.)     │
+│                   (Standard Privileges)                │
 └──────────┬──────────────────────────────────▲──────────┘
            │                                  │
   [HTTP POST: /api/command]           [HTTP GET: /api/telemetry]
@@ -43,271 +43,271 @@ OmenFlow, güvenliği ve kararlılığı artırmak adına kullanıcı arayüzü 
            ▼                                  │
 ┌────────────────────────────────────────────────────────┐
 │             OmenFlow.Worker (Background)               │
-│         (HTTP Server, SensorReader, Servisler)         │
-│                     (Yönetici Yetkisi)                 │
+│         (HTTP Server, SensorReader, Services)          │
+│                   (Administrator Privileges)           │
 └──────────┬──────────────────────────────────▲──────────┘
            │                                  │
   [WMI 0x20008 / EC 0x62-0x66]        [WMI 0x2D / EC 0xD0-0xD3]
            │                                  │
            ▼                                  │
 ┌────────────────────────────────────────────────────────┐
-│           HP Donanım Katmanı (BIOS & EC)               │
+│           HP Hardware Layer (BIOS & EC)                │
 └────────────────────────────────────────────────────────┘
 ```
 
-### 1. Client-Server Ayrımı
-* **`OmenFlow.App` (İstemci)**: Kullanıcının gördüğü WinUI 3 arayüzüdür. Windows güvenlik ilkeleri gereği **standart kullanıcı yetkileriyle** çalıştırılır. Donanıma doğrudan erişim hakkı yoktur.
-* **`OmenFlow.Worker` (Sunucu)**: Arka planda çalışan bir Windows minimal konsol/servis uygulamasıdır. Donanımsal portlara ve WMI BIOS sınıflarına erişebilmesi için **Yönetici (Elevated - Administrator)** yetkileriyle koşturulur.
+### 1. Client-Server Separation
+* **`OmenFlow.App` (Client)**: The WinUI 3 interface seen by the user. Due to Windows security policies, it runs with **standard user privileges**. It does not have direct access to the hardware.
+* **`OmenFlow.Worker` (Server)**: A Windows minimal console/service application running in the background. It is executed with **Administrator (Elevated)** privileges to access hardware ports and WMI BIOS classes.
 
-### 2. Yerel HTTP API İletişimi
-İstemci ve sunucu arasındaki tüm haberleşme, yerel döngü (loopback) üzerinde **`http://localhost:50312`** portu üzerinden gerçekleşir.
-* **Telemetri Hattı (GET `/api/telemetry`)**: Arayüzdeki [IpcClient.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.App/Helpers/IpcClient.cs), arka plan servisini her **2 saniyede bir** sorgulayarak sıcaklıklar, RPM değerleri, anlık güç planı ve RGB durumlarını içeren tek bir JSON nesnesi alır.
-  * *Adaptif Geri Çekilme (Adaptive Polling)*: Sunucuya ulaşılamadığında sorgulama aralığı kademeli olarak artırılarak (5s -> 10s -> 20s -> maksimum 30s) gereksiz CPU yükü engellenir.
-* **Komut Hattı (POST `/api/command`)**: Arayüzdeki eylemler (fan hızı ayarlama, renk değiştirme vb.) sunucuya JSON gövdesiyle gönderilir (örn: `{"Command": "SetBatteryCare", "Value": true}`).
+### 2. Local HTTP API Communication
+All communication between the client and server takes place over the local loopback on port **`http://localhost:50312`**.
+* **Telemetry Pipeline (GET `/api/telemetry`)**: [IpcClient.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.App/Helpers/IpcClient.cs) in the interface queries the background service every **2 seconds** to retrieve a single JSON object containing temperatures, RPM values, current power plan, and RGB states.
+  * *Adaptive Polling*: If the server is unreachable, the polling interval is gradually increased (5s -> 10s -> 20s -> max 30s) to prevent unnecessary CPU load.
+* **Command Pipeline (POST `/api/command`)**: UI actions (setting fan speed, changing colors, etc.) are sent to the server with a JSON body (e.g., `{"Command": "SetBatteryCare", "Value": true}`).
 
-### 3. Otomatik Servis Tetikleme
-* İstemci açıldığında işletim sisteminde `OmenFlow.Worker` işleminin çalışıp çalışmadığını kontrol eder.
-* Süreç aktif değilse, `runas` (yönetici olarak çalıştır) fiili çağrılarak Windows UAC onay penceresi tetiklenir ve `OmenFlow.Worker.exe` arka planda gizli bir pencerede başlatılır.
+### 3. Automatic Service Triggering
+* When the client opens, it checks if the `OmenFlow.Worker` process is running in the OS.
+* If the process is not active, the `runas` (run as administrator) verb is called, triggering the Windows UAC prompt, and `OmenFlow.Worker.exe` is started in a hidden background window.
 
 ---
 
-## 📊 Veri Kaynakları: Neyi Nereden Alıyoruz?
+## 📊 Data Sources: What do we get and from where?
 
-| Telemetri / Veri Tipi | Birincil Kaynak | İkincil / Yedek Kaynak | İşleme / Dönüştürme Yöntemi |
+| Telemetry / Data Type | Primary Source | Secondary / Fallback Source | Processing / Conversion Method |
 | :--- | :--- | :--- | :--- |
-| **CPU / GPU Sıcaklığı** | WMI CMD `0x23` | LHM (`SensorReader`) | WMI üzerinden alınan 1-byte veri doğrudan Santigrat derece olarak okunur. |
-| **Fan RPM (Hız Dönüşü)**| WMI CMD `0x38` | EC Registers (`0xD0-0xD3`) | WMI `0x38` yoksa EC `0xD0-0xD3` portlarından 16-bitlik veri birleştirilir: `(HighByte << 8) \| LowByte`. |
-| **Fan LUT Kademe Oranı**| WMI CMD `0x2D` | WMI CMD `0x37` | Victus gibi cihazlarda gerçek RPM okunamadığında, 0-55 arası LUT değeri `(Kademe * MaxRPM) / 55` formülü ile RPM'e simüle edilir. |
-| **CPU / GPU Yükü & Güç** | LibreHardwareMonitor | Yok | [SensorReader.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Worker/SensorReader.cs) aracılığıyla LHM donanım ağacı taranarak işlemci çekirdek yükü ve Package Power (W) değerleri anlık çekilir. |
-| **GPU MUX Modu** | Windows Registry | WMI `Win32_VideoController` | Registry'deki `InternalMuxState` değeri okunur (`2` = Discrete, `1` = Hybrid). Alternatif olarak dahili grafik kartının (iGPU) sistemdeki aktifliği kontrol edilir. |
-| **GPU Güç Sınırları** | WMI CMD `0x21` | `nvidia-smi` aracı | WMI `0x21` ile customTgp, PPAB ve Dynamic Boost yavaşlama sıcaklığı (`peakTemp`) bilgileri okunur. |
-| **Klavye Aydınlatması** | WMI CMD `0x20009` | WMI CMD `0x20008` (0x2B) | Renk tablosu `0x20009/0x02` üzerinden 128 baytlık bellek alanından (25. - 36. byte aralığı) 4-Bölge RGB renk kodları olarak ayrıştırılır. |
-| **Batarya Koruma** | WMI CMD `0x24` | Yok | Pil şarj sınırı modu (%80 limiti) BIOS'tan 1-byte bayrak olarak sorgulanır. |
+| **CPU / GPU Temperature** | WMI CMD `0x23` | LHM (`SensorReader`) | The 1-byte data from WMI is read directly as Celsius. |
+| **Fan RPM (Speed)**| WMI CMD `0x38` | EC Registers (`0xD0-0xD3`) | If WMI `0x38` is missing, 16-bit data is constructed from EC `0xD0-0xD3` ports: `(HighByte << 8) \| LowByte`. |
+| **Fan LUT Step Ratio**| WMI CMD `0x2D` | WMI CMD `0x37` | When true RPM cannot be read on devices like Victus, the 0-55 LUT value is simulated to RPM using the formula `(Step * MaxRPM) / 55`. |
+| **CPU / GPU Load & Power** | LibreHardwareMonitor | None | Using [SensorReader.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Worker/SensorReader.cs), the LHM hardware tree is scanned to instantly fetch processor core load and Package Power (W) values. |
+| **GPU MUX Mode** | Windows Registry | WMI `Win32_VideoController` | The `InternalMuxState` value in the Registry is read (`2` = Discrete, `1` = Hybrid). Alternatively, the activity of the internal graphics card (iGPU) is checked. |
+| **GPU Power Limits** | WMI CMD `0x21` | `nvidia-smi` tool | WMI `0x21` reads `customTgp`, `PPAB`, and Dynamic Boost thermal throttling temperature (`peakTemp`). |
+| **Keyboard Lighting** | WMI CMD `0x20009` | WMI CMD `0x20008` (0x2B) | Extracted as 4-Zone RGB color codes from the 128-byte memory space (bytes 25-36) via the color table `0x20009/0x02`. |
+| **Battery Care** | WMI CMD `0x24` | None | The battery charge limit mode (80% limit) is queried as a 1-byte flag from the BIOS. |
 
 ---
 
-## 🛡️ Güvenlik ve Yardımcı Arka Plan Servisleri
+## 🛡️ Security and Background Auxiliary Services
 
-OmenFlow, kararsızlığı önlemek ve donanımı korumak amacıyla arka planda çalışan zengin yardımcı servislere sahiptir:
+OmenFlow features rich background auxiliary services to prevent instability and protect the hardware:
 
-### 1. Sessiz Mod Termal Koruyucu ([QuietSafetyMonitor.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/QuietSafetyMonitor.cs))
-* **Sorun**: Sessiz modda (Quiet) BIOS, fanları ve CPU gücünü aşırı derecede kısar. Ağır yük altında (kod derleme, video render) işlemci sıcaklığı hızla 95°C üzerine fırlayabilir.
-* **Çözüm**: Isı izleme servisi Quiet moddayken CPU sıcaklığını sürekli izler. Sıcaklık **93.0°C** eşiğini geçer ve bu eşikte kesintisiz **8 saniye** boyunca kalırsa, profil otomatik olarak **Default (Dengeli)** moduna yükseltilir.
-* **Güvenlik**: Güvenliğe geçiş yapıldığında profil otomatik olarak sessiz moda geri dönmez; kullanıcının bunu manuel olarak yapması gerekir. İki koruma tetiklemesi arasında **5 dakikalık** soğuma süresi (cooldown) uygulanır.
+### 1. Quiet Mode Thermal Protector ([QuietSafetyMonitor.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/QuietSafetyMonitor.cs))
+* **Issue**: In Quiet mode, the BIOS severely throttles the fans and CPU power. Under heavy load (code compilation, video rendering), the CPU temperature can rapidly spike above 95°C.
+* **Solution**: The thermal monitoring service continuously tracks CPU temperature while in Quiet mode. If the temperature exceeds the **93.0°C** threshold and remains there continuously for **8 seconds**, the profile is automatically upgraded to **Default (Balanced)** mode.
+* **Safety**: When safety is triggered, the profile does not automatically return to quiet mode; the user must do so manually. A **5-minute** cooldown period is enforced between two protection triggers.
 
-### 2. Fan Hızı Doğrulama Servisi ([FanVerificationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/FanVerificationService.cs))
-* **İşlev**: Donanıma gönderilen fan komutlarının fiziksel olarak uygulanıp uygulanmadığını kontrol eder.
-* **Çalışma Prensibi**: Bir fan hızı veya profili ayarlandıktan **1.8 saniye** sonra (profil geçişlerinde **3.6 saniye**) donanım fan RPM'i geri okunur.
-* **Karşılaştırma**: Okunan RPM değeri, hedeflenen fan yüzdesine tekabül eden beklenen RPM değeri ile karşılaştırılır (tolerans aralığı ±%35 olarak esnek tutulmuştur).
-* **Blokaj Tespiti**: Eğer hedef hız %0'dan büyük olmasına rağmen ardışık **3 doğrulama** boyunca fanlardan 0 RPM dönüyorsa, günlük dosyasına "Stuck Fan/EC Comm Issue" (Sıkışmış Fan veya EC İletişim Hatası) uyarısı basılır.
+### 2. Fan Speed Verification Service ([FanVerificationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/FanVerificationService.cs))
+* **Function**: Checks whether fan commands sent to the hardware are physically applied.
+* **Mechanism**: **1.8 seconds** after a fan speed or profile is set (or **3.6 seconds** for profile transitions), the hardware fan RPM is read back.
+* **Comparison**: The read RPM value is compared against the expected RPM corresponding to the target fan percentage (with a flexible tolerance range of ±35%).
+* **Blockage Detection**: If the target speed is >0% but the fans return 0 RPM for **3 consecutive verifications**, a "Stuck Fan/EC Comm Issue" warning is logged.
 
-### 3. Dinamik Kalibrasyon Servisi ([FanCalibrationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/FanCalibrationService.cs))
-* **İşlev**: Farklı HP cihaz ailelerinin (Omen V1, Omen V2, Victus, Victus S vb.) karakteristik fan hız/RPM davranışlarını eşleştirir.
-* **Öğrenme Mekanizması**: Cihaz yüksek fan hızlarında çalışırken (örn. %90 ve üzeri) anlık okunan en yüksek RPM değerlerini kaydeder.
-* **Kayıt**: Öğrenilen gerçek maksimum RPM sınırları ve kalibrasyon noktaları yerel olarak `C:\ProgramData\OmenFlow\fan_calibration.json` dosyasında saklanır.
+### 3. Dynamic Calibration Service ([FanCalibrationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/FanCalibrationService.cs))
+* **Function**: Matches the characteristic fan speed/RPM behaviors of different HP device families (Omen V1, Omen V2, Victus, Victus S, etc.).
+* **Learning Mechanism**: Records the highest instantaneously read RPM values when the device is running at high fan speeds (e.g., 90% and above).
+* **Storage**: Learned true max RPM limits and calibration points are stored locally in `C:\ProgramData\OmenFlow\fan_calibration.json`.
 
-### 4. Güç Kaynağı Otomasyonu ([PowerAutomationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/PowerAutomationService.cs))
-* **İşlev**: Bilgisayarın prizden çıkarılması veya prize takılması durumlarında güç profilini otomatik olarak yönetir.
-* **Kural Seti**: Varsayılan olarak AC (Şarj) bağlıyken **Performance**, Bataryada çalışırken ise **Quiet** profili uygulanır. Ayarlar ekranından özelleştirilebilir ve `C:\ProgramData\OmenFlow\power_automation.json` dosyasına kaydedilir.
+### 4. Power Source Automation ([PowerAutomationService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/PowerAutomationService.cs))
+* **Function**: Automatically manages the power profile when the computer is unplugged or plugged in.
+* **Rule Set**: By default, **Performance** is applied when AC (Charger) is connected, and **Quiet** profile when running on Battery. It can be customized from the Settings screen and is saved to `C:\ProgramData\OmenFlow\power_automation.json`.
 
-### 5. Uyku ve Uyanma Yönetimi ([SuspendRecoveryService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/SuspendRecoveryService.cs))
-* **Sorun**: Bilgisayar uyku moduna (Suspend) geçerken fan keep-alive komutlarının gönderilmeye devam etmesi fanların yüksek hızda takılı kalmasına veya cihazın uykudan uyanamamasına (standby arızası) yol açabilir.
-* **Askıya Alma**: Uyku sinyali alındığında, fan eğrisi motoru tamamen durdurulur ve keep-alive sayaçları iptal edilir. Aktif durumun (fan modu, profil, aydınlatma) bir anlık görüntüsü (snapshot) belleğe alınır.
-* **Geri Yükleme**: Sistem uykudan uyandığında (Resume) **3 saniye** beklenerek BIOS/ACPI katmanının stabil hale gelmesi sağlanır. Ardından uykudan önceki son profil, fan eğrisi ve RGB ışıklandırma değerleri donanıma sırasıyla güvenle yeniden yazılır.
+### 5. Suspend and Resume Management ([SuspendRecoveryService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/SuspendRecoveryService.cs))
+* **Issue**: Continuing to send fan keep-alive commands while the computer goes into Suspend mode can cause fans to get stuck at high speeds or prevent the device from waking up (standby failure).
+* **Suspend**: When a sleep signal is received, the fan curve engine is completely stopped and keep-alive timers are canceled. A snapshot of the active state (fan mode, profile, lighting) is cached in memory.
+* **Resume**: When the system wakes up (Resume), it waits for **3 seconds** to allow the BIOS/ACPI layer to stabilize. Then, the last profile, fan curve, and RGB lighting values from before sleep are safely rewritten to the hardware in sequence.
 
-### 6. Tanı ve Teşhis Dışa Aktarımı ([DiagnosticsExportService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/DiagnosticsExportService.cs))
-* **İşlev**: Hata bildirimi veya inceleme amacıyla sistemin tüm donanımsal register ve geçmiş kaydını tek bir sıkıştırılmış dosya haline getirir.
-* **Kayıt Konumu**: Dosya kullanıcının masaüstüne `OmenFlow_Diagnostics_yyyy-MM-dd_HH-mm-ss.zip` adıyla kaydedilir.
-* **Paket İçeriği**:
-  * `diagnostics.txt`: Genel sistem özeti, sıcaklıklar, RPM'ler ve etkin profiller.
-  * `fan_command_history.txt`: Son 80 fan komutunun zamanı, hedef değeri ve başarı durumu.
-  * `fan_calibration.txt`: Kalibrasyon geçmişi ve gözlemlenen maksimum RPM sınırları.
-  * `ec_snapshot.txt`: Kritik Embedded Controller register adreslerinin anlık değerleri (`0x95`, `0xCE`, `0x34`, `0x35`, `0xD0-D3`, `0x80`, `0xA0`).
-  * `event_log.txt`: Son 500 satırlık işlem günlüğü.
+### 6. Diagnostics Export ([DiagnosticsExportService.cs](file:///c:/Users/yeyil/Documents/GitHub/OmenFlow/OmenFlow.Hardware/DiagnosticsExportService.cs))
+* **Function**: Bundles all hardware registers and history logs of the system into a single compressed file for bug reporting or investigation.
+* **Save Location**: The file is saved to the user's desktop as `OmenFlow_Diagnostics_yyyy-MM-dd_HH-mm-ss.zip`.
+* **Package Contents**:
+  * `diagnostics.txt`: General system summary, temperatures, RPMs, and active profiles.
+  * `fan_command_history.txt`: The time, target value, and success status of the last 80 fan commands.
+  * `fan_calibration.txt`: Calibration history and observed max RPM limits.
+  * `ec_snapshot.txt`: Instant values of critical Embedded Controller register addresses (`0x95`, `0xCE`, `0x34`, `0x35`, `0xD0-D3`, `0x80`, `0xA0`).
+  * `event_log.txt`: The last 500 lines of the transaction log.
 
 ---
 
-## ⚙️ WMI & EC Komut Referansı (Detaylı Katalog)
+## ⚙️ WMI & EC Command Reference (Detailed Catalog)
 
-Aşağıda OmenFlow tarafındaki donanım haberleşmesini yöneten alt komutlar parametrik yapılarıyla birlikte açıklanmıştır.
+Below are the sub-commands that manage hardware communication on the OmenFlow side, along with their parametric structures.
 
-### 1. Donanım Denetim Komutları (WMI Kategori: `0x20008`)
+### 1. Hardware Control Commands (WMI Category: `0x20008`)
 
-Tüm istekler `root\WMI` altındaki `hpqBDataIn` sınıfının `hpqBIntM` metoduna gönderilir. Girdi nesnesi properties: `Sign` (her zaman `[0x53, 0x45, 0x43, 0x55]`), `Command` (`0x20008`), `CommandType` (Aşağıdaki Sub-CMD değerleri), `hpqBData` (Input payload) ve `Size` (Input payload boyutu).
+All requests are sent to the `hpqBIntM` method of the `hpqBDataIn` class under `root\WMI`. Input object properties: `Sign` (always `[0x53, 0x45, 0x43, 0x55]`), `Command` (`0x20008`), `CommandType` (Sub-CMD values below), `hpqBData` (Input payload), and `Size` (Input payload size).
 
 #### 🔴 `0x10` (Heartbeat / Wake-Up)
-* **Payload**: `[0x00, 0x00, 0x00, 0x00]` (4-byte sıfır)
-* **OutSize**: 4 Byte
-* **Görevi**: BIOS uykudayken WMI portunu dinlemeye başlaması için dürtükler. Ayrıca fan manuel kontroldeyken her 5 saniyede bir gönderilerek BIOS'un otomatik fan kontrolünü zorla geri almasını (override) engeller.
+* **Payload**: `[0x00, 0x00, 0x00, 0x00]` (4-byte zero)
+* **OutSize**: 4 Bytes
+* **Task**: Pokes the BIOS to start listening to the WMI port while it's sleeping. It's also sent every 5 seconds while the fan is under manual control to prevent the BIOS from forcibly overriding the automatic fan control.
 
 #### 🔴 `0x1A` (Thermal Policy Switch)
 * **Payload**: `[0xFF, ModeByte, 0x00, 0x00]`
-* **OutSize**: 0 Byte
-* **Görevi**: BIOS düzeyinde donanım güç sınırlarını (TDP) ve fan eşiklerini değiştirir.
-  * `ModeByte = 0x30` (48) -> Default (Dengeli)
-  * `ModeByte = 0x31` (49) -> Performance (Yüksek Güç Limitleri)
-  * `ModeByte = 0x50` (80) -> Quiet (Sessiz / Düşük TDP limitleri)
+* **OutSize**: 0 Bytes
+* **Task**: Changes hardware power limits (TDP) and fan thresholds at the BIOS level.
+  * `ModeByte = 0x30` (48) -> Default (Balanced)
+  * `ModeByte = 0x31` (49) -> Performance (High Power Limits)
+  * `ModeByte = 0x50` (80) -> Quiet (Low TDP limits)
 
 #### 🔴 `0x21` (Get GPU Power State)
 * **Payload**: `[0x00, 0x00, 0x00, 0x00]` (4-byte)
-* **OutSize**: 4 Byte
-* **Görevi**: GPU Dynamic Boost ve TGP durumunu okur.
-  * Gelen tamponun `data[0]` değeri `customTgp` (0 veya 1), `data[1]` değeri `PPAB` (0 veya 1), `data[3]` değeri ekran kartı termal yavaşlama eşik sıcaklığıdır (`peakTemp`).
+* **OutSize**: 4 Bytes
+* **Task**: Reads the GPU Dynamic Boost and TGP status.
+  * The returned buffer's `data[0]` value is `customTgp` (0 or 1), `data[1]` is `PPAB` (0 or 1), and `data[3]` is the graphics card thermal throttling threshold temperature (`peakTemp`).
 
 #### 🔴 `0x22` (Set GPU Power State)
 * **Payload**: `[CustomTgp, Ppab, 0x01, PeakTemp]`
-* **OutSize**: 0 Byte
-* **Görevi**: NVIDIA Dynamic Boost TGP ek sınırlarını yönetir.
-  * Base Power için `CustomTgp=0, Ppab=0`, Extra Power için `CustomTgp=1, Ppab=0`, Max Power (maksimum boost) için `CustomTgp=1, Ppab=1` gönderilir. `PeakTemp` değeri yazılırken donanım koruması adına öncelikle `0x21` ile okunan orijinal değer korunarak aynen iletilir (asla sıfır yazılmaz).
+* **OutSize**: 0 Bytes
+* **Task**: Manages NVIDIA Dynamic Boost TGP extra limits.
+  * Send `CustomTgp=0, Ppab=0` for Base Power, `CustomTgp=1, Ppab=0` for Extra Power, and `CustomTgp=1, Ppab=1` for Max Power (maximum boost). When writing `PeakTemp`, the original value read with `0x21` must be preserved and forwarded exactly (never zero) for hardware protection.
 
 #### 🔴 `0x23` (Get Temperature Sensors)
 * **Payload**: `[SensorID, 0x00, 0x00, 0x00]`
-* **OutSize**: 4 Byte
-* **Görevi**: Anakart üzerindeki fiziksel ısı sensörlerini okur.
-  * `SensorID = 0x01` -> CPU Sıcaklığı. Çıktı `OutData[0]` değerindedir.
-  * `SensorID = 0x02` -> GPU Sıcaklığı. Çıktı `OutData[0]` değerindedir.
+* **OutSize**: 4 Bytes
+* **Task**: Reads the physical temperature sensors on the motherboard.
+  * `SensorID = 0x01` -> CPU Temperature. Output is in `OutData[0]`.
+  * `SensorID = 0x02` -> GPU Temperature. Output is in `OutData[0]`.
 
 #### 🔴 `0x24` (Battery Care Mode)
 * **Payload**: `[ModeByte, 0x00, 0x00, 0x00]`
-* **OutSize**: 4 Byte (Okurken) / 0 Byte (Yazarken)
-* **Görevi**: Bataryanın %80 şarj limit korumasını açar veya kapatır.
-  * `ModeByte = 0x01` -> Şarjı %80'de keserek pil ömrünü korur.
-  * `ModeByte = 0x00` -> Pili %100'e kadar şarj eder.
+* **OutSize**: 4 Bytes (When reading) / 0 Bytes (When writing)
+* **Task**: Toggles the battery's 80% charge limit protection.
+  * `ModeByte = 0x01` -> Cuts off charge at 80% to preserve battery life.
+  * `ModeByte = 0x00` -> Charges the battery up to 100%.
 
 #### 🔴 `0x27` (Set Max Fan Command)
 * **Payload**: `[EnabledByte, 0x00, 0x00, 0x00]`
-* **OutSize**: 0 Byte
-* **Görevi**: Fanları maksimum hıza kilitler.
-  * `EnabledByte = 0x01` -> Fanlar %100 duty seviyesine kilitlenir.
-  * `EnabledByte = 0x00` -> Kilit açılır ve fan kontrolü tekrar WMI profil kurallarına bırakılır.
+* **OutSize**: 0 Bytes
+* **Task**: Locks the fans to maximum speed.
+  * `EnabledByte = 0x01` -> Fans are locked to 100% duty cycle.
+  * `EnabledByte = 0x00` -> Lock is released and fan control is handed back to WMI profile rules.
 
 #### 🔴 `0x29` (Set CPU Power Limits)
 * **Payload**: `[PL1_Watt, PL2_Watt, 0x00, 0x00]`
-* **OutSize**: 0 Byte
-* **Görevi**: İşlemcinin sürekli güç limitini (PL1) ve kısa süreli turbo güç limitini (PL2) doğrudan Watt birimiyle ayarlar (Örn: 45W / 90W limitleri için `[45, 90, 0, 0]`).
+* **OutSize**: 0 Bytes
+* **Task**: Directly sets the processor's sustained power limit (PL1) and short-term turbo power limit (PL2) in Watts (e.g., `[45, 90, 0, 0]` for 45W / 90W limits).
 
 #### 🔴 `0x2B` (Get Keyboard Feature Type)
 * **Payload**: `[0x00, 0x00, 0x00, 0x00]`
-* **OutSize**: 4 Byte
-* **Görevi**: Cihazdaki fiziksel klavye backlight yeteneğini sorgular.
-  * Dönüş değeri `OutData[0] == 0x04` ise 4 Bölgeli RGB klavye, `0x05` ise Per-Key RGB, diğer değerlerde ise Standart 1-Bölge aydınlatma olarak tanımlanır.
+* **OutSize**: 4 Bytes
+* **Task**: Queries the physical keyboard backlight capability on the device.
+  * If the return value `OutData[0] == 0x04` it's a 4-Zone RGB keyboard, if `0x05` it's Per-Key RGB, other values define Standard 1-Zone lighting.
 
 #### 🔴 `0x2D` / `0x37` (Get Fan Level LUT V1 / V2)
 * **Payload**: `[0x00, 0x00, 0x00, 0x00]`
-* **OutSize**: 128 Byte
-* **Görevi**: Fanların BIOS tarafından belirlenen anlık çalışma kademe indeksini döner. V1/Victus modellerinde 0-55 aralığındadır. V2 modellerinde ise 0-100 aralığındadır.
-  * `OutData[0]` = CPU fan seviyesi, `OutData[1]` = GPU fan seviyesi.
+* **OutSize**: 128 Bytes
+* **Task**: Returns the instant operating step index determined by the BIOS for the fans. It's in the 0-55 range for V1/Victus models, and 0-100 range for V2 models.
+  * `OutData[0]` = CPU fan level, `OutData[1]` = GPU fan level.
 
 #### 🔴 `0x2E` (Set Fan Level LUT)
 * **Payload**: `[CpuLevel, GpuLevel, 0x00, 0x00]`
-* **OutSize**: 0 Byte
-* **Görevi**: Fanların hızını elle belirler. Victus/V1 cihazlarında `CpuLevel` ve `GpuLevel` parametreleri maksimum **55** olacak şekilde sınırlandırılır.
+* **OutSize**: 0 Bytes
+* **Task**: Manually sets the fan speed. On Victus/V1 devices, the `CpuLevel` and `GpuLevel` parameters are capped at a maximum of **55**.
 
 #### 🔴 `0x38` (Get Fan RPM - V2)
 * **Payload**: `[0x00, 0x00, 0x00, 0x00]`
-* **OutSize**: 128 Byte
-* **Görevi**: Yeni nesil (Omen V2) cihazlarda fanların anlık gerçek dönme hızlarını (RPM) doğrudan BIOS takometresinden milisaniyelik gecikme olmadan çeker.
+* **OutSize**: 128 Bytes
+* **Task**: On newer generation (Omen V2) devices, this reads the instantaneous true rotational speeds (RPM) of the fans directly from the BIOS tachometer without millisecond delay.
   * CPU RPM: `OutData[0] \| (OutData[1] << 8)`
   * GPU RPM: `OutData[2] \| (OutData[3] << 8)`
 
 ---
 
-### 2. Aydınlatma Denetim Komutları (WMI Kategori: `0x20009`)
+### 2. Lighting Control Commands (WMI Category: `0x20009`)
 
 #### 🔵 `0x02` (Get RGB Lighting Table)
-* **Payload**: `[0x00, 0x00, ... 0x00]` (128 byte)
-* **OutSize**: 128 Byte
-* **Görevi**: 4-Bölge RGB renk tablosunun o anki durumunu okur. Renk kodları çıktının `25` ile `36` indeksleri arasındaki 12-byte bellek alanındadır.
+* **Payload**: `[0x00, 0x00, ... 0x00]` (128 bytes)
+* **OutSize**: 128 Bytes
+* **Task**: Reads the current state of the 4-Zone RGB color table. Color codes are in the 12-byte memory space between indices `25` and `36` of the output.
 
 #### 🔵 `0x03` (Set RGB Lighting Table)
-* **Payload**: `[0x03, 0x00, ... [Zones] ...]` (128 byte)
-* **OutSize**: 0 Byte
-* **Görevi**: 4-Bölge RGB klavyeye renk paketi gönderir.
-  * İlk byte `0x03` olmalıdır. Bölge renkleri 25. bayttan başlar:
+* **Payload**: `[0x03, 0x00, ... [Zones] ...]` (128 bytes)
+* **OutSize**: 0 Bytes
+* **Task**: Sends a color packet to the 4-Zone RGB keyboard.
+  * The first byte must be `0x03`. Zone colors start from the 25th byte:
     * Zone 1 (R, G, B) -> `payload[25], payload[26], payload[27]`
     * Zone 2 (R, G, B) -> `payload[28], payload[29], payload[30]`
     * Zone 3 (R, G, B) -> `payload[31], payload[32], payload[33]`
     * Zone 4 (R, G, B) -> `payload[34], payload[35], payload[36]`
 
 #### 🔵 `0x04` / `0x05` (Get/Set Standard Backlight)
-* **Görevi**: Tek renk aydınlatmalı klavyelerin ışığını açar veya kapatır.
-  * `0x04` sorgusunda dönüş değeri `0xE4` ise açık, `0x64` ise kapalıdır.
-  * `0x05` yazma komutunda payload `[0xE4, 0x00, 0x00, 0x00]` (Açık) veya `[0x64, 0x00, 0x00, 0x00]` (Kapalı) olarak gönderilir.
+* **Task**: Turns the light of single-color backlit keyboards on or off.
+  * In the `0x04` query, the return value `0xE4` means on, `0x64` means off.
+  * In the `0x05` write command, the payload is sent as `[0xE4, 0x00, 0x00, 0x00]` (On) or `[0x64, 0x00, 0x00, 0x00]` (Off).
 
 ---
 
-### 3. Ekran Kartı MUX Switch Komutları (WMI Kategori: `0x00002` / `0x00001` Fallback)
+### 3. Graphics Card MUX Switch Commands (WMI Category: `0x00002` / `0x00001` Fallback)
 
 #### 🟢 `0x52` (MUX Switch Mode)
 * **Payload**: `[ModeByte, 0x00, 0x00, 0x00]`
-* **OutSize**: 4 Byte (Okurken) / 0 Byte (Yazarken)
-* **Görevi**: Ekran kartı MUX anahtarını değiştirir.
-  * `ModeByte = 0x01` -> Yalnızca Harici GPU (Discrete Mode - Intel/AMD ekran kartı devre dışı kalır, maksimum oyun performansı).
-  * `ModeByte = 0x00` -> Hibrit / Optimus (Hybrid Mode - Enerji tasarrufu).
-  * *MUX değişimi gönderildikten sonra WMI istekleri askıya alınır, bilgisayar yeniden başlayana kadar donanım korumaya alınır.*
+* **OutSize**: 4 Bytes (When reading) / 0 Bytes (When writing)
+* **Task**: Changes the graphics card MUX switch.
+  * `ModeByte = 0x01` -> Discrete GPU Only (Discrete Mode - Intel/AMD graphics card is disabled, maximum gaming performance).
+  * `ModeByte = 0x00` -> Hybrid / Optimus (Hybrid Mode - Energy saving).
+  * *After the MUX change is dispatched, WMI requests are suspended, and the hardware is safeguarded until the computer restarts.*
 
 ---
 
-### 4. Embedded Controller (EC) Register Komut Kataloğu
+### 4. Embedded Controller (EC) Register Command Catalog
 
-OmenFlow, düşük seviyeli doğrudan donanım komutlarını Embedded Controller (EC) register'larına yazarak fallback sağlar. EC portları `0x62` (Data) ve `0x66` (Command) üzerinden PawnIO arayüzüyle kontrol edilir.
+OmenFlow provides fallback by writing low-level direct hardware commands to Embedded Controller (EC) registers. EC ports `0x62` (Data) and `0x66` (Command) are controlled via the PawnIO interface.
 
-* **`0x34` (CPU Fan Override Level)**: CPU fan hız oranını (LUT seviyesi olarak) doğrudan EC'ye yazar.
-* **`0x35` (GPU Fan Override Level)**: GPU fan hız oranını (LUT seviyesi olarak) doğrudan EC'ye yazar.
-* **`0x95` (Hardware Profile Target)**: WMI 0x1A komutunun donanımsal karşılığıdır. `0x01` Performance, `0x02` Quiet, `0x00` Default (Dengeli) modunu temsil eder.
-* **`0xCE` (Fan Profile Transition Trigger)**: Victus S serilerinde fan kademesi geçişlerinde BIOS'un fanları aniden durdurmasını engellemek için geçiş tetiği sağlar (`0x00` = Quiet, `0x01` = Default, `0x02` = Performance).
-* **`0xD0-0xD1` (CPU Fan Tachometer Lo/Hi)**: CPU fanının o anki anlık dönüş devrini (RPM) okur.
-* **`0xD2-0xD3` (GPU Fan Tachometer Lo/Hi)**: GPU fanının o anki anlık dönüş devrini (RPM) okur.
+* **`0x34` (CPU Fan Override Level)**: Writes the CPU fan speed ratio (as LUT level) directly to the EC.
+* **`0x35` (GPU Fan Override Level)**: Writes the GPU fan speed ratio (as LUT level) directly to the EC.
+* **`0x95` (Hardware Profile Target)**: This is the hardware equivalent of the WMI 0x1A command. `0x01` represents Performance, `0x02` Quiet, `0x00` Default (Balanced) mode.
+* **`0xCE` (Fan Profile Transition Trigger)**: On Victus S series, provides a transition trigger to prevent the BIOS from suddenly stopping the fans during fan step transitions (`0x00` = Quiet, `0x01` = Default, `0x02` = Performance).
+* **`0xD0-0xD1` (CPU Fan Tachometer Lo/Hi)**: Reads the instantaneous rotational speed (RPM) of the CPU fan.
+* **`0xD2-0xD3` (GPU Fan Tachometer Lo/Hi)**: Reads the instantaneous rotational speed (RPM) of the GPU fan.
 
 ---
 
-## 📂 Dizin Yapısı ve Dosyaların Görevleri
+## 📂 Directory Structure and File Roles
 
-Proje dosyaları mantıksal olarak 5 ana bölüme ayrılmıştır:
+The project files are logically divided into 5 main sections:
 
 ```
 OmenFlow/
 │
-├── OmenFlow.Core/                               # Paylaşılan model dosyaları ve arayüz sözleşmeleri
-│   ├── Models/                                  # Telemetri, fan eğrileri ve güç planı DTO'ları
-│   ├── Interfaces/                              # Donanım servis soyutlamaları
-│   └── Services/                                # Logger.cs (Merkezi günlük kaydı)
+├── OmenFlow.Core/                               # Shared model files and interface contracts
+│   ├── Models/                                  # Telemetry, fan curves, and power plan DTOs
+│   ├── Interfaces/                              # Hardware service abstractions
+│   └── Services/                                # Logger.cs (Central logging)
 │
-├── OmenFlow.Hardware/                           # Donanım erişim servisleri ve WMI/EC kontrolcüleri
-│   ├── BiosService.cs                           # WMI kuyruk döngüsü ve heartbeat servisi
-│   ├── EcService.cs                             # PawnIO ile donanımsal register okuma/yazma
-│   ├── ModelCapabilityDatabase.cs               # Victus (55 LUT) / Omen (100 LUT) model sınırları veritabanı
-│   ├── FanControlService.cs                     # Fan modları ve otomatik/manuel fan kontrolü
-│   ├── FanCurveHostedService.cs                 # Kullanıcı fan eğrilerini uygulayan arka plan iş parçacığı
-│   ├── QuietSafetyMonitor.cs                    # Sessiz mod aşırı ısınma koruması
-│   ├── SuspendRecoveryService.cs                # Uykudan uyanma sonrası durum geri yükleyici
-│   ├── DiagnosticsExportService.cs              # Masaüstüne tanı ZIP paketi oluşturan servis
-│   ├── FanCalibrationService.cs                 # Model tabanlı RPM kalibrasyon yöneticisi
-│   └── FanVerificationService.cs                # RPM hızı doğrulama ve stuck fan kontrolü
+├── OmenFlow.Hardware/                           # Hardware access services and WMI/EC controllers
+│   ├── BiosService.cs                           # WMI queue loop and heartbeat service
+│   ├── EcService.cs                             # Hardware register read/write with PawnIO
+│   ├── ModelCapabilityDatabase.cs               # Victus (55 LUT) / Omen (100 LUT) model boundaries database
+│   ├── FanControlService.cs                     # Fan modes and auto/manual fan control
+│   ├── FanCurveHostedService.cs                 # Background thread applying custom fan curves
+│   ├── QuietSafetyMonitor.cs                    # Quiet mode overheating protection
+│   ├── SuspendRecoveryService.cs                # Post-resume state restorer
+│   ├── DiagnosticsExportService.cs              # Service generating diagnostic ZIP packages to desktop
+│   ├── FanCalibrationService.cs                 # Model-based RPM calibration manager
+│   └── FanVerificationService.cs                # RPM speed verification and stuck fan check
 │
-├── OmenFlow.Worker/                             # Yönetici yetkili arka plan sunucusu
-│   ├── Program.cs                               # Minimal HTTP API (localhost:50312) ve yönlendirmeler
-│   ├── SensorReader.cs                          # LHM ile CPU/GPU yük, güç ve RAM takibi
-│   └── WmiBiosMonitor.cs                        # Arka planda telemetri tazeleyen periyodik işçi
+├── OmenFlow.Worker/                             # Administrator privileged background server
+│   ├── Program.cs                               # Minimal HTTP API (localhost:50312) and routing
+│   ├── SensorReader.cs                          # CPU/GPU load, power, and RAM tracking with LHM
+│   └── WmiBiosMonitor.cs                        # Periodic worker refreshing telemetry in the background
 │
-├── OmenFlow.App/                                # WinUI 3 tabanlı kullanıcı arayüzü (İstemci)
-│   ├── Pages/                                   # Arayüz sayfaları (Performans, Aydınlatma, MUX vb.)
-│   └── Helpers/IpcClient.cs                     # HTTP sunucusu ile haberleşen istemci sınıfı
+├── OmenFlow.App/                                # WinUI 3 based user interface (Client)
+│   ├── Pages/                                   # UI pages (Performance, Lighting, MUX etc.)
+│   └── Helpers/IpcClient.cs                     # Client class communicating with the HTTP server
 │
-├── OmenFlow.TestConsole/                        # Geliştiriciler için interaktif WMI/EC terminali
-└── README.md                                    # Ana dökümantasyon dosyası
+├── OmenFlow.TestConsole/                        # Interactive WMI/EC terminal for developers
+└── README.md                                    # Main documentation file
 ```
 
 ---
 
-## 🤝 Teşekkürler ve Katkıda Bulunanlar
+## 🤝 Acknowledgments and Contributors
 
-OmenFlow, HP donanım katmanlarının tersine mühendislik çalışmaları ve açık kaynaklı araştırmalar üzerine inşa edilmiştir. Aşağıdaki projelere sundukları altyapı ve paylaştıkları kıymetli bilgiler için teşekkür ederiz:
-* **[omencore](https://github.com/theantipopau/omencore)**: HP WMI ve EC katmanlarının çözümlenmesinde öncülük eden ve WMI protokollerinin anlaşılmasını sağlayan eşsiz bir tersine mühendislik projesi.
-* **[OmenMon-Reborn](https://github.com/seakyy/OmenMon-Reborn)**: EC fan kontrol sınırları, bellek taşmaları (55 LUT kısıtlaması) ve kararlı fan eğrileri konusunda pratik çözümler sunan başarılı bir çalışma.
+OmenFlow is built upon reverse engineering efforts on HP hardware layers and open-source research. We thank the following projects for the infrastructure they provided and the valuable information they shared:
+* **[omencore](https://github.com/theantipopau/omencore)**: A unique reverse engineering project that pioneered the decoding of HP WMI and EC layers and enabled the understanding of WMI protocols.
+* **[OmenMon-Reborn](https://github.com/seakyy/OmenMon-Reborn)**: A successful endeavor offering practical solutions regarding EC fan control limits, memory overflows (55 LUT restriction), and stable fan curves.
 
 ---
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje açık kaynak topluluğuyla paylaşılmak üzere geliştirilmiştir. Ayrıntılar için `LICENSE` dosyasına göz atabilirsiniz.
+This project was developed to be shared with the open-source community. You can check the `LICENSE` file for details.

@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace OmenFlow_App.Pages;
@@ -63,7 +63,32 @@ public sealed partial class AdditionalSettingsPage : Page
             }
         }
 
+        // Auto Profiles
+        bool autoProfilesEnabled = false;
+        if (localSettings.TryGetValue("AutoProfileGamesEnabled", out object apVal))
+            autoProfilesEnabled = (bool)apVal;
+        ToggleAutoProfileGames.IsOn = autoProfilesEnabled;
+        PanelAutoProfileGames.Visibility = autoProfilesEnabled ? Visibility.Visible : Visibility.Collapsed;
+
+        // Omen Key Intercept
+        bool omenKeyEnabled = false;
+        if (localSettings.TryGetValue("OmenKeyInterceptEnabled", out object okVal))
+            omenKeyEnabled = (bool)okVal;
+        ToggleOmenKey.IsOn = omenKeyEnabled;
+
         _isInitializing = false;
+
+        _ = LoadAutoProfileGamesAsync();
+    }
+
+    private async System.Threading.Tasks.Task LoadAutoProfileGamesAsync()
+    {
+        if (App.IpcClient == null) return;
+        var games = await App.IpcClient.GetAutoProfileGamesAsync();
+        if (games != null)
+        {
+            ListGames.ItemsSource = games;
+        }
     }
 
     private async void ToggleBatteryCare_Toggled(object sender, RoutedEventArgs e)
@@ -136,5 +161,60 @@ public sealed partial class AdditionalSettingsPage : Page
         };
 
         await App.IpcClient.SendCommandAsync("SetPowerAutomation", payload);
+    }
+
+    private async void ToggleAutoProfileGames_Toggled(object sender, RoutedEventArgs e)
+    {
+        bool isOn = ToggleAutoProfileGames.IsOn;
+        PanelAutoProfileGames.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+        
+        if (_isInitializing) return;
+        
+        Helpers.LocalSettings.Values["AutoProfileGamesEnabled"] = isOn;
+        if (App.IpcClient != null)
+        {
+            await App.IpcClient.SendCommandAsync("SetAutoProfileConfig", new { IsEnabled = isOn });
+        }
+    }
+
+    private async void BtnAddGame_Click(object sender, RoutedEventArgs e)
+    {
+        string game = TxtNewGame.Text.Trim();
+        if (string.IsNullOrEmpty(game) || App.IpcClient == null) return;
+        
+        TxtNewGame.Text = "";
+        var sent = await App.IpcClient.SendCommandAsync("AutoProfileAddGame", game);
+        if (sent)
+        {
+            await System.Threading.Tasks.Task.Delay(100);
+            await LoadAutoProfileGamesAsync();
+        }
+    }
+
+    private async void BtnRemoveGame_Click(object sender, RoutedEventArgs e)
+    {
+        var btn = sender as Button;
+        if (btn == null || btn.Tag == null || App.IpcClient == null) return;
+        
+        string game = btn.Tag.ToString() ?? "";
+        if (string.IsNullOrEmpty(game)) return;
+
+        var sent = await App.IpcClient.SendCommandAsync("AutoProfileRemoveGame", game);
+        if (sent)
+        {
+            await System.Threading.Tasks.Task.Delay(100);
+            await LoadAutoProfileGamesAsync();
+        }
+    }
+
+    private async void ToggleOmenKey_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_isInitializing) return;
+        
+        Helpers.LocalSettings.Values["OmenKeyInterceptEnabled"] = ToggleOmenKey.IsOn;
+        if (App.IpcClient != null)
+        {
+            await App.IpcClient.SendCommandAsync("SetOmenKeyIntercept", ToggleOmenKey.IsOn);
+        }
     }
 }
